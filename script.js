@@ -86,6 +86,9 @@
             { id: 23, name: "Унеча", coords: [52.766639, 32.936365], color: "red" },
             { id: 24, name: "1235,3 км", coords: [51.677002, 50.916119], color: "red" }
         ];
+
+
+
 // Функция для создания смещения метки
 function generateOffset(index) {
     const offsetFactor = 0.002; // Смещение

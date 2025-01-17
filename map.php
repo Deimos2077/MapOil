@@ -30,6 +30,8 @@ try {
 } catch (Exception $e) {
     $data = ['error' => $e->getMessage()];
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
