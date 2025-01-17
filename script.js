@@ -208,8 +208,8 @@ const cylinderIcon = L.divIcon({
         <div style="
             width: 25px;
             height: 40px;
-            background: linear-gradient(to bottom, #679ad2, #2b5a8b);
-            border: 2px solid #8b5a2b;
+            background: linear-gradient(to bottom, white 50%, black 50%);
+            border: 2px solid #2b5a8b;
             border-radius: 10px; /* Закругленные углы */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         ">
@@ -250,9 +250,7 @@ const pipelineReservoirCoords = [
     [47.6, 61.5],
     [47.6, 61.8],
     [47.95, 54.5], 
-    [47.95, 54.8], 
-    [46.9, 77.2],
-    [46.9, 77.5]
+    [47.95, 54.8]
 
 ];
 
@@ -260,10 +258,10 @@ const pipelineReservoirCoords = [
 const newCylinderIcon = L.divIcon({
     html: `
         <div style="
-            width: 25px;
-            height: 40px;
-            background: linear-gradient(to bottom, #88d279, #2b8b5a);
-            border: 2px solid #2b5a8b;
+            width: 40px;
+            height: 25px;
+            background: linear-gradient(to bottom, white 90%, black 10%);
+            border: 2px solid #2b8b5a;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         ">
@@ -352,10 +350,6 @@ const midPipelineTanks = [
     },
     {
         coords: [[47.95, 54.5], [47.95, 54.8]],
-        color: '#88d279'
-    },
-    {
-        coords: [[46.9, 77.2], [46.9, 77.5]],
         color: '#88d279'
     }
 ];
@@ -542,39 +536,110 @@ pipelinesWithIds.forEach(({ from, to, company }, index) => {
             className: "dashed-line" // Класс для CSS-анимации
         }).addTo(map);
 
-        const distance = haversine(point1.coords[0], point1.coords[1], point2.coords[0], point2.coords[1]).toFixed(2);
+        // Добавление стрелок
+        const arrowDecorator = L.polylineDecorator(mainLine, {
+            patterns: [
+                {
+                    offset: '50%', // Позиция стрелки (50% от длины линии)
+                    repeat: 0, // Не повторять стрелку
+                    symbol: L.Symbol.arrowHead({
+                        pixelSize: 15, // Размер стрелки
+                        pathOptions: { color: mainLineColor, fillOpacity: 1 }
+                    })
+                }
+            ]
+        }).addTo(map);
+    
+    }
+});
 
-        // Средняя точка для текста
+
+
+
+
+
+
+
+
+
+//-------------------------------Информация хода нефти--------------------------
+
+const pipelinesData = [
+    { from: 7, to: 19, oilVolume: 15000 }, // НПС им. Шманова -> НПС им. Касымова
+    { from: 8, to: 16, oilVolume: 12000 }, // ПСП Самара -> Клин
+    { from: 16, to: 20, oilVolume: 10000 }, // Клин -> Никольское
+    { from: 20, to: 23, oilVolume: 14000 }, // Никольское -> Унеча
+    { from: 8, to: 18, oilVolume: 11000 }, // ПСП Самара -> Красноармейск
+    { from: 18, to: 17, oilVolume: 9000 }, // Красноармейск -> 915 км н/пр.КЛ
+    { from: 17, to: 21, oilVolume: 13000 }, // 915 км н/пр.КЛ -> Родионовская
+    { from: 21, to: 22, oilVolume: 16000 }, // Родионовская -> Тихорецк
+    { from: 22, to: 15, oilVolume: 17000 }, // Тихорецк -> Грушовая
+    { from: 15, to: 9, oilVolume: 18000 }, // Грушовая -> Новороссийск
+    { from: 2, to: 1, oilVolume: 20000 }, // Алашанькоу -> ГНПС Атасу
+    { from: 2, to: 3, oilVolume: 19000 }, // ПНХЗ -> ГНПС Атасу
+    { from: 14, to: 2, oilVolume: 21000 }, // ГНПС Атасу -> ГНПС им. Б. Джумагалиева
+    { from: 14, to: 6, oilVolume: 22000 }, // ПКОП -> ГНПС им. Б. Джумагалиева
+    { from: 4, to: 14, oilVolume: 23000 }, // ГНПС им. Б. Джумагалиева -> ГНПС Кумколь
+    { from: 5, to: 4, oilVolume: 24000 }, // ГНПС Кумколь -> ГНПС Кенкияк
+    { from: 11, to: 5, oilVolume: 25000 }, // КПОУ Жана Жол -> ГНПС Кенкияк
+    { from: 12, to: 5, oilVolume: 26000 }, // ПСП 45 км -> ГНПС Кенкияк
+    { from: 5, to: 7, oilVolume: 27000 }, // ГНПС Кенкияк -> НПС им. Шманова
+    { from: 19, to: 24, oilVolume: 28000 }, // НПС им. Касымова -> 1235,3 км
+    { from: 24, to: 13, oilVolume: 29000 }, // 1235,3 км -> Большая Черниговка
+    { from: 23, to: 10, oilVolume: 30000 }, // Унеча -> Усть-Луга
+    { from: 13, to: 8, oilVolume: 31000 } // Большая Черниговка -> ПСП Самара
+];
+
+pipelinesData.forEach(({ from, to, oilVolume }) => {
+    const point1 = points.find(p => p.id === from);
+    const point2 = points.find(p => p.id === to);
+
+    if (point1 && point2) {
+        // Центр линии
         const midLat = (point1.coords[0] + point2.coords[0]) / 2;
         const midLon = (point1.coords[1] + point2.coords[1]) / 2;
 
-        // Добавление смещения
-        const offset = (index % 2 === 0 ? 0.002 : -0.002) * (index % 3);
-        const adjustedLat = midLat + offset;
-        const adjustedLon = midLon + offset;
+        // Вычисление направления линии
+        const dx = point2.coords[1] - point1.coords[1];
+        const dy = point2.coords[0] - point1.coords[0];
 
-        const label = L.divIcon({
-            className: 'distance-label',
-            html: `
-                <div style="
-                    font-size: 14px;
-                    font-family: 'Arial', sans-serif;
-                    color: #333;
-                    line-height: 1.5;
-                    white-space: nowrap; /* Запрет на перенос строк */
-                    text-align: center;
-                ">
-                    <strong>${distance} км</strong><br>
-                    <span style="font-style: italic;">${company}</span>
-                </div>
-            `,
-            iconSize: [0, 0],
-            iconAnchor: [0, 0]
-        });
+        // Перпендикулярное смещение
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const offsetLat = (dy / length) * 0.01; // Масштабировать смещение
+        const offsetLon = (-dx / length) * 0.01;
 
-        L.marker([adjustedLat, adjustedLon], { icon: label }).addTo(map);
+        // Добавление текста
+        L.marker([midLat + offsetLat, midLon + offsetLon], {
+            icon: L.divIcon({
+                className: 'distance-label',
+                html: `
+                    <div style="
+                        font-size: 16px;
+                        font-family: Arial, sans-serif;
+                        color: black;
+                        font-weight: bold;
+                        text-align: center;
+                        white-space: nowrap;
+                    ">
+                        ${oilVolume} т
+                    </div>
+                `,
+                iconSize: [0, 0],
+                iconAnchor: [0, 0]
+            })
+        }).addTo(map);
     }
 });
+
+
+
+
+
+
+
+
+
+
 
 
 //--------------------------------Потери------------------------
@@ -661,16 +726,17 @@ map.on('zoomend', () => {
 
 
 
-// Кнопка для скрытия/показа меток
 const filterButton = document.getElementById('filter-button');
 let labelsVisible = true;
 
 filterButton.addEventListener('click', () => {
     labelsVisible = !labelsVisible;
 
+    // Управляем видимостью меток объема нефти
     document.querySelectorAll('.distance-label').forEach(label => {
         label.style.display = labelsVisible ? 'block' : 'none';
     });
 
+    // Обновляем текст кнопки
     filterButton.textContent = labelsVisible ? "Скрыть надписи" : "Показать надписи";
 });
