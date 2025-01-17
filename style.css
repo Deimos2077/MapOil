@@ -1,6 +1,8 @@
 #map {
-    height: 650px;
-    width: 100%;
+    height: 90vh; /* Использовать всю высоту окна */
+    width: 100%; /* Полная ширина */
+    max-width: 100%; /* Ограничить карту в рамках экрана */
+    box-sizing: border-box; /* Включить padding и border в размеры */
 }
 #zoom-slider {
     position: absolute;
@@ -27,10 +29,7 @@
 }
 .distance-label {
     display: inline-block; /* Растяжение фона по содержимому текста */
-    background: rgba(255, 255, 255, 0.9); /* Белый фон с прозрачностью */
     padding: 6px 10px; /* Отступы */
-    border-radius: 12px; /* Закругленные углы */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* Тень */
     font-size: 14px; /* Размер текста */
     line-height: 1; /* Межстрочный интервал */
     text-align: center; /* Центрирование текста */
@@ -44,7 +43,7 @@
     bottom: 10px;
     left: 10px;
     z-index: 1000;
-    background: white;
+    background: rgba(255, 255, 255, 0.633);
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
