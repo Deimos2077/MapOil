@@ -20,7 +20,14 @@ try {
 
     $stmt = $pdo->query($sql);
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Если данных нет, выбрасываем ошибку
+    if (empty($data)) {
+        throw new Exception("Нет данных в базе.");
+    }
 } catch (PDOException $e) {
+    $data = ['error' => 'Ошибка базы данных: ' . $e->getMessage()];
+} catch (Exception $e) {
     $data = ['error' => $e->getMessage()];
 }
 ?>
@@ -44,6 +51,7 @@ try {
         <!-- Интеграция с серверными данными -->
         <script>
             const pointsData = <?php echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE); ?>;
+            console.log(pointsData); // Проверка данных в консоли
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
