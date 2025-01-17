@@ -506,9 +506,9 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 const companyColors = {
-    "АО КазТрансОйл": "rgb(79, 73, 239)",
-    "ПАО Транснефть": "rgb(3, 198, 252)",
-    "ТОО «Казахстанско-Китайский трубопровод»": "green",
+    "АО КазТрансОйл": "rgb(3, 198, 252)",
+    "ПАО Транснефть": "rgb(79, 73, 239)",
+    "ТОО «Казахстанско-Китайский трубопровод»": "rgb(5, 186, 53)",
     "АО 'СЗТК' МунайТас'": "rgb(221, 5, 221)"
 };
 
@@ -543,7 +543,7 @@ pipelinesWithIds.forEach(({ from, to, company }, index) => {
                     offset: '50%', // Позиция стрелки (50% от длины линии)
                     repeat: 0, // Не повторять стрелку
                     symbol: L.Symbol.arrowHead({
-                        pixelSize: 15, // Размер стрелки
+                        pixelSize: 8, // Размер стрелки
                         pathOptions: { color: mainLineColor, fillOpacity: 1 }
                     })
                 }
@@ -564,74 +564,83 @@ pipelinesWithIds.forEach(({ from, to, company }, index) => {
 
 //-------------------------------Информация хода нефти--------------------------
 
-const pipelinesData = [
-    { from: 7, to: 19, oilVolume: 15000 }, // НПС им. Шманова -> НПС им. Касымова
-    { from: 8, to: 16, oilVolume: 12000 }, // ПСП Самара -> Клин
-    { from: 16, to: 20, oilVolume: 10000 }, // Клин -> Никольское
-    { from: 20, to: 23, oilVolume: 14000 }, // Никольское -> Унеча
-    { from: 8, to: 18, oilVolume: 11000 }, // ПСП Самара -> Красноармейск
-    { from: 18, to: 17, oilVolume: 9000 }, // Красноармейск -> 915 км н/пр.КЛ
-    { from: 17, to: 21, oilVolume: 13000 }, // 915 км н/пр.КЛ -> Родионовская
-    { from: 21, to: 22, oilVolume: 16000 }, // Родионовская -> Тихорецк
-    { from: 22, to: 15, oilVolume: 17000 }, // Тихорецк -> Грушовая
-    { from: 15, to: 9, oilVolume: 18000 }, // Грушовая -> Новороссийск
-    { from: 2, to: 1, oilVolume: 20000 }, // Алашанькоу -> ГНПС Атасу
-    { from: 2, to: 3, oilVolume: 19000 }, // ПНХЗ -> ГНПС Атасу
-    { from: 14, to: 2, oilVolume: 21000 }, // ГНПС Атасу -> ГНПС им. Б. Джумагалиева
-    { from: 14, to: 6, oilVolume: 22000 }, // ПКОП -> ГНПС им. Б. Джумагалиева
-    { from: 4, to: 14, oilVolume: 23000 }, // ГНПС им. Б. Джумагалиева -> ГНПС Кумколь
-    { from: 5, to: 4, oilVolume: 24000 }, // ГНПС Кумколь -> ГНПС Кенкияк
-    { from: 11, to: 5, oilVolume: 25000 }, // КПОУ Жана Жол -> ГНПС Кенкияк
-    { from: 12, to: 5, oilVolume: 26000 }, // ПСП 45 км -> ГНПС Кенкияк
-    { from: 5, to: 7, oilVolume: 27000 }, // ГНПС Кенкияк -> НПС им. Шманова
-    { from: 19, to: 24, oilVolume: 28000 }, // НПС им. Касымова -> 1235,3 км
-    { from: 24, to: 13, oilVolume: 29000 }, // 1235,3 км -> Большая Черниговка
-    { from: 23, to: 10, oilVolume: 30000 }, // Унеча -> Усть-Луга
-    { from: 13, to: 8, oilVolume: 31000 } // Большая Черниговка -> ПСП Самара
-];
+// Данные о переданной нефти
+const oilTransferData = {
+    1: 20000, 2: 19000, 3: 15000, 4: 26066, 5: 30087,
+    6: 22000, 7: 4008, 8: 12000, 9: 18000, 10: 30000,
+    11: 1350, 12: 28737, 13: 31000, 14: 26000, 15: 17000,
+    16: 10000, 17: 9000, 18: 11000, 19: 28000, 20: 14000,
+    21: 13000, 22: 16000, 23: 14000, 24: 29000
+};
 
-pipelinesData.forEach(({ from, to, oilVolume }) => {
-    const point1 = points.find(p => p.id === from);
-    const point2 = points.find(p => p.id === to);
+// IDs точек с метками
+const pointsWithLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
 
-    if (point1 && point2) {
-        // Центр линии
-        const midLat = (point1.coords[0] + point2.coords[0]) / 2;
-        const midLon = (point1.coords[1] + point2.coords[1]) / 2;
+// Функция для добавления линий и меток
+function addPointLinesWithLabels(points, oilData, pointsWithLabels) {
+    points.forEach((point) => {
+        if (pointsWithLabels.includes(point.id)) {
+            const oilVolume = oilData[point.id] || 0;
 
-        // Вычисление направления линии
-        const dx = point2.coords[1] - point1.coords[1];
-        const dy = point2.coords[0] - point1.coords[0];
+            // Смещение для линии
+            const offsetLat = 0.03; // Смещение линии вверх
+            const offsetLon = -0.4; // Смещение линии вправо
 
-        // Перпендикулярное смещение
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const offsetLat = (dy / length) * 0.01; // Масштабировать смещение
-        const offsetLon = (-dx / length) * 0.01;
+            const lineEndLat = point.coords[0] + offsetLat;
+            const lineEndLon = point.coords[1] + offsetLon;
 
-        // Добавление текста
-        L.marker([midLat + offsetLat, midLon + offsetLon], {
-            icon: L.divIcon({
-                className: 'distance-label',
-                html: `
-                    <div style="
-                        font-size: 16px;
-                        font-family: Arial, sans-serif;
-                        color: black;
-                        font-weight: bold;
-                        text-align: center;
-                        white-space: nowrap;
-                    ">
-                        ${oilVolume} т
-                    </div>
-                `,
-                iconSize: [0, 0],
-                iconAnchor: [0, 0]
-            })
-        }).addTo(map);
-    }
-});
+            // Добавляем линию от точки
+            const line = L.polyline([point.coords, [lineEndLat, lineEndLon]], {
+                color: 'black',
+                weight: 2,
+                opacity: 0.8
+            }).addTo(map);
+
+            // Рассчитываем направление линии
+            const dx = lineEndLon - point.coords[1];
+            const dy = lineEndLat - point.coords[0];
+
+            // Нормализуем смещение для текста
+            const norm = Math.sqrt(dx * dx + dy * dy);
+            const textOffsetLat = (dy / norm) * 1; // Смещение текста вдоль линии
+            const textOffsetLon = (dx / norm) * 0.25; // Смещение текста вдоль линии
+
+            // Добавляем метку рядом с линией
+            const labelLat = lineEndLat + textOffsetLat;
+            const labelLon = lineEndLon + textOffsetLon;
+
+            L.marker([labelLat, labelLon], {
+                icon: L.divIcon({
+                    className: 'oil-label',
+                    html: `<div>${oilVolume} </div>`,
+                    iconSize: null,
+                    iconAnchor: [10, 0]
+                })
+            }).addTo(map);
+        }
+    });
+}
 
 
+
+
+// Вызов функции для добавления линий и меток
+addPointLinesWithLabels(points, oilTransferData, pointsWithLabels);
+
+// Добавляем стили для меток
+const style = document.createElement('style');
+style.innerHTML = `
+.oil-label div {
+    font-size: 12px;
+    font-weight: bold;
+    color: black;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+}
+`;
+document.head.appendChild(style);
 
 
 
@@ -647,79 +656,6 @@ pipelinesData.forEach(({ from, to, oilVolume }) => {
 
 // Пример данных с потерями для каждого трубопровода
 // Эти данные будут взяты из базы данных в будущем
-const pipelineLosses = {
-    "7-19": 100, // Потери между НПС им. Шманова и НПС им. Касымова
-    "5-7": 50,  // Потери между ПСП Самара и Клин
-    "5-4": 75, // Потери между Клин и Никольское
-    "14-2": 60, // Потери между Никольское и Унеча
-    // Добавьте данные для других трубопроводов
-};
-
-const minZoomToShowLossCircles = 7.5; // Минимальный зум для отображения кругляшков потерь
-
-// Создаем слой для кругляшков потерь
-const lossCirclesLayer = L.layerGroup();
-
-// Добавляем кругляшки потерь в слой
-pipelinesWithIds.forEach(({ from, to }, index) => {
-    const point1 = points.find(p => p.id === from);
-    const point2 = points.find(p => p.id === to);
-
-    if (point1 && point2) {
-        const lineKey = `${from}-${to}`;
-        const loss = pipelineLosses[lineKey];
-
-        if (loss !== undefined) {
-            const midLat = (point1.coords[0] + point2.coords[0]) / 2;
-            const midLon = (point1.coords[1] + point2.coords[1]) / 2;
-
-            const lossCircle = L.divIcon({
-                className: 'loss-circle',
-                html: `
-                    <div style="
-                        background: rgba(234, 255, 0, 0.81);
-                        color: black;
-                        font-size: 12px;
-                        font-weight: bold;
-                        border-radius: 50%;
-                        width: 30px;
-                        height: 30px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        border: 2px solid black;
-                        box-shadow: 0 0 5px rgba(0,0,0,0.5);
-                    ">
-                        ${loss}т
-                    </div>
-                `,
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            });
-
-            // Добавляем метку в слой
-            L.marker([midLat, midLon], { icon: lossCircle }).addTo(lossCirclesLayer);
-        }
-    }
-});
-
-// Добавляем логику отображения/скрытия при изменении зума
-map.on('zoomend', () => {
-    const currentZoom = map.getZoom();
-
-    // Логика отображения кругляшков потерь
-    if (currentZoom >= minZoomToShowLossCircles) {
-        if (!map.hasLayer(lossCirclesLayer)) {
-            map.addLayer(lossCirclesLayer); // Показываем кругляшки потерь
-        }
-    } else {
-        if (map.hasLayer(lossCirclesLayer)) {
-            map.removeLayer(lossCirclesLayer); // Скрываем кругляшки потерь
-        }
-    }
-});
-
-
 
 //--------------------------------------------------------
 
