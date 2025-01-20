@@ -25,6 +25,7 @@
 
         // Подключение OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attributionControl: false
         }).addTo(map);
 
 
@@ -251,7 +252,6 @@ const pipelineReservoirCoords = [
     [47.6, 61.8],
     [47.95, 54.5], 
     [47.95, 54.8]
-
 ];
 
 // Создаем новый divIcon для резервуаров другого цвета
@@ -360,8 +360,8 @@ function addManualArrows(tanks) {
             const [start, end] = coords;
 
             // Рассчитываем среднюю широту для начала и конца линии
-            const adjustedStart = [(start[0] + end[0]) / 2, start[1]]; // Средняя широта
-            const adjustedEnd = [(start[0] + end[0]) / 2, end[1]];     // Средняя широта
+            const adjustedStart = start;
+            const adjustedEnd = end;            
 
             // Создаем линию
             L.polyline([adjustedStart, adjustedEnd], {
@@ -418,46 +418,28 @@ addManualArrows(
 );
 
 
-const minZoomToShowTanks = 7.5; // Минимальный зум для отображения резервуаров
-const minZoomToShowNewTanks = 7.5; // Минимальный зум для отображения новых резервуаров
-const minZoomToShowArrows = 7.5; // Минимальный зум для отображения стрелок
+const minZoom = 7.5;
 
 map.on('zoomend', () => {
     const currentZoom = map.getZoom();
 
-    // Логика отображения резервуаров
-    if (currentZoom >= minZoomToShowTanks) {
-        if (!map.hasLayer(tanksLayer)) {
-            map.addLayer(tanksLayer); // Показываем резервуары
-        }
-    } else {
-        if (map.hasLayer(tanksLayer)) {
-            map.removeLayer(tanksLayer); // Скрываем резервуары
-        }
-    }
+    const layers = [
+        { layer: tanksLayer, minZoom },
+        { layer: newTanksLayer, minZoom },
+        { layer: arrowLayer, minZoom }
+    ];
 
-    // Логика отображения новых резервуаров
-    if (currentZoom >= minZoomToShowNewTanks) {
-        if (!map.hasLayer(newTanksLayer)) {
-            map.addLayer(newTanksLayer); // Показываем новые резервуары
+    layers.forEach(({ layer, minZoom }) => {
+        if (currentZoom >= minZoom) {
+            if (!map.hasLayer(layer)) map.addLayer(layer);
+        } else {
+            if (map.hasLayer(layer)) map.removeLayer(layer);
         }
-    } else {
-        if (map.hasLayer(newTanksLayer)) {
-            map.removeLayer(newTanksLayer); // Скрываем новые резервуары
-        }
-    }
-
-    // Логика отображения стрелок
-    if (currentZoom >= minZoomToShowArrows) {
-        if (!map.hasLayer(arrowLayer)) {
-            map.addLayer(arrowLayer); // Показываем стрелки
-        }
-    } else {
-        if (map.hasLayer(arrowLayer)) {
-            map.removeLayer(arrowLayer); // Скрываем стрелки
-        }
-    }
+    });
 });
+
+
+
 
 //--------------------------Линии между точками-------------------------------------
         const pipelinesWithIds = [
@@ -520,38 +502,52 @@ pipelinesWithIds.forEach(({ from, to, company }, index) => {
     if (point1 && point2) {
         const mainLineColor = companyColors[company] || "black";
 
-        // Основная линия (широкая)
+        // Основная линия
         const mainLine = L.polyline([point1.coords, point2.coords], {
             color: mainLineColor,
-            weight: 6, // Увеличенная толщина линии
+            weight: 6,
             opacity: 0.8
         }).addTo(map);
 
-        // Пунктирная линия (анимация)
+        // Пунктирная линия
         const dashedLine = L.polyline([point1.coords, point2.coords], {
-            color: "black", // Цвет пунктирной линии
+            color: "black",
             weight: 3,
-            dashArray: "10, 10", // Настройка пунктира: длина штриха и промежутка
+            dashArray: "10, 10",
             opacity: 1,
-            className: "dashed-line" // Класс для CSS-анимации
+            className: "dashed-line"
         }).addTo(map);
 
-        // Добавление стрелок
-        const arrowDecorator = L.polylineDecorator(mainLine, {
-            patterns: [
-                {
-                    offset: '50%', // Позиция стрелки (50% от длины линии)
-                    repeat: 0, // Не повторять стрелку
-                    symbol: L.Symbol.arrowHead({
-                        pixelSize: 8, // Размер стрелки
-                        pathOptions: { color: mainLineColor, fillOpacity: 1 }
-                    })
-                }
-            ]
-        }).addTo(map);
-    
+        // Список исключений (линии без стрелок)
+        const noArrowLines = [
+            { from: 12, to: 5 }, // ПСП 45 км -> ГНПС Кенкияк
+            { from: 11, to: 5 }, // КПОУ Жана Жол -> ГНПС Кенкияк
+            { from: 7, to: 19 }, // НПС им. Шманова -> НПС им. Касымова
+            { from: 24, to: 13 }, // 1235 -> Большая Черниговка
+            { from: 15, to: 9 } // Грушовая -> Новороссийск
+        ];
+
+        // Проверка, нужна ли стрелка
+        const hasArrow = !noArrowLines.some(line => line.from === from && line.to === to);
+
+        // Добавление стрелок, если они нужны
+        if (hasArrow) {
+            const arrowDecorator = L.polylineDecorator(mainLine, {
+                patterns: [
+                    {
+                        offset: '50%', // Позиция стрелки
+                        repeat: 0, // Не повторять стрелку
+                        symbol: L.Symbol.arrowHead({
+                            pixelSize: 8,
+                            pathOptions: { color: mainLineColor, fillOpacity: 1 }
+                        })
+                    }
+                ]
+            }).addTo(map);
+        }
     }
 });
+
 
 
 
@@ -574,7 +570,7 @@ const oilTransferData = {
 };
 
 // IDs точек с метками
-const pointsWithLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+const pointsWithLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 19, 24];
 
 // Функция для добавления линий и меток
 function addPointLinesWithLabels(points, oilData, pointsWithLabels) {
@@ -653,9 +649,103 @@ document.head.appendChild(style);
 
 //--------------------------------Потери------------------------
 
-
 // Пример данных с потерями для каждого трубопровода
 // Эти данные будут взяты из базы данных в будущем
+const pipelineLosses = {
+    "7-19": 100, // Потери между НПС им. Шманова и НПС им. Касымова
+    "5-7": 50,  // Потери между ПСП Самара и Клин
+    "5-4": 75, // Потери между Клин и Никольское
+    "14-2": 60, // Потери между Никольское и Унеча
+    // Добавьте данные для других трубопроводов
+};
+
+const minZoomToShowLossCircles = 7.5; // Минимальный зум для отображения потерь
+
+// Создаем слой для потерь
+const lossCirclesLayer = L.layerGroup();
+
+pipelinesWithIds.forEach(({ from, to }, index) => {
+    const point1 = points.find(p => p.id === from);
+    const point2 = points.find(p => p.id === to);
+
+    if (!point1 || !point2) {
+        console.warn(`Не найдены точки для связи: ${from}-${to}`);
+        return; // Пропускаем эту связь
+    }
+
+    const lineKey = `${from}-${to}`;
+    const loss = pipelineLosses[lineKey];
+
+    if (loss !== undefined) {
+        // Позиция начала линии (середина трубопровода)
+        const midLat = (point1.coords[0] + point2.coords[0]) / 2;
+        const midLon = (point1.coords[1] + point2.coords[1]) / 2;
+
+        // Вектор направления между точками
+        const dx = point2.coords[0] - point1.coords[0];
+        const dy = point2.coords[1] - point1.coords[1];
+        const lengthOffset = 0.1; // Фиксированная длина линии
+
+        // Нормализация вектора
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        const normalizedDx = dx / magnitude;
+        const normalizedDy = dy / magnitude;
+
+        // Смещение линии на фиксированную длину
+        const offsetLat = midLat + normalizedDy * lengthOffset;
+        const offsetLon = midLon - normalizedDx * lengthOffset;
+
+        // Линия от трубопровода
+        const lossLine = L.polyline(
+            [[midLat, midLon], [offsetLat, offsetLon]],
+            { color: 'black', weight: 2, dashArray: '5' } // Стиль линии
+        ).addTo(lossCirclesLayer);
+
+        // Текстовая метка рядом с концом линии
+        const lossLabel = L.divIcon({
+            className: 'loss-label',
+            html: ` 
+                <div style="
+                    color: black;
+                    font-size: 12px;
+                    font-weight: bold;
+                    white-space: nowrap;
+                ">
+                    ${loss}т-Потери
+                </div>
+            `,
+            iconSize: [50, 20], // Размеры метки
+            iconAnchor: [-5, 5] // Центр метки относительно точки
+        });
+
+        // Добавляем текстовую метку
+        L.marker([offsetLat, offsetLon], { icon: lossLabel }).addTo(lossCirclesLayer);
+    } else {
+        console.warn(`Нет данных о потерях для трубопровода ${lineKey}`);
+    }
+});
+
+
+
+
+
+
+// Логика отображения/скрытия потерь при изменении зума
+map.on('zoomend', () => {
+    const currentZoom = map.getZoom();
+
+    if (currentZoom >= minZoomToShowLossCircles) {
+        if (!map.hasLayer(lossCirclesLayer)) {
+            map.addLayer(lossCirclesLayer); // Показываем потери
+        }
+    } else {
+        if (map.hasLayer(lossCirclesLayer)) {
+            map.removeLayer(lossCirclesLayer); // Скрываем потери
+        }
+    }
+});
+
+
 
 //--------------------------------------------------------
 

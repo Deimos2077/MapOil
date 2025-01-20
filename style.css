@@ -123,4 +123,5 @@
         display: inline-block;
         margin-right: 8px;
     }
+    .leaflet-control-attribution.leaflet-control a:first-child { display: none; }
 
