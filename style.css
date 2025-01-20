@@ -2,6 +2,7 @@
     height: 650px;
     width: 100%;
 }
+.leaflet-control-attribution.leaflet-control a:first-child { display: none; }
 #zoom-slider {
     position: absolute;
     top: 20px;

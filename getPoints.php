@@ -10,7 +10,7 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->query('SELECT id, name, lat, long, color FROM points');
+    $stmt = $pdo->query('SELECT id, name, lat, lng, color FROM points');
     $points = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($points);
