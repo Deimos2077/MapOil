@@ -1,36 +1,6 @@
 <?php
 // Подключаем файл для работы с базой данных
-require_once 'db.php';
-
-// Запрос к базе данных для получения точек
-try {
-    $sql = "
-        SELECT 
-            p.id AS point_id, 
-            p.name AS point_name, 
-            p.latitude, 
-            p.longitude, 
-            p.color, 
-            t.name AS tank_name, 
-            t.capacity, 
-            t.current_volume
-        FROM points p
-        LEFT JOIN tanks t ON p.id = t.point_id
-    ";
-
-    $stmt = $pdo->query($sql);
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Если данных нет, выбрасываем ошибку
-    if (empty($data)) {
-        throw new Exception("Нет данных в базе.");
-    }
-} catch (PDOException $e) {
-    $data = ['error' => 'Ошибка базы данных: ' . $e->getMessage()];
-} catch (Exception $e) {
-    $data = ['error' => $e->getMessage()];
-}
-
+include 'db.php';
 
 ?>
 <!DOCTYPE html>
