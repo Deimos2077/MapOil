@@ -41,8 +41,8 @@
 }
 .legend {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
+    bottom: 775px;
+    left: 1645px;
     z-index: 1000;
     background: rgba(255, 255, 255, 0.633);
     padding: 10px;
@@ -107,8 +107,8 @@
     .cylinder-S {
         width: 25px; /* Ширина цилиндра */
         height: 40px; /* Высота цилиндра */
-        background: linear-gradient(to bottom, #88d279, #2b8b5a); /* Градиент для объемного эффекта */
-        border: 2px solid #2b5a8b; /* Цвет обводки */
+        background: linear-gradient(to bottom, #e8e8e8, #b1b1b1); /* Градиент для объемного эффекта */
+        border: 2px solid #151515; /* Цвет обводки */
         border-radius: 10px; /* Закругленные углы */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
         display: inline-block;
@@ -117,8 +117,8 @@
     .cylinder-T {
         width: 25px; /* Ширина цилиндра */
         height: 40px; /* Высота цилиндра */
-        background: linear-gradient(to bottom, #679ad2, #2b5a8b); /* Градиент для объемного эффекта */
-        border: 2px solid #2b5a8b; /* Цвет обводки */
+        background: linear-gradient(to bottom, #ee3333, #993636); /* Градиент для объемного эффекта */
+        border: 2px solid black; /* Цвет обводки */
         border-radius: 10px; /* Закругленные углы */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
         display: inline-block;

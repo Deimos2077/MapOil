@@ -30,10 +30,10 @@ include 'db.php';
                 <li><span class="pipeline" style="background-color: rgb(3, 198, 252);"></span> Нефтепровод ПАО Транснефть</li>
                 <li><span class="pipeline" style="background-color: green;"></span> Нефтепровод ТОО «Казахстанско-Китайский трубопровод»</li>
                 <li><span class="pipeline" style="background-color: rgb(221, 5, 221);"></span> Нефтепровод АО 'СЗТК' МунайТас'</li>
-                <li><span class="circle" style="background-color: red;"></span> Приемо сдаточный пункт</li>
-                <li><span class="circle" style="background-color: green;"></span> Приемо сдаточный пункт с резервуарами для хранения нефти</li>
-                <li><span class="cylinder-T" style="background-color: #2b5a8b"></span> Остатки товарной нефти</li>
-                <li><span class="cylinder-S" style="background-color: #88d279;"></span> Остатки технологической нефти</li>
+                <li><span class="circle" style="background-color: white; border: 2px solid black;"></span>Приемо-сдаточный пункт</li>
+                <li><span class="circle" style="background-color: red; border: 2px solid black;"></span>Приемо-сдаточный пункт с резервуарами для хранения товарной нефти</li>
+                <li><span class="cylinder-T" style="background-color: rgb(239, 17, 17)"></span> Резервуар с остатками товарной нефти</li>
+                <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод с остатками технологической нефти</li>
             </ul>
         </div>        
 
