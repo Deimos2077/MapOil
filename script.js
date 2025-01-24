@@ -471,64 +471,61 @@ main();
 // Создаем слой для стрелок и меток
 const flowLayerGroup = L.layerGroup().addTo(map);
 
-
-// Функция для добавления минималистичных коротких линий
-function addMinimalistFlow(points, oilTransferData) {
-    
+// Функция для добавления информации по точкам
+function addFlowInfo(points, oilTransferData) {
     flowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых данных
 
+    // Считаем объемы нефти для каждой точки
+    const pointStats = {};
     oilTransferData.forEach(record => {
-        const fromPoint = points.find(point => point.id === record.from_point);
-        const toPoint = points.find(point => point.id === record.to_point);
+        // Обновляем данные для точки отправки
+        if (!pointStats[record.from_point_id]) pointStats[record.from_point_id] = { sent: 0, received: 0 };
+        pointStats[record.from_point_id].sent += record.from_amount;
 
-        if (fromPoint && toPoint && fromPoint.coords && toPoint.coords) {
-            // Рассчитываем направление и смещение для короткой линии
-            const directionLat = (toPoint.coords[0] - fromPoint.coords[0]) * 0.1; // Укорачиваем линию (10%)
-            const directionLng = (toPoint.coords[1] - fromPoint.coords[1]) * 0.1;
+        // Обновляем данные для точки получения
+        if (!pointStats[record.to_point_id]) pointStats[record.to_point_id] = { sent: 0, received: 0 };
+        pointStats[record.to_point_id].received += record.to_amount;
+    });
 
-            const endLat = fromPoint.coords[0] + directionLat;
-            const endLng = fromPoint.coords[1] + directionLng;
+    // Добавляем метки для каждой точки
+    points.forEach(point => {
+        const stats = pointStats[point.id] || { sent: 0, received: 0 };
+        const popupContent = `
+            <b>${point.name}</b><br>
+            Отправлено: ${stats.sent} тн<br>
+            Получено: ${stats.received} тн
+        `;
 
-            // Добавляем короткую линию
-            const line = L.polyline([fromPoint.coords, [endLat, endLng]], {
-                color: 'blue',
-                weight: 2,
-                opacity: 0.8
-            }).addTo(flowLayerGroup);
-
-            // Добавляем метку объёма нефти рядом с линией
-            const labelLat = endLat + directionLat * 0.2; // Смещение для текста
-            const labelLng = endLng + directionLng * 0.2;
-
-            L.marker([labelLat, labelLng], {
-                icon: L.divIcon({
-                    className: 'oil-label',
-                    html: `<div>${record.from_amount} тн</div>`,
-                    iconSize: null,
-                    iconAnchor: [10, 0]
-                })
-            }).addTo(flowLayerGroup);
-        }
+        L.marker(point.coords, {
+            icon: L.divIcon({
+                className: 'flow-label',
+                html: popupContent,
+                iconSize: null,
+                iconAnchor: [10, 0]
+            })
+        }).addTo(flowLayerGroup);
     });
 }
 
-// Стили для минималистичной метки
+// Стили для меток
 const style = document.createElement('style');
 style.innerHTML = `
-.oil-label div {
+.flow-label {
     font-size: 12px;
     font-weight: bold;
     color: black;
-    padding: 2px 5px;
-    border-radius: 4px;
+    background: white;
+    border-radius: 5px;
+    padding: 5px;
+    border: 1px solid gray;
     text-align: center;
     white-space: nowrap;
 }
 `;
 document.head.appendChild(style);
 
-// Инициализация карты с минималистичным отображением
-async function initializeMinimalistMap() {
+// Инициализация карты с отображением потока нефти
+async function initializeFlowMap() {
     const points = await fetchPointsFromDB();
     const oilTransferData = await fetchOilTransferFromDB();
 
@@ -537,12 +534,10 @@ async function initializeMinimalistMap() {
         return;
     }
 
-    addMinimalistFlow(points, oilTransferData);
+    addFlowInfo(points, oilTransferData);
 }
 
-
-
-initializeMinimalistMap();
+initializeFlowMap();
 
 
 

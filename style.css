@@ -41,8 +41,8 @@
 }
 .legend {
     position: absolute;
-    bottom: 775px;
-    left: 1645px;
+    bottom: 755px;
+    left: 1520px;
     z-index: 1000;
     background: rgba(255, 255, 255, 0.633);
     padding: 10px;
