@@ -1,6 +1,6 @@
 <?php
 // Подключаем файл для работы с базой данных
-include 'db.php';
+include 'database/db.php';
 
 ?>
 <!DOCTYPE html>
@@ -9,7 +9,7 @@ include 'db.php';
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Карта</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/style.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.7.1/leaflet.polylineDecorator.min.js"></script>
@@ -20,9 +20,7 @@ include 'db.php';
     </head>
     <body>
         <h1>Карта нефтепроводов</h1>
-        <div id="map"></div>
-        <input id="zoom-slider" type="range" min="3" max="10" value="4" step="0.1" style="position: absolute; top: 25px; left: 550px; z-index: 1000;">
-        <button id="filter-button">Скрыть надписи</button>
+        <div id="map">
         <div class="legend">
             <strong>Легенда:</strong>
             <ul>
@@ -35,10 +33,14 @@ include 'db.php';
                 <li><span class="cylinder-T" style="background-color: rgb(239, 17, 17)"></span> Резервуар для хранения остатков товарной нефти</li>
                 <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод для хранения остатков технологической нефти</li>
             </ul>
-        </div>        
+        </div>
+        </div>
+        <input id="zoom-slider" type="range" min="3" max="10" value="4" step="0.1" style="position: absolute; top: 25px; left: 550px; z-index: 1000;">
+        <button id="filter-button">Скрыть надписи</button>
+        
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
-    <script src="script.js"></script>    
+    <script src="js/script.js"></script>    
 </body>
 </html>
