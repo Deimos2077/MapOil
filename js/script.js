@@ -9,19 +9,6 @@
             zoomControl: false // Отключение стандартных кнопок зума
             });
             
-        // Подключаем ползунок к карте
-        var slider = document.getElementById('zoom-slider');
-
-        // Обновление карты при изменении значения ползунка
-        slider.addEventListener('input', function () {
-            var zoomLevel = parseInt(this.value, 10);
-            map.setZoom(zoomLevel);
-        });
-
-        // Синхронизация ползунка при изменении зума карты
-        map.on('zoomend', function () {
-            slider.value = map.getZoom();
-        });
 
         // Подключение OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

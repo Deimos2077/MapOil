@@ -19,6 +19,17 @@ include 'database/db.php';
 
     </head>
     <body>
+    <input type="checkbox" id="active">
+    <label for="active" class="menu-btn"><i class="fas fa-bars"></i></label>
+        <div class="wrapper">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Gallery</a></li>
+                <li><a href="#">Feedback</a></li>
+            </ul>
+        </div>
         <h1>Карта нефтепроводов</h1>
         <div id="map">
         <div class="legend">
@@ -35,10 +46,7 @@ include 'database/db.php';
             </ul>
         </div>
         </div>
-        <input id="zoom-slider" type="range" min="3" max="10" value="4" step="0.1" style="position: absolute; top: 25px; left: 550px; z-index: 1000;">
         <button id="filter-button">Скрыть надписи</button>
-        
-
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
     <script src="js/script.js"></script>    
