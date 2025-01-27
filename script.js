@@ -468,50 +468,90 @@ main();
 
 //----------------------------------Информация хода нефти с отображением стрелок-------------------------------
 
-// Создаем слой для стрелок и меток
+// Создаем слой для отображения линий и меток
 const flowLayerGroup = L.layerGroup().addTo(map);
 
-// Функция для добавления информации по точкам
-function addFlowInfo(points, oilTransferData) {
-    flowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых данных
+function addMinimalistFlow(points, oilTransferData) {
+    flowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
 
-    // Считаем объемы нефти для каждой точки
-    const pointStats = {};
+    // Обработка данных о поступлении нефти
+    const uniqueEntries = new Set(); // Множество для хранения уникальных записей
+
     oilTransferData.forEach(record => {
-        // Обновляем данные для точки отправки
-        if (!pointStats[record.from_point_id]) pointStats[record.from_point_id] = { sent: 0, received: 0 };
-        pointStats[record.from_point_id].sent += record.from_amount;
+        const toPoint = points.find(point => point.id === record.to_point); // Находим конечную точку
 
-        // Обновляем данные для точки получения
-        if (!pointStats[record.to_point_id]) pointStats[record.to_point_id] = { sent: 0, received: 0 };
-        pointStats[record.to_point_id].received += record.to_amount;
+        if (toPoint && toPoint.coords) {
+            const recordKey = `${record.to_point}-${record.to_amount}`; // Уникальный ключ на основе точки и количества нефти
+
+            if (!uniqueEntries.has(recordKey)) {
+                uniqueEntries.add(recordKey); // Добавляем запись в множество
+
+                const labelPosition = findFreePosition(toPoint.coords, flowLayerGroup);
+
+                // Линия от точки к метке
+                L.polyline([toPoint.coords, labelPosition], {
+                    color: 'green',
+                    weight: 2,
+                    dashArray: '5, 5',
+                    opacity: 0.8,
+                }).addTo(flowLayerGroup);
+
+                // Метка с количеством нефти
+                L.marker(labelPosition, {
+                    icon: L.divIcon({
+                        className: 'flow-label',
+                        html: `<div>${record.to_amount} тн</div>`, // Просто выводим `to_amount`
+                        iconSize: null,
+                        iconAnchor: [10, 0],
+                    }),
+                }).addTo(flowLayerGroup);
+            }
+        }
     });
+}
 
-    // Добавляем метки для каждой точки
-    points.forEach(point => {
-        const stats = pointStats[point.id] || { sent: 0, received: 0 };
-        const popupContent = `
-            <b>${point.name}</b><br>
-            Отправлено: ${stats.sent} тн<br>
-            Получено: ${stats.received} тн
-        `;
+// Функция для поиска свободного места вокруг точки
+function findFreePosition(coords, layerGroup) {
+    const baseOffset = 0.1; // Базовое смещение
+    const directions = [
+        [baseOffset, baseOffset],  // Верхний правый угол
+        [baseOffset, -baseOffset], // Верхний левый угол
+        [-baseOffset, baseOffset], // Нижний правый угол
+        [-baseOffset, -baseOffset] // Нижний левый угол
+    ];
 
-        L.marker(point.coords, {
-            icon: L.divIcon({
-                className: 'flow-label',
-                html: popupContent,
-                iconSize: null,
-                iconAnchor: [10, 0]
-            })
-        }).addTo(flowLayerGroup);
-    });
+    for (let i = 0; i < directions.length; i++) {
+        const candidateCoords = [
+            coords[0] + directions[i][0],
+            coords[1] + directions[i][1]
+        ];
+
+        // Проверяем, пересекается ли с существующими элементами
+        const isOverlapping = Array.from(layerGroup.getLayers()).some(layer => {
+            if (layer.getLatLng) {
+                const layerCoords = layer.getLatLng();
+                return (
+                    Math.abs(layerCoords.lat - candidateCoords[0]) < baseOffset / 2 &&
+                    Math.abs(layerCoords.lng - candidateCoords[1]) < baseOffset / 2
+                );
+            }
+            return false;
+        });
+
+        if (!isOverlapping) {
+            return candidateCoords; // Возвращаем первое свободное место
+        }
+    }
+
+    // Если нет свободного места, возвращаем стандартное смещение
+    return [coords[0] + baseOffset, coords[1] + baseOffset];
 }
 
 // Стили для меток
 const style = document.createElement('style');
 style.innerHTML = `
-.flow-label {
-    font-size: 12px;
+.flow-label div {
+    font-size: 14px;
     font-weight: bold;
     color: black;
     background: white;
@@ -524,20 +564,24 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// Инициализация карты с отображением потока нефти
-async function initializeFlowMap() {
+// Инициализация карты
+async function initializeMinimalistFlowMap() {
     const points = await fetchPointsFromDB();
     const oilTransferData = await fetchOilTransferFromDB();
+
+    console.log('Точки:', points);
+    console.log('Данные о нефти:', oilTransferData);
 
     if (points.length === 0 || oilTransferData.length === 0) {
         console.error('Недостаточно данных для отрисовки карты.');
         return;
     }
 
-    addFlowInfo(points, oilTransferData);
+    addMinimalistFlow(points, oilTransferData);
 }
 
-initializeFlowMap();
+initializeMinimalistFlowMap();
+
 
 
 

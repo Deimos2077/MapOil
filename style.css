@@ -41,18 +41,19 @@
 }
 .legend {
     position: absolute;
-    bottom: 755px;
-    left: 1520px;
+    bottom: 60%; /* Отступ снизу в процентах от высоты экрана */
+    left: 73%; /* Отступ слева в процентах от ширины экрана */
     z-index: 1000;
     background: rgba(255, 255, 255, 0.633);
-    padding: 10px;
+    padding: 1%; /* Отступы в процентах от ширины экрана */
     border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem; /* Радиус закругления в относительных единицах */
+    box-shadow: 0 0.5rem 0.6rem rgba(0, 0, 0, 0.1);
     font-family: Arial, sans-serif;
-    font-size: 12px;
+    font-size: 1rem; /* Размер шрифта в относительных единицах */
     line-height: 1.5;
 }
+
 .legend ul {
     list-style: none;
     padding: 0;
