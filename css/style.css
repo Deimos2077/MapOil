@@ -6,18 +6,7 @@
     z-index: 1;
 }
 .leaflet-control-attribution.leaflet-control a:first-child { display: none; }
-#zoom-slider {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 1;
-    background: white;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
 #filter-button {
-    position: absolute;
     top: 20px;
     left: 350px;
     z-index: 1;
@@ -41,43 +30,142 @@
     white-space: normal; /* Разрешить перенос строк */
 }
 .legend {
-    position: absolute;
-    left: 73%; /* Отступ слева в процентах от ширины экрана */
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.633);
-    padding: 1%; /* Отступы в процентах от ширины экрана */
-    border: 1px solid #ccc;
-    border-radius: 0.5rem; /* Радиус закругления в относительных единицах */
-    box-shadow: 0 0.5rem 0.6rem rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    font-size: 1rem; /* Размер шрифта в относительных единицах */
-    line-height: 1.5;
+  position: absolute;
+  left: 82%; /* Отступ слева в процентах от ширины экрана */
+  top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.633);
+  padding: 1.5%; /* Внутренние отступы в процентах */
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 0.6rem rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 1rem; /* Базовый размер шрифта */
+  line-height: 1.5;
+  width: 25%; /* Ширина легенды в процентах */
+  max-width: 300px; /* Максимальная ширина */
 }
 
 .legend ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
+
 .legend li {
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
 }
+
 .legend .pipeline {
-    display: inline-block;
-    width: 30px; /* Длина линии */
-    height: 5px; /* Толщина линии */
-    margin-right: 10px; /* Отступ от текста */
-    border-radius: 2px; /* Закруглённые концы линии */
+  display: inline-block;
+  width: 30px;
+  height: 5px;
+  margin-right: 10px;
+  border-radius: 2px;
 }
+
 .legend .circle {
-    display: inline-block;
-    width: 15px; /* Диаметр круга */
-    height: 15px;
-    margin-right: 10px; /* Отступ от текста */
-    border-radius: 50%; /* Делает элемент кругом */
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 10px;
+  border-radius: 50%;
 }
+
+/* Адаптация для экранов с шириной до 1920px */
+@media (max-width: 1920px) {
+  .legend {
+      left: 81.5%; /* Отступ слева в процентах от ширины экрана */
+      top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
+      padding: 1.2%; /* Уменьшаем внутренние отступы */
+      font-size: 0.9rem; /* Уменьшаем размер шрифта */
+      width: 23%; /* Уменьшаем ширину */
+  }
+
+  .legend .pipeline {
+      width: 25px; /* Уменьшаем длину линии */
+      height: 4px; /* Уменьшаем толщину линии */
+  }
+
+  .legend .circle {
+      width: 12px; /* Уменьшаем диаметр круга */
+      height: 12px;
+  }
+}
+
+/* Адаптация для экранов с шириной до 1440px */
+@media (max-width: 1440px) {
+  .legend {
+      left: 77.5%; /* Ещё больше уменьшаем отступ слева */
+      top: 0.5%; /* Ещё больше уменьшаем отступ сверху */
+      padding: 1%; /* Ещё больше уменьшаем внутренние отступы */
+      font-size: 0.8rem; /* Ещё больше уменьшаем размер шрифта */
+      width: 20%; /* Ещё больше уменьшаем ширину */
+  }
+
+  .legend .pipeline {
+      width: 20px; /* Ещё больше уменьшаем длину линии */
+      height: 3px; /* Ещё больше уменьшаем толщину линии */
+  }
+
+  .legend .circle {
+      width: 10px; /* Ещё больше уменьшаем диаметр круга */
+      height: 10px;
+  }
+}
+
+/* Настройка кнопки Leaflet.easyPrint */
+.leaflet-control-easyPrint {
+  position: absolute !important; /* Принудительное абсолютное позиционирование */
+  top: 5%; /* Отступ сверху в процентах от высоты экрана */
+  left: 2%; /* Отступ слева в процентах от ширины экрана */
+  right: auto; /* Убираем привязку к правому краю */
+  bottom: auto; /* Убираем привязку к нижнему краю */
+}
+
+/* Адаптация для экранов с меньшими разрешениями */
+@media (max-width: 1920px) {
+  .leaflet-control-easyPrint {
+      top: 6%; /* Увеличиваем отступ сверху */
+      left: 3%; /* Увеличиваем отступ слева */
+  }
+}
+
+@media (max-width: 1440px) {
+  .leaflet-control-easyPrint {
+      top: 7%; /* Ещё больший отступ сверху */
+      left: 4%; /* Ещё больший отступ слева */
+  }
+}
+
+#info-table-container {
+  display: block; /* Делает контейнер видимым */
+  visibility: visible; /* Убирает скрытие */
+  opacity: 1; /* Полностью видимый элемент */
+  z-index: 1000; /* Поверх других элементов */
+  background-color: white; /* Добавляем фон, чтобы таблица была видна */
+  position: relative;
+  padding: 10px; /* Внутренний отступ */
+  border: 1px solid black; /* Рамка таблицы */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Тень для выделения */
+}
+
+#info-table {
+  border: 1px solid black; /* Чёрная рамка для таблицы */
+}
+
+#info-table th, #info-table td {
+  border: 1px solid black; /* Чёрная рамка для ячеек */
+  padding: 8px;            /* Внутренний отступ для содержимого */
+  text-align: center;      /* Выравнивание текста по центру */
+}
+
+#info-table th {
+  background-color: #f2f2f2; /* Светлый фон для заголовка */
+}
+
 
     .marker-label {
         font-family: Arial, sans-serif;
@@ -125,98 +213,3 @@
         display: inline-block;
         margin-right: 8px;
     }
-    .leaflet-control-attribution.leaflet-control a:first-child { display: none; }
-
-    .wrapper{
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        z-index: 2;
-        /*background: linear-gradient(-135deg, #c850c0, #4158d0);*/
-        /* background: linear-gradient(375deg, #1cc7d0, #2ede98); */
-       /* background: linear-gradient(-45deg, #e3eefe 0%, #efddfb 100%);*/
-        /* clip-path: circle(25px at calc(0% + 45px) 45px); */
-        background: #000;
-        clip-path: circle(25px at calc(100% - 45px) 45px);
-        transition: all 0.3s ease-in-out;
-      }
-      #active:checked ~ .wrapper{
-        clip-path: circle(75%);
-      }
-      .menu-btn{
-        position: absolute;
-        z-index: 3;
-        right: 20px;
-        /* left: 20px; */
-        top: 20px;
-        height: 50px;
-        width: 50px;
-        text-align: center;
-        line-height: 50px;
-        border-radius: 50%;
-        font-size: 20px;
-        color: #fff;
-        cursor: pointer;
-        /*background: linear-gradient(-135deg, #c850c0, #4158d0);*/
-        /* background: linear-gradient(375deg, #1cc7d0, #2ede98); */
-       /* background: linear-gradient(-45deg, #e3eefe 0%, #efddfb 100%); */
-        background: #000;
-        transition: all 0.3s ease-in-out;
-      }
-      #active:checked ~ .menu-btn{
-        color: #fff;
-      }
-      #active:checked ~ .menu-btn i:before{
-        content: "\f00d";
-      }
-      .wrapper ul{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        list-style: none;
-        text-align: center;
-      }
-      .wrapper ul li{
-        margin: 15px 0;
-      }
-      .wrapper ul li a{
-        color: none;
-        text-decoration: none;
-        font-size: 30px;
-        font-weight: 500;
-        padding: 5px 30px;
-        color: #fff;
-        border-radius: 50px;
-        background: #000;
-        position: relative;
-        line-height: 50px;
-        transition: all 0.3s ease;
-      }
-      .wrapper ul li a:after{
-        position: absolute;
-        content: "";
-        background: #fff;
-         background: linear-gradient(#14ffe9, #ffeb3b, #ff00e0);
-        /*background: linear-gradient(375deg, #1cc7d0, #2ede98);*/
-        width: 104%;
-        height: 110%;
-        left: -2%;
-        top: -5%; /* if the font is 'Oswald'*/
-        border-radius: 50px;
-        transform: scaleY(0);
-        z-index: -1;
-        animation: rotate 1.5s linear infinite;
-        transition: transform 0.3s ease;
-      }
-      .wrapper ul li a:hover:after{
-        transform: scaleY(1);
-      }
-      .wrapper ul li a:hover{
-        color: #fff;
-      }
-      input[type="checkbox"]{
-        display: none;
-      }

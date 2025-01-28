@@ -14,14 +14,18 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attributionControl: false
         }).addTo(map);
-
-
-        L.easyPrint({
-    title: 'Распечатать карту',
-    position: 'topright', // Позиция кнопки
-    sizeModes: ['A4Portrait', 'A4Landscape'], // Поддерживаемые форматы
-    exportOnly: false // Установите в false для вызова печати напрямую
-    }).addTo(map);
+    
+        // Подключение библиотеки Leaflet.easyPrint
+        var printer = L.easyPrint({
+            title: 'Распечатать карту',
+            position: 'topleft', // Базовое положение в верхнем левом углу
+            sizeModes: ['A4Portrait', 'A4Landscape'],
+            exportOnly: false, // Печать напрямую
+            hideControlContainer: false,
+            customLayout: true,
+            scale: 1
+        }).addTo(map);
+        
 
     map.invalidateSize(); // Перерендеринг карты
 
@@ -247,6 +251,67 @@ fetch('database/getData.php?table=Points')
 
 
 
+//---------------------------Таблица с информацией---------------------------
+
+// Функция обновления таблицы
+function updateTable(data) {
+    const tableContainer = document.getElementById('info-table-container');
+    const tableBody = document.getElementById('info-table').querySelector('tbody');
+
+    // Очищаем таблицу
+    tableBody.innerHTML = '';
+
+    if (data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5">Нет данных для отображения</td></tr>';
+    } else {
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.date || 'Не указано'}</td>
+                <td>${row.from_name || 'Не указано'}</td>
+                <td>${row.to_name || 'Не указано'}</td>
+                <td>${row.amount || 0}</td>
+                <td>${row.losses || 0}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // Показываем таблицу
+    tableContainer.style.display = 'block';
+}
+
+// Подключение маркеров и обработка событий клика
+fetch('database/getData.php?table=Points')
+    .then(response => response.json())
+    .then(points => {
+        points.forEach(point => {
+            if (point.lat && point.lng) {
+                const marker = L.circleMarker([point.lat, point.lng], {
+                    pane: 'pointsPane',
+                    radius: 6,
+                    color: 'black',
+                    weight: 2,
+                    fillColor: point.color,
+                    fillOpacity: 1,
+                }).addTo(map);
+
+                // Обработчик клика на маркер
+                marker.on('click', () => {
+                    fetch(`database/TableInfo.php?pointId=${point.id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateTable(data);
+                        })
+                        .catch(error => console.error('Ошибка загрузки данных о точке:', error));
+                });
+            } else {
+                console.warn(`Пропущена точка с ID ${point.id} из-за отсутствия координат.`);
+            }
+        });
+    })
+    .catch(error => console.error('Ошибка загрузки данных:', error));
+
 
 
 //--------------------------Резервуары----------------------------
@@ -458,6 +523,74 @@ main();
 // Создаем слой для отображения линий и меток
 const flowLayerGroup = L.layerGroup().addTo(map);
 
+// Настройки направлений для точек (смещения по широте и долготе)
+const directionOffsets = {
+    1: { lat: 0.5, lng: 0.3 },   // Алашанькоу
+    2: { lat: 0.2, lng: 0.5 },    // Атасу
+    3: { lat: 0.5, lng: 0.3 },    // ПНХЗ
+    4: { lat: 0.5, lng: 0.3},   // Кумколь
+    5: { lat: 0.2, lng: 0.5 },   // Кенкияк
+    6: { lat: 0.2, lng: 0.3 },   // ПКОП
+    7: { lat: 0.4, lng: 0.2 },   // Шманова
+    8: { lat: 0.2, lng: 0.2 },   // Самара
+    9: { lat: -0.5, lng: -0.5 },   // Новороссийск
+    10: { lat: 0.2, lng: 0.3 },  // Усть-Луга
+    19: { lat: -0.3, lng: -0.2 },  // Касымова
+    24: { lat: -0.3, lng: 0.6 },  // 1235
+};
+
+// Обновленная функция поиска свободного места
+function findFreePosition(coords, layerGroup, pointId) {
+    const baseOffset = 0.5; // Базовое смещение
+    const defaultDirections = [
+        [baseOffset, baseOffset],   // Верхний правый угол
+        [baseOffset, -baseOffset],  // Верхний левый угол
+        [-baseOffset, baseOffset],  // Нижний правый угол
+        [-baseOffset, -baseOffset], // Нижний левый угол
+    ];
+
+    const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
+    const directions = [
+        [customOffset.lat, customOffset.lng], // Индивидуальное смещение для точки
+        ...defaultDirections                  // Остальные стандартные направления
+    ];
+
+    for (let i = 0; i < directions.length; i++) {
+        const candidateCoords = [
+            coords[0] + directions[i][0],
+            coords[1] + directions[i][1]
+        ];
+
+        // Проверяем, пересекается ли с существующими элементами
+        const isOverlapping = Array.from(layerGroup.getLayers()).some(layer => {
+            if (layer.getLatLng) {
+                const layerCoords = layer.getLatLng();
+                return (
+                    Math.abs(layerCoords.lat - candidateCoords[0]) < baseOffset / 2 &&
+                    Math.abs(layerCoords.lng - candidateCoords[1]) < baseOffset / 2
+                );
+            }
+            if (layer instanceof L.Polyline) {
+                // Проверяем пересечение с линиями
+                const latlngs = layer.getLatLngs();
+                return latlngs.some(latlng =>
+                    Math.abs(latlng.lat - candidateCoords[0]) < baseOffset / 2 &&
+                    Math.abs(latlng.lng - candidateCoords[1]) < baseOffset / 2
+                );
+            }
+            return false;
+        });
+
+        if (!isOverlapping) {
+            return candidateCoords; // Возвращаем первое свободное место
+        }
+    }
+
+    // Если нет свободного места, возвращаем стандартное смещение
+    return [coords[0] + baseOffset, coords[1] + baseOffset];
+}
+
+// Обновляем вызов addMinimalistFlow
 function addMinimalistFlow(points, oilTransferData) {
     flowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
 
@@ -472,7 +605,7 @@ function addMinimalistFlow(points, oilTransferData) {
             if (!uniqueEntries.has(recordKey)) {
                 uniqueEntries.add(recordKey); // Добавляем запись в множество
 
-                const labelPosition = findFreePosition(toPoint.coords, flowLayerGroup);
+                const labelPosition = findFreePosition(toPoint.coords, flowLayerGroup, record.to_point);
 
                 // Определяем текст для метки (включая источник)
                 const sourceText =
@@ -500,49 +633,12 @@ function addMinimalistFlow(points, oilTransferData) {
                         className: 'flow-label',
                         html: markerHtml,
                         iconSize: null,
-                        iconAnchor: [10, 0],
+                        iconAnchor: [4, 18],
                     }),
                 }).addTo(flowLayerGroup);
             }
         }
     });
-}
-
-// Функция для поиска свободного места вокруг точки
-function findFreePosition(coords, layerGroup) {
-    const baseOffset = 0.5; // Базовое смещение
-    const directions = [
-        [baseOffset, baseOffset],  // Верхний правый угол
-        [baseOffset, -baseOffset], // Верхний левый угол
-        [-baseOffset, baseOffset], // Нижний правый угол
-        [-baseOffset, -baseOffset] // Нижний левый угол
-    ];
-
-    for (let i = 0; i < directions.length; i++) {
-        const candidateCoords = [
-            coords[0] + directions[i][0],
-            coords[1] + directions[i][1]
-        ];
-
-        // Проверяем, пересекается ли с существующими элементами
-        const isOverlapping = Array.from(layerGroup.getLayers()).some(layer => {
-            if (layer.getLatLng) {
-                const layerCoords = layer.getLatLng();
-                return (
-                    Math.abs(layerCoords.lat - candidateCoords[0]) < baseOffset / 2 &&
-                    Math.abs(layerCoords.lng - candidateCoords[1]) < baseOffset / 2
-                );
-            }
-            return false;
-        });
-
-        if (!isOverlapping) {
-            return candidateCoords; // Возвращаем первое свободное место
-        }
-    }
-
-    // Если нет свободного места, возвращаем стандартное смещение
-    return [coords[0] + baseOffset, coords[1] + baseOffset];
 }
 
 // Стили для меток
@@ -552,7 +648,7 @@ style.innerHTML = `
     font-size: 14px;
     font-weight: bold;
     color: black;
-    border-radius: 5px;
+    border-radius: 5px; 
     padding: 5px;
     text-align: center;
     white-space: nowrap;
