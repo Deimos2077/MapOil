@@ -19,10 +19,10 @@ body {
 	margin: 0;
 	background: #556270;
 	color: #353d46;
-	font: 18px/27px 'Oxygen', sans-serif;
+	font: 12px 'Oxygen', sans-serif;
 }
 
-h1, h2, h3 { display: block; color: #393939; padding: 5px; }
+h1, h2, h3 { display: block; color: #393939; padding: 5px; font-size: 27px;}
 
 /*
   Menu
@@ -162,7 +162,7 @@ body.menu-active div#content .menu-trigger { left: 294px; }
 
 ul.ks-cboxtags {
     list-style: none;
-    padding: 20px;
+    padding-left: 0px;
 }
 ul.ks-cboxtags li{
   display: inline;
@@ -189,16 +189,25 @@ ul.ks-cboxtags li label {
     cursor: pointer;
 }
 
-ul.ks-cboxtags li label::before {
-    display: inline-block;
-    font-style: normal;
-    font-variant: normal;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 12px;
-    padding: 2px 6px 2px 2px;
-    content: "\f067";
-    transition: transform .3s ease-in-out;
+
+
+ul.ks-cboxtags li input[type="checkbox"]:checked + label {
+    content: "\f00c";
+}
+
+ul.ks-cboxtags li input[type="checkbox"]:checked + label {
+    border: 2px solid #1bdbf8;
+    background-color: #12bbd4;
+    color: #fff;
+}
+
+ul.ks-cboxtags li input[type="checkbox"] {
+  display: absolute;
+}
+ul.ks-cboxtags li input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+}
+ul.ks-cboxtags li input[type="checkbox"]:focus + label {
+  border: 2px solid #e9a1ff;
 }

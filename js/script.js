@@ -789,7 +789,7 @@ initializeMinimalistFlowMap();
 
 
 
-const filterButton = document.getElementById('filter-button');
+const filterButton = document.getElementById('checkboxOne');
 let flowLayerVisible = true;
 
 filterButton.addEventListener('click', () => {
@@ -798,9 +798,9 @@ filterButton.addEventListener('click', () => {
     // Управляем видимостью слоя
     if (flowLayerVisible) {
         map.addLayer(flowLayerGroup); // Показываем слой
-        filterButton.textContent = "Скрыть надписи";
+        
     } else {
         map.removeLayer(flowLayerGroup); // Скрываем слой
-        filterButton.textContent = "Показать надписи";
+        
     }
 });

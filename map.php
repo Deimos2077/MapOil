@@ -30,11 +30,10 @@ include 'database/db.php';
 	<div class="menu-trigger"></div>
     <h1>Карта нефтепроводов</h1>
     <div class="btnList">
-        <button id="filter-button">Скрыть надписи</button>
         <ul class="ks-cboxtags">
-            <li><input type="checkbox" id="checkboxOne" value="Rainbow Dash"><label for="checkboxOne">Rainbow Dash</label></li>
-            <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy" checked><label for="checkboxTwo">Cotton Candy</label></li>
-            <li><input type="checkbox" id="checkboxThree" value="Rarity" checked><label for="checkboxThree">Rarity</label></li>
+            <li><input type="checkbox" id="checkboxOne" value="Oil" checked><label for="checkboxOne">Нефть</label></li>
+            <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy" ><label for="checkboxTwo">Cotton Candy</label></li>
+            <li><input type="checkbox" id="checkboxThree" value="Rarity" ><label for="checkboxThree">Rarity</label></li>
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
         </ul>     
