@@ -1,33 +1,38 @@
 <?php
-// Подключаем файл для работы с базой данных
-include 'database/db.php';
+session_start();
+require_once 'database/db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Карта</title>
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-        <link rel="stylesheet" href="css/menu.css">
-        <style>
-
-        </style>
-    </head>
-    <body>
-    <nav id="slide-menu">
-	    <ul>
-		    <li class="timeline">Timeline</li>
-		    <li class="events">Events</li>
-		    <li class="calendar">Calendar</li>
-		    <li class="sep settings">Settings</li>
-		    <li class="logout">Logout</li>
-	    </ul>
-    </nav>
-    <div id="content">
-	<div class="menu-trigger"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/leaflet.legend.css">
+</head>
+<body>
+<nav id="slide-menu">
+    <ul>
+        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/">Графики</a></li>
+        <li class="events"><a class="menu-href" href="http://localhost/mapoil/table.php">МатОтчет</a></li>
+        <li class="timeline"><a class="menu-href" href="http://localhost/mapoil/map.php">Карта</a></li>
+        <li class="sep settings">Settings</li>
+        <li class="logout"><a href="logout.php">Logout</a></li>
+    </ul>
+</nav>
+<div id="content">
+    <div class="menu-trigger"></div>
+    <div class="head"></div>
     <h1>Карта нефтепроводов</h1>
     <div class="btnList">
         <ul class="ks-cboxtags">
@@ -38,7 +43,7 @@ include 'database/db.php';
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
         </ul>     
     </div>
-        <div id="map">
+    <div id="map">
         <div class="legend">
             <strong>Легенда:</strong>
             <ul>
@@ -52,32 +57,32 @@ include 'database/db.php';
                 <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод для хранения <br>остатков технологической нефти</li>
             </ul>
         </div>
-        </div>
-        </div>
-        <div id="info-table-container" style="margin-top: 20px; display: none;">
-             <h3>Информация о передвижении нефти</h3>
-             <table id="info-table" style="width: 100%; border-collapse: collapse; border: 1px solid black;">
-                 <thead>
-                     <tr style="background-color: #f2f2f2;">
-                         <th style="border: 1px solid black;">Дата</th>
-                         <th style="border: 1px solid black;">Источник</th>
-                         <th style="border: 1px solid black;">Получатель</th>
-                         <th style="border: 1px solid black;">Количество нефти (тн)</th>
-                         <th style="border: 1px solid black;">Потери (тн)</th>
-                     </tr>
-                 </thead>
-                 <tbody>
-                 </tbody>
-             </table>
     </div>
+</div>
+<div id="info-table-container" style="margin-top: 20px; display: none;">
+     <h3>Информация о передвижении нефти</h3>
+     <table id="info-table" style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+         <thead>
+             <tr style="background-color: #f2f2f2;">
+                 <th style="border: 1px solid black;">Дата</th>
+                 <th style="border: 1px solid black;">Источник</th>
+                 <th style="border: 1px solid black;">Получатель</th>
+                 <th style="border: 1px solid black;">Количество нефти (тн)</th>
+                 <th style="border: 1px solid black;">Потери (тн)</th>
+             </tr>
+         </thead>
+         <tbody>
+         </tbody>
+     </table>
+</div>
 
-    <script src= "js/menu.js"></script>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.7.1/leaflet.polylineDecorator.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylinedecorator/1.8.0/leaflet.polylineDecorator.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
-    <script src="js/script.js"></script>    
+<script src= "js/menu.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.7.1/leaflet.polylineDecorator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylinedecorator/1.8.0/leaflet.polylineDecorator.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
