@@ -161,8 +161,13 @@ fetch('database/getData.php?table=Points')
         const zoomThreshold = 7; // Уровень зума, при котором названия меняются
         let markers = [];
 
-        // Смещения для дальних меток
-        const labelOffsets = {
+        // Определяем разрешение экрана
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        let labelOffsets, labelCloseOffsets;
+
+        // Смещения для 1920x1080
+        const labelOffsets_1920 = {
             "ПСП 45 км": { offsetLat: 0.15, offsetLng: 0 },
             "КПОУ Жана Жол": { offsetLat: -0.35, offsetLng: 0 },
             "НПС им. Шманова": { offsetLat: -0.25, offsetLng: 1.8 },
@@ -180,7 +185,7 @@ fetch('database/getData.php?table=Points')
             "ПСП Самара": { offsetLat: 0, offsetLng: 1.3 },
             "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
             "Большая Черниговка": { offsetLat: 0.1, offsetLng: 1.15 },
-            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.5, offsetLng: 1.5 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.2, offsetLng: 1.5 },
             "Клин": { offsetLat: 0.15, offsetLng: 0 },
             "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 1.5 },
             "Красноармейск": { offsetLat: -0.1, offsetLng: 1.7 },
@@ -189,8 +194,7 @@ fetch('database/getData.php?table=Points')
             "1235,3 км": { offsetLat: -0.07, offsetLng: 1.1 }
         };
 
-        // Смещения для ближних меток
-        const labelCloseOffsets = {
+        const labelCloseOffsets_1920 = {
             "ПСП 45 км": { offsetLat: 0.08, offsetLng: -0.07 },
             "КПОУ Жана Жол": { offsetLat: -0.1, offsetLng: -0.1 },
             "НПС им. Шманова": { offsetLat: -0.1, offsetLng: 0.2 },
@@ -215,8 +219,71 @@ fetch('database/getData.php?table=Points')
             "Родионовская": { offsetLat: 0, offsetLng: 0.35 },
             "Тихорецк": { offsetLat: 0, offsetLng: 0.2 },
             "1235,3 км": { offsetLat: 0.1, offsetLng: 0.2 }
-        }; 
+        };
 
+        // Смещения для 2560x1600
+        const labelOffsets_2560 = {
+            "ПСП 45 км": { offsetLat: 0.15, offsetLng: 0 },
+            "КПОУ Жана Жол": { offsetLat: -0.35, offsetLng: 0 },
+            "НПС им. Шманова": { offsetLat: -0.25, offsetLng: 1.8 },
+            "НПС им. Касымова": { offsetLat: -0.1, offsetLng: -2.1 },
+            "Новороссийск": { offsetLat: 0.1, offsetLng: -1.4 },
+            "Грушовая": { offsetLat: -0.15, offsetLng: 1.15 },
+            "Унеча": { offsetLat: -0.25, offsetLng: 0 },
+            "Никольское": { offsetLat: 0.15, offsetLng: 0 },
+            "Алашанькоу": { offsetLat: -0.1, offsetLng: 1.4 },
+            "ГНПС Атасу": { offsetLat: -0.1, offsetLng: 1.4 },
+            "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
+            "ГНПС Кумколь": { offsetLat: -0.35, offsetLng: 0 },
+            "ГНПС Кенкияк": { offsetLat: -0.1, offsetLng: 1.6 },
+            "ПКОП": { offsetLat: -0.4, offsetLng: 0 },
+            "ПСП Самара": { offsetLat: 0, offsetLng: 1.3 },
+            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
+            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 1.15 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.2, offsetLng: 1.5 },
+            "Клин": { offsetLat: 0.15, offsetLng: 0 },
+            "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 1.5 },
+            "Красноармейск": { offsetLat: -0.1, offsetLng: 1.7 },
+            "Родионовская": { offsetLat: -0.1, offsetLng: 1.5 },
+            "Тихорецк": { offsetLat: -0.1, offsetLng: 1 },
+            "1235,3 км": { offsetLat: -0.07, offsetLng: 1.1 }
+        };
+
+        const labelCloseOffsets_2560 = {
+            "ПСП 45 км": { offsetLat: 0.08, offsetLng: -0.07 },
+            "КПОУ Жана Жол": { offsetLat: -0.1, offsetLng: -0.1 },
+            "НПС им. Шманова": { offsetLat: -0.1, offsetLng: 0.2 },
+            "НПС им. Касымова": { offsetLat: 0, offsetLng: -0.9 },
+            "Новороссийск": { offsetLat: 0.1, offsetLng: -0.4 },
+            "Грушовая": { offsetLat: -0.15, offsetLng: 0.1 },
+            "Унеча": { offsetLat: -0.1, offsetLng: -0.2 },
+            "Никольское": { offsetLat: 0.15, offsetLng: 0 },
+            "Алашанькоу": { offsetLat: 0, offsetLng: 0.4 },
+            "ГНПС Атасу": { offsetLat: 0, offsetLng: 0.4 },
+            "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
+            "ГНПС Кумколь": { offsetLat: -0.1, offsetLng: -0.1 },
+            "ГНПС Кенкияк": { offsetLat: 0.05, offsetLng: 0.35 },
+            "ПКОП": { offsetLat: -0.1, offsetLng: -0.1 },
+            "ПСП Самара": { offsetLat: 0, offsetLng: 0.25 },
+            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
+            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 0.25 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.1, offsetLng: 0.35 },
+            "Клин": { offsetLat: 0.15, offsetLng: 0 },
+            "915 км н/пр.КЛ": { offsetLat: -0.05, offsetLng: 0.35 },
+            "Красноармейск": { offsetLat: 0, offsetLng: 0.35 },
+            "Родионовская": { offsetLat: 0, offsetLng: 0.35 },
+            "Тихорецк": { offsetLat: 0, offsetLng: 0.2 },
+            "1235,3 км": { offsetLat: 0.1, offsetLng: 0.2 }
+        };
+
+        // Выбор данных в зависимости от разрешения
+        if (screenWidth >= 2560 && screenHeight >= 1600) {
+            labelOffsets = labelOffsets_2560;
+            labelCloseOffsets = labelCloseOffsets_2560;
+        } else {
+            labelOffsets = labelOffsets_1920;
+            labelCloseOffsets = labelCloseOffsets_1920;
+        }
 
         points.forEach(point => {
             if (point.lat && point.lng) {
@@ -292,70 +359,6 @@ fetch('database/getData.php?table=Points')
         updateLabelsOnZoom();
     })
     .catch(error => console.error('Ошибка загрузки данных:', error));
-
-
-
-//---------------------------Таблица с информацией---------------------------
-
-// Функция обновления таблицы
-function updateTable(data) {
-    const tableContainer = document.getElementById('info-table-container');
-    const tableBody = document.getElementById('info-table').querySelector('tbody');
-
-    // Очищаем таблицу
-    tableBody.innerHTML = '';
-
-    if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5">Нет данных для отображения</td></tr>';
-    } else {
-        data.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${row.date || 'Не указано'}</td>
-                <td>${row.from_name || 'Не указано'}</td>
-                <td>${row.to_name || 'Не указано'}</td>
-                <td>${row.amount || 0}</td>
-                <td>${row.losses || 0}</td>
-            `;
-            tableBody.appendChild(tr);
-        });
-    }
-
-    // Показываем таблицу
-    tableContainer.style.display = 'block';
-}
-
-// Подключение маркеров и обработка событий клика
-fetch('database/getData.php?table=Points')
-    .then(response => response.json())
-    .then(points => {
-        points.forEach(point => {
-            if (point.lat && point.lng) {
-                const marker = L.circleMarker([point.lat, point.lng], {
-                    pane: 'pointsPane',
-                    radius: 6,
-                    color: 'black',
-                    weight: 2,
-                    fillColor: point.color,
-                    fillOpacity: 1,
-                }).addTo(map);
-
-                // Обработчик клика на маркер
-                marker.on('click', () => {
-                    fetch(`database/TableInfo.php?pointId=${point.id}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            updateTable(data);
-                        })
-                        .catch(error => console.error('Ошибка загрузки данных о точке:', error));
-                });
-            } else {
-                console.warn(`Пропущена точка с ID ${point.id} из-за отсутствия координат.`);
-            }
-        });
-    })
-    .catch(error => console.error('Ошибка загрузки данных:', error));
-
 
 
 //--------------------------Резервуары----------------------------

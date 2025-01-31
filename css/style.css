@@ -31,7 +31,7 @@
 }
 .legend {
   position: absolute;
-  left: 82%; /* Отступ слева в процентах от ширины экрана */
+  left: 81%; /* Отступ слева в процентах от ширины экрана */
   top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
   z-index: 1000;
   background: rgba(255, 255, 255, 0.633);
@@ -142,14 +142,12 @@
 
 #info-table-container {
   display: block;
-  width: 100%; /* Полная ширина таблицы */
   visibility: visible;
   opacity: 1;
   background-color: white; /* Белый фон таблицы */
   padding: 10px; /* Отступы вокруг таблицы */
-  border: 1px solid black; /* Рамка вокруг таблицы */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Лёгкая тень для выделения */
-  margin-top: 10px; /* Отступ сверху */
+  margin: 0px auto; /* Отступ сверху */
 }
 
 #info-table {

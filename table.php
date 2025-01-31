@@ -25,8 +25,8 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/">Графики</a></li>
-        <li class="events"><a class="menu-href" href="http://localhost/mapoil/table.php">МатОтчет</a></li>
-        <li class="calendar"><a class="menu-href" href="http://localhost/mapoil/map.php">Карта</a></li>
+        <li class="events"><a class="menu-href" href="http://localhost/mapoilds/MapOil/table.php">МатОтчет</a></li>
+        <li class="calendar"><a class="menu-href" href="http://localhost/mapoilds/MapOil/map.php">Карта</a></li>
         <li class="sep settings">Settings</li>
         <li class="logout"><a href="logout.php">Logout</a></li>
     </ul>
