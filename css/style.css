@@ -141,29 +141,31 @@
 }
 
 #info-table-container {
-  display: block; /* Делает контейнер видимым */
-  visibility: visible; /* Убирает скрытие */
-  opacity: 1; /* Полностью видимый элемент */
-  z-index: 1000; /* Поверх других элементов */
-  background-color: white; /* Добавляем фон, чтобы таблица была видна */
-  position: relative;
-  padding: 10px; /* Внутренний отступ */
-  border: 1px solid black; /* Рамка таблицы */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Тень для выделения */
+  display: block;
+  width: 100%; /* Полная ширина таблицы */
+  visibility: visible;
+  opacity: 1;
+  background-color: white; /* Белый фон таблицы */
+  padding: 10px; /* Отступы вокруг таблицы */
+  border: 1px solid black; /* Рамка вокруг таблицы */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Лёгкая тень для выделения */
+  margin-top: 10px; /* Отступ сверху */
 }
 
 #info-table {
-  border: 1px solid black; /* Чёрная рамка для таблицы */
+  width: 100%; /* Таблица на всю ширину контейнера */
+  border-collapse: collapse; /* Убираем двойные линии между ячейками */
+  margin-top: 10px; /* Отступ сверху внутри контейнера */
 }
 
 #info-table th, #info-table td {
-  border: 1px solid black; /* Чёрная рамка для ячеек */
-  padding: 8px;            /* Внутренний отступ для содержимого */
-  text-align: center;      /* Выравнивание текста по центру */
+  border: 1px solid black; /* Чёрные границы ячеек */
+  padding: 8px; /* Внутренние отступы для текста */
+  text-align: center; /* Текст по центру */
 }
 
 #info-table th {
-  background-color: #f2f2f2; /* Светлый фон для заголовка */
+  background-color: #f2f2f2; /* Фон заголовка */
 }
 
 

@@ -152,102 +152,146 @@ initializeMap();
 
 
 //----------------------------------Точки(Метки) на карте-------------------------------------- 
-
 map.createPane('pointsPane');
 map.getPane('pointsPane').style.zIndex = 600; // Высокий zIndex для точек
 
 fetch('database/getData.php?table=Points')
     .then(response => response.json())
     .then(points => {
+        const zoomThreshold = 7; // Уровень зума, при котором названия меняются
+        let markers = [];
+
+        // Смещения для дальних меток
+        const labelOffsets = {
+            "ПСП 45 км": { offsetLat: 0.15, offsetLng: 0 },
+            "КПОУ Жана Жол": { offsetLat: -0.35, offsetLng: 0 },
+            "НПС им. Шманова": { offsetLat: -0.25, offsetLng: 1.8 },
+            "НПС им. Касымова": { offsetLat: -0.1, offsetLng: -2.1 },
+            "Новороссийск": { offsetLat: 0.1, offsetLng: -1.4 },
+            "Грушовая": { offsetLat: -0.15, offsetLng: 1.15 },
+            "Унеча": { offsetLat: -0.25, offsetLng: 0 },
+            "Никольское": { offsetLat: 0.15, offsetLng: 0 },
+            "Алашанькоу": { offsetLat: -0.1, offsetLng: 1.4 },
+            "ГНПС Атасу": { offsetLat: -0.1, offsetLng: 1.4 },
+            "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
+            "ГНПС Кумколь": { offsetLat: -0.35, offsetLng: 0 },
+            "ГНПС Кенкияк": { offsetLat: -0.1, offsetLng: 1.6 },
+            "ПКОП": { offsetLat: -0.4, offsetLng: 0 },
+            "ПСП Самара": { offsetLat: 0, offsetLng: 1.3 },
+            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
+            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 1.15 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.5, offsetLng: 1.5 },
+            "Клин": { offsetLat: 0.15, offsetLng: 0 },
+            "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 1.5 },
+            "Красноармейск": { offsetLat: -0.1, offsetLng: 1.7 },
+            "Родионовская": { offsetLat: -0.1, offsetLng: 1.5 },
+            "Тихорецк": { offsetLat: -0.1, offsetLng: 1 },
+            "1235,3 км": { offsetLat: -0.07, offsetLng: 1.1 }
+        };
+
+        // Смещения для ближних меток
+        const labelCloseOffsets = {
+            "ПСП 45 км": { offsetLat: 0.08, offsetLng: -0.07 },
+            "КПОУ Жана Жол": { offsetLat: -0.1, offsetLng: -0.1 },
+            "НПС им. Шманова": { offsetLat: -0.1, offsetLng: 0.2 },
+            "НПС им. Касымова": { offsetLat: 0, offsetLng: -0.9 },
+            "Новороссийск": { offsetLat: 0.1, offsetLng: -0.4 },
+            "Грушовая": { offsetLat: -0.15, offsetLng: 0.1 },
+            "Унеча": { offsetLat: -0.1, offsetLng: -0.2 },
+            "Никольское": { offsetLat: 0.15, offsetLng: 0 },
+            "Алашанькоу": { offsetLat: 0, offsetLng: 0.4 },
+            "ГНПС Атасу": { offsetLat: 0, offsetLng: 0.4 },
+            "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
+            "ГНПС Кумколь": { offsetLat: -0.1, offsetLng: -0.1 },
+            "ГНПС Кенкияк": { offsetLat: 0.05, offsetLng: 0.35 },
+            "ПКОП": { offsetLat: -0.1, offsetLng: -0.1 },
+            "ПСП Самара": { offsetLat: 0, offsetLng: 0.25 },
+            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
+            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 0.25 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.1, offsetLng: 0.35 },
+            "Клин": { offsetLat: 0.15, offsetLng: 0 },
+            "915 км н/пр.КЛ": { offsetLat: -0.05, offsetLng: 0.35 },
+            "Красноармейск": { offsetLat: 0, offsetLng: 0.35 },
+            "Родионовская": { offsetLat: 0, offsetLng: 0.35 },
+            "Тихорецк": { offsetLat: 0, offsetLng: 0.2 },
+            "1235,3 км": { offsetLat: 0.1, offsetLng: 0.2 }
+        }; 
+
+
         points.forEach(point => {
             if (point.lat && point.lng) {
+                // Основной маркер
                 const marker = L.circleMarker([point.lat, point.lng], {
                     pane: 'pointsPane',
-                    radius: 6,             // Размер круга
-                    color: 'black',        // Цвет обводки (чёрный)
-                    weight: 2,             // Толщина обводки
-                    fillColor: point.color, // Цвет заливки из базы данных
-                    fillOpacity: 1         // Прозрачность заливки
+                    radius: 6,
+                    color: 'black',
+                    weight: 2,
+                    fillColor: point.color,
+                    fillOpacity: 1
                 }).addTo(map);
-                
-                const label = L.marker([point.lat + 0.005, point.lng + 0.005], {
+
+                // Получаем смещения для дальнего названия
+                const offsetFar = labelOffsets[point.name] || { offsetLat: 0, offsetLng: 0 };
+                const latFar = point.lat + offsetFar.offsetLat;
+                const lngFar = point.lng + offsetFar.offsetLng;
+
+                // Получаем смещения для ближнего названия
+                const offsetClose = labelCloseOffsets[point.name] || { offsetLat: 0, offsetLng: 0 };
+                const latClose = point.lat + offsetClose.offsetLat;
+                const lngClose = point.lng + offsetClose.offsetLng;
+
+                // Смещенное название (дальняя метка)
+                const labelFar = L.marker([latFar, lngFar], {
                     pane: 'pointsPane',
                     icon: L.divIcon({
-                        className: 'marker-label',
+                        className: 'marker-label far-label',
                         html: `<div>${point.name}</div>`,
                         iconSize: null,
                         iconAnchor: [60, 15]
                     }),
                 }).addTo(map);
 
-                markers.push({ name: point.name, marker, label });
+                // Ближнее название (при увеличенном масштабе, изначально скрыто)
+                const labelClose = L.marker([latClose, lngClose], {
+                    pane: 'pointsPane',
+                    icon: L.divIcon({
+                        className: 'marker-label close-label',
+                        html: `<div>${point.name}</div>`,
+                        iconSize: null,
+                        iconAnchor: [40, 10]
+                    })
+                }).addTo(map);
+                labelClose.getElement().style.display = 'none'; // Скрываем ближнее название по умолчанию
+
+                markers.push({ name: point.name, marker, labelFar, labelClose });
             } else {
                 console.warn(`Пропущена точка с ID ${point.id} из-за отсутствия координат.`);
             }
         });
-        // Функция для обновления позиций всех меток
-        function updateLabels() {
-            const labelOffsets = {
-                "ПСП 45 км": { offsetLat: 0.15, offsetLng: 0 },
-                "КПОУ Жана Жол": { offsetLat: -0.35, offsetLng: 0 },
-                "НПС им. Шманова": { offsetLat: -0.25, offsetLng: 1.8 },
-                "НПС им. Касымова": { offsetLat: -0.1, offsetLng: -2.1 },
-                "Новороссийск": { offsetLat: 0.1, offsetLng: -1.4 },
-                "Грушовая": { offsetLat: -0.15, offsetLng: 1.15 },
-                "Унеча": { offsetLat: -0.25, offsetLng: 0 },
-                "Никольское": { offsetLat: 0.15, offsetLng: 0 },
-                "Алашанькоу": { offsetLat: -0.1, offsetLng: 1.4 },
-                "ГНПС Атасу": { offsetLat: -0.1, offsetLng: 1.4 },
-                "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
-                "ГНПС Кумколь": { offsetLat: -0.35, offsetLng: 0 },
-                "ГНПС Кенкияк": { offsetLat: -0.1, offsetLng: 1.6 },
-                "ПКОП": { offsetLat: -0.4, offsetLng: 0 },
-                "ПСП Самара": { offsetLat: 0, offsetLng: 1.3 },
-                "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
-                "Большая Черниговка": { offsetLat: 0.1, offsetLng: 1.15 },
-                "ГНПС им. Б. Джумагалиева": { offsetLat: 0.5, offsetLng: 1.5 },
-                "Клин": { offsetLat: 0.15, offsetLng: 0 },
-                "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 1.5 },
-                "Красноармейск": { offsetLat: -0.1, offsetLng: 1.7 },
-                "Родионовская": { offsetLat: -0.1, offsetLng: 1.5 },
-                "Тихорецк": { offsetLat: -0.1, offsetLng: 1 },
-                "1235,3 км": { offsetLat: -0.07, offsetLng: 1.1 }
-            };
 
+        // Функция для обновления названий при изменении масштаба
+        function updateLabelsOnZoom() {
+            const currentZoom = map.getZoom();
             markers.forEach(markerObj => {
-                const offsets = labelOffsets[markerObj.name] || { offsetLat: 0, offsetLng: 0 };
-                editLabelPosition(markerObj.name, offsets.offsetLat, offsets.offsetLng);
-            });
-
-            function editLabelPosition(name, offsetLat, offsetLng, newText = null) {
-                const target = markers.find(markerObj => markerObj.name === name);
-                if (!target) {
-                    console.error(`Точка с именем "${name}" не найдена`);
-                    return;
+                if (currentZoom >= zoomThreshold) {
+                    // Показываем ближнее название и скрываем дальнее
+                    markerObj.labelFar.getElement().style.display = 'none';
+                    markerObj.labelClose.getElement().style.display = 'block';
+                } else {
+                    // Показываем дальнее название и скрываем ближнее
+                    markerObj.labelFar.getElement().style.display = 'block';
+                    markerObj.labelClose.getElement().style.display = 'none';
                 }
-            
-                const currentLat = target.marker.getLatLng().lat;
-                const currentLng = target.marker.getLatLng().lng;
-            
-                const newLat = currentLat + offsetLat;
-                const newLng = currentLng + offsetLng;
-            
-                const labelHtml = newText || target.name;
-            
-                target.label.setLatLng([newLat, newLng]).setIcon(
-                    L.divIcon({
-                        className: 'marker-label',
-                        html: `<div>${labelHtml}</div>`,
-                        iconSize: [120, 30],
-                        iconAnchor: [60, 15]
-                    })
-                );
-            }
+            });
         }
-        updateLabels();
+
+        // Обновляем названия при изменении масштаба
+        map.on('zoomend', updateLabelsOnZoom);
+
+        // Запускаем логику после загрузки
+        updateLabelsOnZoom();
     })
     .catch(error => console.error('Ошибка загрузки данных:', error));
-
 
 
 
@@ -342,6 +386,103 @@ const lineReservoirIcon = L.divIcon({
 // Создаём слои для резервуаров (но не добавляем на карту)
 const pointTanksLayer = L.layerGroup();
 const lineTanksLayer = L.layerGroup();
+
+// Настройка смещения для каждого резервуара
+const reservoirOffsets = {
+    1: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    2: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    3: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    4: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    5: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    6: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+};
+
+// Получаем данные резервуаров и их объемов из базы
+fetch('database/getData.php?table=Reservoirs')
+    .then(response => response.json())
+    .then(reservoirs => {
+        fetch('database/getData.php?table=reservoirvolumes')
+            .then(response => response.json())
+            .then(volumes => {
+                const latestVolumes = {};
+                volumes.forEach(volume => {
+                    latestVolumes[volume.reservoir_id] = {
+                        start_volume: volume.start_volume,
+                        end_volume: volume.end_volume
+                    };
+                });
+                
+                reservoirs.forEach(reservoir => {
+                    const volumeData = latestVolumes[reservoir.id] || { start_volume: 'Нет данных', end_volume: 'Нет данных' };
+                    const coordStart = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
+                    const coordEnd = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
+                    
+                    const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
+                    const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
+                    const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
+                    
+                    if (reservoir.type === 0) {
+                        L.marker(coordStart, { icon: pointReservoirIcon })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${coordStart}`)
+                            .addTo(pointTanksLayer);
+
+                        L.marker(coordEnd, { icon: pointReservoirIcon })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${coordEnd}`)
+                            .addTo(pointTanksLayer);
+                    } else if (reservoir.type === 1) {
+                        L.marker(coordStart, { icon: lineReservoirIcon })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${coordStart}`)
+                            .addTo(lineTanksLayer);
+
+                        L.marker(coordEnd, { icon: lineReservoirIcon })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${coordEnd}`)
+                            .addTo(lineTanksLayer);
+                    }
+                    
+                    L.polyline([coordStart, coordStartLabel], {
+                        color: 'black',
+                        weight: 2,
+                        opacity: 0.8,
+                        dashArray: '4,2'
+                    }).addTo(lineTanksLayer);
+
+                    L.polyline([coordEnd, coordEndLabel], {
+                        color: 'black',
+                        weight: 2,
+                        opacity: 0.8,
+                        dashArray: '4,2'
+                    }).addTo(lineTanksLayer);
+                    
+                    L.polyline([coordStart, coordEnd], {
+                        color: '#722600',
+                        weight: 4,
+                        opacity: 0.7
+                    }).addTo(lineTanksLayer);
+                    
+                    L.marker(coordStartLabel, {
+                        icon: L.divIcon({
+                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+                                ${volumeData.start_volume} м³
+                            </div>`,
+                            className: ''
+                        })
+                    }).addTo(lineTanksLayer);
+
+                    L.marker(coordEndLabel, {
+                        icon: L.divIcon({
+                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+                                ${volumeData.end_volume} м³
+                            </div>`,
+                            className: ''
+                        })
+                    }).addTo(lineTanksLayer);
+                });
+                
+                updateLayerVisibility();
+            })
+            .catch(error => console.error('Ошибка загрузки данных объемов нефти:', error));
+    })
+    .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
 
 // Получаем данные резервуаров из базы
 fetch('database/getData.php?table=Reservoirs')
@@ -679,7 +820,192 @@ initializeMinimalistFlowMap();
 
 
 
+//---------------------------Таблица с информацией---------------------------
 
+// Функция обновления таблицы
+function updateTable(data, pointId) {
+    const tableContainer = document.getElementById('info-table-container');
+    const tableBody = document.getElementById('info-table').querySelector('tbody');
+
+    // Очищаем таблицу
+    tableBody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6">Нет данных для отображения</td></tr>';
+    } else {
+        data.forEach(row => {
+            addTableRow(row, tableBody, pointId);
+        });
+    }
+
+    // Показываем таблицу
+    tableContainer.style.display = 'block';
+}
+
+// Функция для добавления строки в таблицу
+function addTableRow(row, tableBody = null, pointId) {
+    if (!tableBody) {
+        tableBody = document.getElementById('info-table').querySelector('tbody');
+    }
+
+    const tr = document.createElement('tr');
+    tr.dataset.id = row.id; // Сохранение ID записи
+
+    tr.innerHTML = `
+        <td contenteditable="true" data-field="date">${row.date || 'Не указано'}</td>
+        <td contenteditable="true" data-field="from_name">${row.from_name || 'Не указано'}</td>
+        <td contenteditable="true" data-field="to_name">${row.to_name || 'Не указано'}</td>
+        <td contenteditable="true" data-field="amount">${row.amount || 0}</td>
+        <td contenteditable="true" data-field="losses">${row.losses || 0}</td>
+        <td>
+            <button class="save-btn">Сохранить</button>
+            <button class="delete-btn">Удалить</button>
+        </td>
+    `;
+
+    // Добавление обработчиков событий
+    tr.querySelector('.save-btn').addEventListener('click', () => saveRow(tr, pointId));
+    tr.querySelector('.delete-btn').addEventListener('click', () => deleteRow(tr));
+
+    tableBody.appendChild(tr);
+}
+
+// Функция сохранения изменений
+function saveRow(row, pointId) {
+    const id = row.dataset.id;
+    if (!id) {
+        alert('Ошибка: нет ID записи!');
+        return;
+    }
+
+    const updatedData = {
+        id: id,
+        pointId: pointId,
+        date: row.querySelector('[data-field="date"]').innerText,
+        from_name: row.querySelector('[data-field="from_name"]').innerText,
+        to_name: row.querySelector('[data-field="to_name"]').innerText,
+        amount: row.querySelector('[data-field="amount"]').innerText,
+        losses: row.querySelector('[data-field="losses"]').innerText,
+    };
+
+    fetch('database/updateData.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Данные обновлены');
+        } else {
+            alert('Ошибка при обновлении данных');
+        }
+    })
+    .catch(error => console.error('Ошибка сохранения:', error));
+}
+
+// Функция удаления строки
+function deleteRow(row) {
+    const id = row.dataset.id;
+    if (!id) {
+        alert('Ошибка: нет ID записи!');
+        return;
+    }
+
+    if (!confirm('Вы уверены, что хотите удалить эту запись?')) return;
+
+    fetch('database/deleteData.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            row.remove();
+            alert('Запись удалена');
+        } else {
+            alert('Ошибка при удалении');
+        }
+    })
+    .catch(error => console.error('Ошибка удаления:', error));
+}
+
+function addNewRow(pointId) {
+    const newData = {
+        pointId: pointId,
+        pipeline_id: 1, // Здесь укажите существующий ID из таблицы pipelines
+        date: 'Новая дата',
+        from_name: 'Источник',
+        to_name: 'Получатель',
+        amount: 0,
+        losses: 0
+    };
+
+    console.log('Данные для отправки:', newData);
+
+    fetch('database/addData.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Ответ от сервера:', data);
+        if (data.success) {
+            newData.id = data.id; // Устанавливаем ID новой записи
+            addTableRow(newData, null, pointId);
+            alert('Запись добавлена');
+        } else {
+            alert('Ошибка при добавлении записи: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => console.error('Ошибка добавления:', error));
+}
+
+let currentPointId = null; // Глобальная переменная для текущего ID точки
+
+// Пример добавления маркеров
+fetch('database/getData.php?table=Points')
+    .then(response => response.json())
+    .then(points => {
+        points.forEach(point => {
+            if (point.lat && point.lng) {
+                const marker = L.circleMarker([point.lat, point.lng], {
+                    pane: 'pointsPane',
+                    radius: 6,
+                    color: 'black',
+                    weight: 2,
+                    fillColor: point.color,
+                    fillOpacity: 1,
+                }).addTo(map);
+
+                // При клике на маркер сохраняем текущий ID точки
+                marker.on('click', () => {
+                    currentPointId = point.id; // Устанавливаем ID точки
+                    console.log('Выбрана точка с ID:', currentPointId);
+
+                    fetch(`database/TableInfo.php?pointId=${point.id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateTable(data, point.id);
+                        })
+                        .catch(error => console.error('Ошибка загрузки данных о точке:', error));
+                });
+            }
+        });
+    })
+    .catch(error => console.error('Ошибка загрузки данных:', error));
+
+// Обработчик для кнопки "Добавить запись"
+document.getElementById('add-row-btn').addEventListener('click', () => {
+    console.log('Кнопка "Добавить запись" нажата');
+    if (currentPointId) {
+        addNewRow(currentPointId); // Передаём текущий ID точки
+    } else {
+        alert('Ошибка: не выбрана точка на карте');
+    }
+});
 
 
 

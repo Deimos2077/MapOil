@@ -2,11 +2,17 @@
 header('Content-Type: application/json');
 include 'db.php';
 
-$pointId = $_GET['pointId'];
+$pointId = $_GET['pointId'] ?? null;
+
+if (!$pointId) {
+    echo json_encode(['error' => 'Не указан ID точки']);
+    exit;
+}
 
 try {
     $stmt = $pdo->prepare("
         SELECT 
+            t.id,
             t.date,
             p1.name AS from_name,
             p2.name AS to_name,
