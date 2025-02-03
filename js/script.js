@@ -363,42 +363,40 @@ fetch('database/getData.php?table=Points')
 
 //--------------------------Резервуары----------------------------
 
-// Создаём кастомные иконки для двух типов резервуаров
-const pointReservoirIcon = L.divIcon({
-    html: `<div style="width: 25px; 
-    height: 40px; 
-    background: linear-gradient(to bottom, white 50%, black 50%); 
-    border: 2px solid rgb(190, 53, 53); 
-    border-radius: 10px; 
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);"></div>`,
-    iconSize: [25, 40],
-    className: ''
-});
-
-const lineReservoirIcon = L.divIcon({
-    html: `<div style="width: 40px; 
-    height: 25px; 
-    background: linear-gradient(to bottom, white 90%, black 10%); 
-    border: 2px solid #722600; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);"></div>`,
-    iconSize: [40, 25],
-    className: ''
-});
-
-// Создаём слои для резервуаров (но не добавляем на карту)
-const pointTanksLayer = L.layerGroup();
-const lineTanksLayer = L.layerGroup();
-
 // Настройка смещения для каждого резервуара
 const reservoirOffsets = {
     1: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
     2: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
     3: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
     4: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
-    5: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
-    6: { start: { lat: 0.15, lng: -0.07 }, end: { lat: 0.15, lng: 0.07 } },
+    5: { start: { lat: 0.1, lng: -0.1 }, end: { lat: 0.1, lng: 0.1 } }, // Для технических резервуаров
+    6: { start: { lat: 0.1, lng: -0.1 }, end: { lat: 0.1, lng: 0.1 } }, // Для технических резервуаров
 };
+
+// Функция для расчёта процента заполненности
+function getFillPercentage(volume, maxCapacity) {
+    return Math.min(100, (volume / maxCapacity) * 100); // Не больше 100%
+}
+
+// Функция создания иконки с черным/белым заполнением для двух типов резервуаров
+function createReservoirIcon(fillPercentage, width, height, type) {
+    // Цвет рамки зависит от типа резервуара
+    const borderColor = type === 0 ? "rgba(192, 38, 38, 0.99)" : "brown";
+
+    return L.divIcon({
+        html: `<div style="position: relative; width: ${width}px; height: ${height}px; border: 2px solid ${borderColor}; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+                    <div style="position: absolute; width: 100%; height: 100%; background: white;"></div>
+                    <div style="position: absolute; width: 100%; height: ${fillPercentage}%; background: black; bottom: 0;"></div>
+               </div>`,
+        iconSize: [width, height],
+        className: '',
+    });
+}
+
+
+// Создаём слои для резервуаров
+const pointTanksLayer = L.layerGroup(); // Точечные резервуары
+const technicalTanksLayer = L.layerGroup(); // Технические резервуары
 
 // Получаем данные резервуаров и их объемов из базы
 fetch('database/getData.php?table=Reservoirs')
@@ -414,127 +412,94 @@ fetch('database/getData.php?table=Reservoirs')
                         end_volume: volume.end_volume
                     };
                 });
-                
+
                 reservoirs.forEach(reservoir => {
-                    const volumeData = latestVolumes[reservoir.id] || { start_volume: 'Нет данных', end_volume: 'Нет данных' };
+                    const volumeData = latestVolumes[reservoir.id] || { start_volume: 0, end_volume: 0 };
                     const coordStart = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
                     const coordEnd = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
-                    
+
                     const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
                     const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
                     const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
-                    
-                    if (reservoir.type === 0) {
-                        L.marker(coordStart, { icon: pointReservoirIcon })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${coordStart}`)
-                            .addTo(pointTanksLayer);
 
-                        L.marker(coordEnd, { icon: pointReservoirIcon })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${coordEnd}`)
+
+                    //--------------------------------------------------------Тут проработать колчиество по резервуарам!!!!
+                    let maxCapacity = 10000; // По умолчанию 10 тыс. тонн
+                    if (reservoir.name.includes("Кенкияк-Шманова")) {
+                        maxCapacity = 5000;
+                    } else if (reservoir.name.includes("Кенкияк-Кумоль")) {
+                        maxCapacity = 15000;
+                    }
+
+                    const startFillPercentage = getFillPercentage(volumeData.start_volume, maxCapacity);
+                    const endFillPercentage = getFillPercentage(volumeData.end_volume, maxCapacity);
+
+                    if (reservoir.type === 0) {
+                        // Точечные резервуары (красная рамка)
+                        L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 25, 40, reservoir.type) })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+                            .addTo(pointTanksLayer);
+                    
+                        L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 25, 40, reservoir.type) })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
                             .addTo(pointTanksLayer);
                     } else if (reservoir.type === 1) {
-                        L.marker(coordStart, { icon: lineReservoirIcon })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${coordStart}`)
-                            .addTo(lineTanksLayer);
-
-                        L.marker(coordEnd, { icon: lineReservoirIcon })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${coordEnd}`)
-                            .addTo(lineTanksLayer);
+                        // Технические резервуары (коричневая рамка)
+                        L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 35, 25, reservoir.type) })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+                            .addTo(technicalTanksLayer);
+                    
+                        L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 35, 25, reservoir.type) })
+                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
+                            .addTo(technicalTanksLayer);
                     }
                     
+
+                    // Линии между точками (для всех типов)
+                    L.polyline([coordStart, coordEnd], {
+                        color: '#722600',
+                        weight: 4,
+                        opacity: 0.7
+                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+                    // Линии от маркеров к меткам с объемами
                     L.polyline([coordStart, coordStartLabel], {
                         color: 'black',
                         weight: 2,
                         opacity: 0.8,
                         dashArray: '4,2'
-                    }).addTo(lineTanksLayer);
+                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
 
                     L.polyline([coordEnd, coordEndLabel], {
                         color: 'black',
                         weight: 2,
                         opacity: 0.8,
                         dashArray: '4,2'
-                    }).addTo(lineTanksLayer);
-                    
-                    L.polyline([coordStart, coordEnd], {
-                        color: '#722600',
-                        weight: 4,
-                        opacity: 0.7
-                    }).addTo(lineTanksLayer);
-                    
+                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+                    // Метки с объемами рядом с резервуарами
                     L.marker(coordStartLabel, {
                         icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+                            html: `<div style="white-space: nowrap; padding: 6px 10px; font-weight: bold; transform: translateY(-10px);">
                                 ${volumeData.start_volume} м³
                             </div>`,
                             className: ''
                         })
-                    }).addTo(lineTanksLayer);
+                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
 
                     L.marker(coordEndLabel, {
                         icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+                            html: `<div style="white-space: nowrap; padding: 6px 10px; font-weight: bold; transform: translateY(-10px);">
                                 ${volumeData.end_volume} м³
                             </div>`,
                             className: ''
                         })
-                    }).addTo(lineTanksLayer);
+                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
                 });
-                
+
                 updateLayerVisibility();
             })
             .catch(error => console.error('Ошибка загрузки данных объемов нефти:', error));
-    })
-    .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
-
-// Получаем данные резервуаров из базы
-fetch('database/getData.php?table=Reservoirs')
-    .then(response => response.json())
-    .then(data => {
-        data.forEach(reservoir => {
-            if (reservoir.type === 0) {
-                // Точечные резервуары
-                const coordStart = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
-                const coordEnd = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
-
-                L.marker(coordStart, { icon: pointReservoirIcon })
-                    .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${coordStart}`)
-                    .addTo(pointTanksLayer);
-
-                L.marker(coordEnd, { icon: pointReservoirIcon })
-                    .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${coordEnd}`)
-                    .addTo(pointTanksLayer);
-
-                // Добавляем линию между началом и концом
-                L.polyline([coordStart, coordEnd], {
-                    color: 'rgb(206, 47, 47)',
-                    weight: 4,
-                    opacity: 0.7
-                }).addTo(lineTanksLayer);
-            } else if (reservoir.type === 1) {
-                // Линейные резервуары
-                const startCoord = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
-                const endCoord = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
-
-                L.marker(startCoord, { icon: lineReservoirIcon })
-                    .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${startCoord}`)
-                    .addTo(lineTanksLayer);
-
-                L.marker(endCoord, { icon: lineReservoirIcon })
-                    .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${endCoord}`)
-                    .addTo(lineTanksLayer);
-
-                // Добавляем линию между началом и концом
-                L.polyline([startCoord, endCoord], {
-                    color: '#722600',
-                    weight: 4,
-                    opacity: 0.7
-                }).addTo(lineTanksLayer);
-            }
-        });
-
-        // Обновляем видимость слоев после загрузки данных
-        updateLayerVisibility();
     })
     .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
 
@@ -546,10 +511,10 @@ function updateLayerVisibility() {
 
     if (currentZoom >= minZoom) {
         if (!map.hasLayer(pointTanksLayer)) map.addLayer(pointTanksLayer);
-        if (!map.hasLayer(lineTanksLayer)) map.addLayer(lineTanksLayer);
+        if (!map.hasLayer(technicalTanksLayer)) map.addLayer(technicalTanksLayer);
     } else {
         if (map.hasLayer(pointTanksLayer)) map.removeLayer(pointTanksLayer);
-        if (map.hasLayer(lineTanksLayer)) map.removeLayer(lineTanksLayer);
+        if (map.hasLayer(technicalTanksLayer)) map.removeLayer(technicalTanksLayer);
     }
 }
 
@@ -561,6 +526,7 @@ map.on('load', updateLayerVisibility);
 
 // Вызываем обновление видимости сразу после инициализации
 updateLayerVisibility();
+
 
 
 
