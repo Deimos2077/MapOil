@@ -480,7 +480,7 @@ fetch('database/getData.php?table=Reservoirs')
                     // Метки с объемами рядом с резервуарами
                     L.marker(coordStartLabel, {
                         icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6px 10px; font-weight: bold; transform: translateY(-10px);">
+                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
                                 ${volumeData.start_volume} м³
                             </div>`,
                             className: ''
@@ -489,7 +489,7 @@ fetch('database/getData.php?table=Reservoirs')
 
                     L.marker(coordEndLabel, {
                         icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6px 10px; font-weight: bold; transform: translateY(-10px);">
+                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
                                 ${volumeData.end_volume} м³
                             </div>`,
                             className: ''
@@ -630,6 +630,7 @@ main();
 
 //----------------------------------Информация хода нефти с отображением стрелок-------------------------------
 
+
 // Создаем слой для отображения линий и меток
 const flowLayerGroup = L.layerGroup().addTo(map);
 
@@ -717,15 +718,9 @@ function addMinimalistFlow(points, oilTransferData) {
 
                 const labelPosition = findFreePosition(toPoint.coords, flowLayerGroup, record.to_point);
 
-                // Определяем текст для метки (включая источник)
-                const sourceText =
-                    record.source_type === 'reservoir'
-                        ? `<span style="color: red;">(${record.to_amount} тн)</span>`
-                        : `<span style="color: brown;">(${record.to_amount} тн)</span>`;
-
                 const markerHtml = `
                     <div>
-                        ${record.to_amount} тн ${sourceText}
+                        ${record.to_amount} тн 
                     </div>
                 `;
 
@@ -786,6 +781,92 @@ if (points.length === 0 || oilTransferData.length === 0) {
 }
 
 initializeMinimalistFlowMap();
+
+
+
+//------------------------------Отображение нефти на трубопроводе-------------------
+// Функция отображения только количества нефти, исходящей из точки
+async function addOutgoingOilAmounts(points, oilTransferData) {
+    const flowLayerGroup = L.layerGroup(); // Создаем слой для потоков
+
+    const staticLabelPositions = {
+        '4-2': [47.5, 69], // От точки 4 к точке 2
+        '4-3': [49.7, 72.4], // От точки 4 к точке 3
+        '4-6': [45.15, 68.65], // От точки 4 к точке 6
+        '5-7': [48.5, 56], // От точки 5 к точке 7
+        '5-4': [48.5, 57.908], // От точки 5 к точке 4
+        '8-9': [52.22, 48], // От точки 8 к точке 9
+        '8-10': [53.2, 49], // От точки 8 к точке 10
+    };
+
+    const lineColors = {
+        '4-2': 'rgb(3, 198, 252)',
+        '4-3': 'rgb(3, 198, 252)',
+        '4-6': 'rgb(3, 198, 252)',
+        '5-7': 'rgb(221, 5, 221)',
+        '5-4': 'rgb(5, 186, 53)',
+        '8-9': 'rgb(79, 73, 239)',
+        '8-10': 'rgb(79, 73, 239)',
+    };
+    
+    const multiOutputPoints = [4, 5, 8]; // Точки с несколькими исходящими потоками
+
+    multiOutputPoints.forEach(pointId => {
+        // Получаем исходящие записи для точки
+        const outgoingTransfers = oilTransferData.filter(record => record.from_point === pointId);
+
+        if (outgoingTransfers.length > 0) {
+            const fromPoint = points.find(point => point.id === pointId);
+
+            if (!fromPoint || !fromPoint.coords) {
+                console.warn(`Точка с ID ${pointId} не найдена или не имеет координат.`);
+                return;
+            }
+
+            outgoingTransfers.forEach(transfer => {
+                const toPoint = points.find(point => point.id === transfer.to_point);
+
+                if (!toPoint || !toPoint.coords) {
+                    console.warn(`Конечная точка с ID ${transfer.to_point} не найдена или не имеет координат.`);
+                    return;
+                }
+
+                // Используем статичные позиции, если они заданы
+                const staticKey = `${transfer.from_point}-${transfer.to_point}`;
+                const labelPosition = staticLabelPositions[staticKey] || [
+                    (fromPoint.coords[0] + toPoint.coords[0]) / 2,
+                    (fromPoint.coords[1] + toPoint.coords[1]) / 2,
+                ];
+
+                const labelColor = lineColors[staticKey] || 'black';
+
+                // Добавляем только метку с количеством нефти
+                L.marker(labelPosition, {
+                    icon: L.divIcon({
+                        className: 'flow-label',
+                        html: `<div style="color: ${labelColor}; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;">${transfer.to_amount} тн</div>`,
+                        iconSize: null,
+                    }),
+                }).addTo(flowLayerGroup);
+            });
+        }
+    });
+
+    flowLayerGroup.addTo(map); // Добавляем слой на карту
+}
+
+// Вызов функции
+(async function initializeOutgoingOilAmounts() {
+    const points = await fetchPointsFromDB();
+    const oilTransferData = await fetchOilTransferFromDB();
+
+    if (points.length > 0 && oilTransferData.length > 0) {
+        addOutgoingOilAmounts(points, oilTransferData);
+    } else {
+        console.error('Недостаточно данных для отображения исходящих объемов нефти.');
+    }
+})();
+
 
 
 
