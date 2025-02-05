@@ -787,7 +787,7 @@ function addMinimalistFlow(points, oilTransferData) {
         map.addLayer(minimalistFlowLayerGroup); // Добавляем слой на карту, если чекбокс включен
     }
 }
-    
+
 
 document.getElementById('checkboxOne').addEventListener('change', function () {
     if (this.checked) {
@@ -970,14 +970,14 @@ function addTableRow(row, tableBody = null, pointId) {
     tr.dataset.id = row.id; // Сохранение ID записи
 
     tr.innerHTML = `
-        <td contenteditable="true" data-field="date">${row.date || 'Не указано'}</td>
-        <td contenteditable="true" data-field="from_name">${row.from_name || 'Не указано'}</td>
-        <td contenteditable="true" data-field="to_name">${row.to_name || 'Не указано'}</td>
-        <td contenteditable="true" data-field="amount">${row.amount || 0}</td>
-        <td contenteditable="true" data-field="losses">${row.losses || 0}</td>
+        <td contenteditable="true" data-field="route" title="Путь транспортировки">
+            ${row.from_name || 'Источник'} → ${row.to_name || 'Получатель'}
+        </td>
+        <td contenteditable="true" data-field="amount" title="Объем нефти в тоннах">${row.amount || 0}</td>
+        <td contenteditable="true" data-field="losses" title="Потери нефти при транспортировке">${row.losses || 0}</td>
         <td>
-            <button class="save-btn">Сохранить</button>
-            <button class="delete-btn">Удалить</button>
+            <button class="save-btn">✔️ Сохранить</button>
+            <button class="delete-btn">🗑️ Удалить</button>
         </td>
     `;
 
@@ -988,6 +988,7 @@ function addTableRow(row, tableBody = null, pointId) {
     tableBody.appendChild(tr);
 }
 
+
 // Функция сохранения изменений
 function saveRow(row, pointId) {
     const id = row.dataset.id;
@@ -996,12 +997,12 @@ function saveRow(row, pointId) {
         return;
     }
 
+    const routeText = row.querySelector('[data-field="route"]').innerText.split(' → ');
     const updatedData = {
         id: id,
         pointId: pointId,
-        date: row.querySelector('[data-field="date"]').innerText,
-        from_name: row.querySelector('[data-field="from_name"]').innerText,
-        to_name: row.querySelector('[data-field="to_name"]').innerText,
+        from_name: routeText[0] || '',
+        to_name: routeText[1] || '',
         amount: row.querySelector('[data-field="amount"]').innerText,
         losses: row.querySelector('[data-field="losses"]').innerText,
     };
@@ -1021,6 +1022,7 @@ function saveRow(row, pointId) {
     })
     .catch(error => console.error('Ошибка сохранения:', error));
 }
+
 
 // Функция удаления строки
 function deleteRow(row) {

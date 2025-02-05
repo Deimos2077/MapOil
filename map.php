@@ -86,24 +86,24 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
     <div id="info-table-container">
-            <h3>Информация о передвижении нефти</h3>
-            <table id="info-table">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Откуда (Источник)</th>
-                        <th>Куда (Получатель)</th>
-                        <th>Объем нефти (тн)</th>
-                        <th>Потери (тн)</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="add-row-btn">Добавить запись</button>
-        </div>
-        
+    <h3>Движение нефти по трубопроводам</h3>
+    <p>В этой таблице представлена информация о перемещении нефти между точками системы.</p>
+    
+    <table id="info-table">
+        <thead>
+            <tr>
+                <th>Маршрут (Источник → Получатель)</th>
+                <th>Объем нефти (тонн)</th>
+                <th>Потери при транспортировке (тонн)</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button id="add-row-btn">Добавить новую запись</button>
 </div>
+
 
 
 <script src= "js/menu.js"></script>
