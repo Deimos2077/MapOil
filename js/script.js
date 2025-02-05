@@ -55,6 +55,11 @@
 
 //----------------------------------Подключение базы данных-------------------------------
 
+// Создаем слой для резервуаров (Глобальная переменная)
+const reservoirLayerGroup = L.layerGroup().addTo(map);
+const minimalistFlowLayerGroup = L.layerGroup().addTo(map);
+const outgoingFlowLayerGroup = L.layerGroup().addTo(map);
+
 
 // Функция для получения данных о трубопроводах
 async function fetchPipelinesFromDB() {
@@ -97,15 +102,20 @@ async function fetchPointsFromDB() {
 }
 
 // Функция для получения данных о передаче нефти
-async function fetchOilTransferFromDB() {
+async function fetchOilTransferFromDB(year, month) {
     try {
-        const response = await fetch('database/getData.php?table=oiltransfer');
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
+        const response = await fetch(`database/getData.php?table=oiltransfer&year=${year}&month=${month}`);
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+
+        const data = await response.json();
+        console.log("🔍 Ответ от сервера:", data);
+
+        if (!Array.isArray(data)) {
+            console.error("❌ ОШИБКА: `data` не массив!", data);
+            return [];
         }
-        const oilTransferData = await response.json();
-        console.log('Данные о передаче нефти из базы:', oilTransferData);
-        return oilTransferData.map(record => ({
+
+        return data.map(record => ({
             id: record.id,
             from_point: record.from_point_id,
             to_point: record.to_point_id,
@@ -114,7 +124,7 @@ async function fetchOilTransferFromDB() {
             losses: record.losses || 0
         }));
     } catch (error) {
-        console.error('Ошибка загрузки данных о передаче нефти:', error);
+        console.error('❌ Ошибка загрузки данных о передаче нефти:', error);
         return [];
     }
 }
@@ -623,6 +633,33 @@ async function main() {
 main();
 
 
+function addReservoirs(reservoirData) {
+    console.log("🛢 Добавляем резервуары на карту:", reservoirData);
+
+    if (!reservoirData || reservoirData.length === 0) {
+        console.warn("⚠ Нет данных для резервуаров.");
+        return;
+    }
+
+    // Очищаем слой резервуаров перед добавлением новых
+    reservoirLayerGroup.clearLayers();
+
+    reservoirData.forEach(reservoir => {
+        if (reservoir.lat && reservoir.lng) {
+            const marker = L.circleMarker([reservoir.lat, reservoir.lng], {
+                radius: 8,
+                color: "brown",
+                weight: 2,
+                fillColor: "yellow",
+                fillOpacity: 0.8
+            }).addTo(reservoirLayerGroup);
+
+            marker.bindPopup(`<b>Резервуар:</b> ${reservoir.name}<br>Начальный объем: ${reservoir.start_volume} тн<br>Конечный объем: ${reservoir.end_volume} тн`);
+        }
+    });
+
+    console.log("✅ Резервуары добавлены на карту.");
+}
 
 
 
@@ -703,48 +740,65 @@ function findFreePosition(coords, layerGroup, pointId) {
 
 // Обновляем вызов addMinimalistFlow
 function addMinimalistFlow(points, oilTransferData) {
-    flowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
+    minimalistFlowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
 
-    const uniqueEntries = new Set(); // Для фильтрации дублирующих данных
+    if (!document.getElementById('checkboxOne').checked) {
+        map.removeLayer(minimalistFlowLayerGroup); // Принудительно скрываем слой
+        return;
+    }
+
+    const uniqueEntries = new Set(); // Для фильтрации дубликатов
 
     oilTransferData.forEach(record => {
         const toPoint = points.find(point => point.id === record.to_point); // Находим конечную точку
 
-        if (toPoint && toPoint.coords) {
-            const recordKey = `${record.to_point}-${record.to_amount}-${record.source_type || 'pipeline'}`; // Уникальный ключ с учетом источника
+        if (!toPoint || !toPoint.coords) return; // Пропускаем если нет координат
 
-            if (!uniqueEntries.has(recordKey)) {
-                uniqueEntries.add(recordKey); // Добавляем запись в множество
+        const recordKey = `${record.to_point}-${record.to_amount}-${record.source_type || 'pipeline'}`; // Уникальный ключ
 
-                const labelPosition = findFreePosition(toPoint.coords, flowLayerGroup, record.to_point);
+        if (uniqueEntries.has(recordKey)) return; // Если запись уже есть, пропускаем
 
-                const markerHtml = `
-                    <div>
-                        ${record.to_amount} тн 
-                    </div>
-                `;
+        uniqueEntries.add(recordKey); // Добавляем запись в множество
 
-                // Линия от точки к метке
-                L.polyline([toPoint.coords, labelPosition], {
-                    color: 'black',
-                    weight: 2,
-                    dashArray: '5, 5',
-                    opacity: 0.8,
-                }).addTo(flowLayerGroup);
+        const labelPosition = findFreePosition(toPoint.coords, minimalistFlowLayerGroup, record.to_point);
 
-                // Метка с количеством нефти и источником
-                L.marker(labelPosition, {
-                    icon: L.divIcon({
-                        className: 'flow-label',
-                        html: markerHtml,
-                        iconSize: null,
-                        iconAnchor: [4, 18],
-                    }),
-                }).addTo(flowLayerGroup);
-            }
-        }
+        const markerHtml = `<div>${record.to_amount} тн</div>`;
+
+        // Линия от точки к метке
+        L.polyline([toPoint.coords, labelPosition], {
+            color: 'black',
+            weight: 2,
+            dashArray: '5, 5',
+            opacity: 0.8,
+        }).addTo(minimalistFlowLayerGroup);
+
+        // Метка с количеством нефти
+        L.marker(labelPosition, {
+            icon: L.divIcon({
+                className: 'flow-label',
+                html: markerHtml,
+                iconSize: null,
+                iconAnchor: [4, 18],
+            }),
+        }).addTo(minimalistFlowLayerGroup);
     });
+
+    if (!map.hasLayer(minimalistFlowLayerGroup)) {
+        map.addLayer(minimalistFlowLayerGroup); // Добавляем слой на карту, если чекбокс включен
+    }
 }
+    
+
+document.getElementById('checkboxOne').addEventListener('change', function () {
+    if (this.checked) {
+        map.addLayer(minimalistFlowLayerGroup); // Показываем слой
+        initializeMinimalistFlow(); // Перерисовываем данные
+    } else {
+        map.removeLayer(minimalistFlowLayerGroup); // Убираем слой
+    }
+});
+
+
 
 // Стили для меток
 const style = document.createElement('style');
@@ -785,9 +839,32 @@ initializeMinimalistFlowMap();
 
 
 //------------------------------Отображение нефти на трубопроводе-------------------
+// Вызов функции
+(async function initializeOutgoingOilAmounts() {
+    const points = await fetchPointsFromDB();
+    const oilTransferData = await fetchOilTransferFromDB();
+
+    if (points.length > 0 && oilTransferData.length > 0) {
+        addOutgoingOilAmounts(points, oilTransferData);
+        if (!document.getElementById('checkboxOne').checked) {
+            map.removeLayer(flowLayerGroup); // Если чекбокс выключен, слой изначально скрыт
+        }
+    } else {
+        console.error('Недостаточно данных для отображения исходящих объемов нефти.');
+    }
+})();
+
+document.getElementById('checkboxOne').addEventListener('change', function () {
+    if (this.checked) {
+        flowLayerGroup.addTo(map); // Показываем слой
+    } else {
+        map.removeLayer(flowLayerGroup); // Скрываем слой
+    }
+});
+
 // Функция отображения только количества нефти, исходящей из точки
 async function addOutgoingOilAmounts(points, oilTransferData) {
-    const flowLayerGroup = L.layerGroup(); // Создаем слой для потоков
+    outgoingFlowLayerGroup.clearLayers(); // Очищаем только этот слой
 
     const staticLabelPositions = {
         '4-2': [47.5, 69], // От точки 4 к точке 2
@@ -855,17 +932,8 @@ async function addOutgoingOilAmounts(points, oilTransferData) {
     flowLayerGroup.addTo(map); // Добавляем слой на карту
 }
 
-// Вызов функции
-(async function initializeOutgoingOilAmounts() {
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB();
 
-    if (points.length > 0 && oilTransferData.length > 0) {
-        addOutgoingOilAmounts(points, oilTransferData);
-    } else {
-        console.error('Недостаточно данных для отображения исходящих объемов нефти.');
-    }
-})();
+
 
 
 
