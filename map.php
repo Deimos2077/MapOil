@@ -41,6 +41,34 @@ if (!isset($_SESSION['user_id'])) {
             <li><input type="checkbox" id="checkboxThree" value="Rarity"><label for="checkboxThree">Rarity</label></li>
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
+            <div id="filter-container">
+                <label for="year-select">Год:</label>
+                <select id="year-select">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+
+                <label for="month-select">Месяц:</label>
+                <select id="month-select">
+                    <option value="1">Январь</option>
+                    <option value="2">Февраль</option>
+                    <option value="3">Март</option>
+                    <option value="4">Апрель</option>
+                    <option value="5">Май</option>
+                    <option value="6">Июнь</option>
+                    <option value="7">Июль</option>
+                    <option value="8">Август</option>
+                    <option value="9">Сентябрь</option>
+                    <option value="10">Октябрь</option>
+                    <option value="11">Ноябрь</option>
+                    <option value="12">Декабрь</option>
+                </select>
+
+                <button id="filter-button">Применить</button>
+            </div>
+
         </ul>     
     </div>
     <div id="map">
@@ -58,23 +86,24 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
     <div id="info-table-container">
-            <h3>Информация о передвижении нефти</h3>
-            <table id="info-table">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Откуда (Источник)</th>
-                        <th>Куда (Получатель)</th>
-                        <th>Объем нефти (тн)</th>
-                        <th>Потери (тн)</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="add-row-btn">Добавить запись</button>
-        </div>
+    <h3>Движение нефти по трубопроводам</h3>
+    <p>В этой таблице представлена информация о перемещении нефти между точками системы.</p>
+    
+    <table id="info-table">
+        <thead>
+            <tr>
+                <th>Маршрут (Источник → Получатель)</th>
+                <th>Объем нефти (тонн)</th>
+                <th>Потери при транспортировке (тонн)</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button id="add-row-btn">Добавить новую запись</button>
 </div>
+
 
 
 <script src= "js/menu.js"></script>
@@ -85,5 +114,6 @@ if (!isset($_SESSION['user_id'])) {
 <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
 <script src="js/script.js"></script>
+<script src="js/date_filt.js"></script>
 </body>
 </html>
