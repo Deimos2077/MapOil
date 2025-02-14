@@ -51,11 +51,14 @@ nav#slide-menu > ul {
 }
 
 nav#slide-menu > ul li {
+    font-size: 20px; /* Увеличьте или уменьшите значение */
     padding: 6px 0;
     cursor: pointer;
 }
 
 nav#slide-menu > ul li a {
+    font-size: 18px; /* Укажите желаемый размер текста */
+    font-weight: 600; /* Добавьте жирность текста, если нужно */
     color: #dfe5eb; /* Цвет текста ссылок */
     text-decoration: none; /* Убираем подчеркивание */
 }
@@ -219,4 +222,53 @@ ul.ks-cboxtags li input[type="checkbox"]:focus + label {
 .btnList {
   display:inline-block;
   float: right;
+}
+
+nav#slide-menu ul ul {
+  display: none;
+  margin-left: 20px;
+  list-style: none;
+}
+
+nav#slide-menu li.settings:hover ul {
+  display: block;
+}
+
+nav#slide-menu ul ul li {
+  margin: 5px 0;
+}
+
+.hidden {
+  display: none;
+}
+
+nav#slide-menu ul li.svg-editor {
+  font-size: 18px; /* Размер текста остается 18px */
+  padding: 4px 8px; /* Уменьшаем внутренние отступы */
+  background: #475b6a; /* Цвет кнопки */
+  border-radius: 3px; /* Скругленные углы */
+  text-align: center;
+  margin: 5px 0; /* Уменьшенный отступ между кнопками */
+  width: auto; /* Кнопка подстраивается под текст */
+  display: inline-block; /* Не растягивается на всю ширину */
+}
+
+nav#slide-menu ul li.svg-editor a {
+  font-size: 18px; /* Оставляем 18px */
+  color: #fff; /* Цвет текста */
+  text-decoration: none;
+  display: block;
+  font-weight: normal; /* Уменьшаем жирность */
+  padding: 2px 4px; /* Уменьшаем отступы */
+}
+
+nav#slide-menu ul li.svg-editor:hover {
+  background: #59e9df; /* Цвет при наведении */
+}
+
+nav#slide-menu ul li.svg-editor:before {
+  content: '\270E'; /* Иконка карандаша (✎) */
+  font-family: "ico";
+  color: #fff;
+  margin-right: 3px; /* Уменьшаем отступ иконки */
 }

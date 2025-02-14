@@ -1,0 +1,20 @@
+{
+    "title": "Pipeline Map",
+    "menu_graphs": "Graphs",
+    "menu_reports": "Reports",
+    "menu_map": "Map",
+    "menu_settings": "Settings",
+    "menu_logout": "Logout",
+    "settings_theme": "Dark/Light Theme",
+    "settings_language": "Interface Language",
+    "settings_font_size": "Font Size",
+    "settings_export_excel": "Export Data to Excel",
+    "settings_export_pdf": "Export Data to PDF",
+    "settings_email_report": "Email Report",
+    "settings_help": "Help",
+    "settings_password_change": "Change Password",
+    "settings_login_history": "Login History",
+    "info_table_title": "Oil Movement in Pipelines",
+    "info_table_description": "This table provides information about oil movement between system points.",
+    "button_add_record": "Add New Record"
+}

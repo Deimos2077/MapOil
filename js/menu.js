@@ -12,3 +12,15 @@
 	}
 
 }).call(this);
+
+document.addEventListener("DOMContentLoaded", function () {
+    const settingsToggle = document.getElementById("settings-toggle");
+    const settingsMenu = document.getElementById("settings-menu");
+
+    if (settingsToggle && settingsMenu) {
+        settingsToggle.addEventListener("click", function (event) {
+            event.preventDefault(); // Предотвращаем переход по ссылке
+            settingsMenu.classList.toggle("hidden"); // Переключаем видимость меню
+        });
+    }
+});

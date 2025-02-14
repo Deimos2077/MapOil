@@ -29,6 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         echo "Неверное имя пользователя или пароль";
     }
+
+    if ($user && $password == $user['password']) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['role_id'] = $user['role_id'];
+    
+        // Запись в таблицу login_history
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+        $stmt = $pdo->prepare("INSERT INTO login_history (user_id, username, ip_address) VALUES (:user_id, :username, :ip_address)");
+        $stmt->execute([
+            'user_id' => $user['id'],
+            'username' => $user['username'],
+            'ip_address' => $ip_address,
+        ]);
+    
+        header('Location: map.php');
+        exit;
+    }
+    
 }
 ?>
 

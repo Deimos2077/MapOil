@@ -1,0 +1,20 @@
+{
+    "title": "Карта нефтепроводов",
+    "menu_graphs": "Графики",
+    "menu_reports": "МатОтчет",
+    "menu_map": "Карта",
+    "menu_settings": "Настройки",
+    "menu_logout": "Выход",
+    "settings_theme": "Темная/светлая тема",
+    "settings_language": "Язык интерфейса",
+    "settings_font_size": "Размер шрифта",
+    "settings_export_excel": "Экспорт данных в Excel",
+    "settings_export_pdf": "Экспорт данных в PDF",
+    "settings_email_report": "Отчет по email",
+    "settings_help": "Помощь",
+    "settings_password_change": "Смена пароля",
+    "settings_login_history": "История входов",
+    "info_table_title": "Движение нефти по трубопроводам",
+    "info_table_description": "В этой таблице представлена информация о перемещении нефти между точками системы.",
+    "button_add_record": "Добавить новую запись"
+}
