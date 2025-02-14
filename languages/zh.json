@@ -1,0 +1,20 @@
+{
+    "menu_graphs": "图表",
+    "menu_reports": "材料报告",
+    "menu_map": "地图",
+    "menu_settings": "设置",
+    "menu_logout": "退出",
+    "settings_theme": "深色/浅色主题",
+    "settings_language": "界面语言",
+    "settings_font_size": "字体大小",
+    "settings_export_excel": "导出到Excel",
+    "settings_export_pdf": "导出到PDF",
+    "settings_email_report": "通过电子邮件发送报告",
+    "settings_help": "帮助",
+    "settings_password_change": "更改密码",
+    "settings_login_history": "登录历史",
+    "title": "石油管道地图",
+    "info_table_title": "管道中的石油流动",
+    "info_table_description": "此表显示系统中点之间的石油移动信息。",
+    "button_add_record": "添加新记录"
+}

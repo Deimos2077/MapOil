@@ -23,17 +23,52 @@ if (!isset($_SESSION['user_id'])) {
 <body>
 <nav id="slide-menu">
     <ul>
-        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/">Графики</a></li>
-        <li class="events"><a class="menu-href" href="http://localhost/mapoilds/MapOil/table.php">МатОтчет</a></li>
-        <li class="timeline"><a class="menu-href" href="http://localhost/mapoilds/MapOil/map.php">Карта</a></li>
-        <li class="sep settings">Settings</li>
-        <li class="logout"><a href="logout.php">Logout</a></li>
+        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
+        <li class="events"><a class="menu-href" href="http://localhost/mapoilds/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
+        <li class="timeline"><a class="menu-href" href="http://localhost/mapoilds/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
+        
+        <li class="svg-editor">
+            <a class="menu-href" href="http://localhost/mapoilds/svgedit-master/dist/editor/" target="_blank">
+                Редактировать SVG
+            </a>
+        </li>
+
+        <!-- Настройки -->
+        <li class="settings">
+            <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
+            <ul id="settings-menu" class="hidden">
+                <li>
+                    <span data-i18n="settings_language">Язык интерфейса:</span>
+                    <select id="language-select">
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </li>
+                <li>
+                    <span data-i18n="settings_font_size">Размер шрифта:</span>
+                    <input type="range" id="font-size" min="12" max="24" step="1">
+                </li>
+                <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+                <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+                <li>
+                    <span data-i18n="settings_email_report">Отчет по email:</span>
+                    <input type="email" id="email" placeholder="Введите email">
+                    <button id="send-report">Отправить</button>
+                </li>
+                <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+                <li><a href="http://localhost/mapoilds/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+                <li><a href="http://localhost/mapoilds/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+            </ul>
+        </li>
+        
+        <li class="logout"><a href="logout.php" data-i18n="menu_logout">Logout</a></li>
     </ul>
 </nav>
 <div id="content">
     <div class="menu-trigger"></div>
     <div class="head"></div>
-    <h1>Карта нефтепроводов</h1>
+    <h1 data-i18n="title">Карта нефтепроводов</h1>
     <div class="btnList">
         <ul class="ks-cboxtags">
             <li><input type="checkbox" id="checkboxOne" value="Oil" checked><label for="checkboxOne">Нефть</label></li>
@@ -86,8 +121,8 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
     <div id="info-table-container">
-    <h3>Движение нефти по трубопроводам</h3>
-    <p>В этой таблице представлена информация о перемещении нефти между точками системы.</p>
+    <h3 data-i18n="info_table_title">Движение нефти по трубопроводам</h3>
+    <p data-i18n="info_table_description">В этой таблице представлена информация о перемещении нефти между точками системы.</p>
     
     <table id="info-table">
         <thead>
@@ -101,11 +136,13 @@ if (!isset($_SESSION['user_id'])) {
         <tbody></tbody>
     </table>
 
-    <button id="add-row-btn">Добавить новую запись</button>
+    <button id="add-row-btn" data-i18n="button_add_record">Добавить новую запись</button>
 </div>
 
 
-
+<script src="js/language.js"></script>
+<script src="js/Settings.js"></script>
+<script src="js/export.js"></script>
 <script src= "js/menu.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.7.1/leaflet.polylineDecorator.min.js"></script>
@@ -113,6 +150,8 @@ if (!isset($_SESSION['user_id'])) {
 <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-easyprint"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.3.2/leaflet.polylineDecorator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <script src="js/script.js"></script>
 <script src="js/date_filt.js"></script>
 </body>
