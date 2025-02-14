@@ -30,3 +30,6 @@ button {
 button:hover {
     opacity: 0.8;
 }
+.ExcelForm {
+    padding: 10px;
+}

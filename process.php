@@ -8,54 +8,84 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excelFile'])) {
     $fileName = basename($_FILES['excelFile']['name']);
     $filePath = $uploadDir . $fileName;
 
-    // Проверяем и сохраняем файл
     if (move_uploaded_file($_FILES['excelFile']['tmp_name'], $filePath)) {
         echo "Файл успешно загружен: $fileName<br>";
 
         try {
-            // Подключение к базе данных MySQL через PDO
             $pdo = new PDO('mysql:host=localhost;dbname=mapoil;charset=utf8', 'root', '');
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Загружаем Excel-файл через PhpSpreadsheet
             $spreadsheet = IOFactory::load($filePath);
             $sheet = $spreadsheet->getSheet(0); // Первая страница (январь)
 
-            $data = [];
-            $maxColumn = 'H'; // Последний столбец — "Сдача с начала года (тонн)"
+            $reservoirData = [];
 
-            // Пропускаем первые 5 строк и начинаем обработку данных
             for ($row = 6; $row <= $sheet->getHighestRow(); $row++) {
-                $recordNumber = $sheet->getCell('A' . $row)->getValue();
-                
-                // Проверяем, что "№ п/п" начинается с "2." и не превышает "2.7.6"
-                if (preg_match('/^2\./', $recordNumber) && $recordNumber !== '2.7.6') {
-                    $data[] = [
-                        'record_number' => $recordNumber,
-                        'name' => $sheet->getCell('B' . $row)->getValue(),
-                        'contract_info' => $sheet->getCell('C' . $row)->getValue(),
-                        'gross_quantity' => (float)$sheet->getCell('D' . $row)->getValue(),
-                        'net_quantity' => (float)$sheet->getCell('E' . $row)->getValue(),
-                        'mouth_production' => (float)$sheet->getCell('F' . $row)->getValue(),
-                        'year_to_date_production' => (float)$sheet->getCell('G' . $row)->getValue(),
-                        'year_to_date_delivery' => (float)$sheet->getCell('H' . $row)->getValue()
-                    ];
+                $recordNumber = $sheet->getCell('A' . $row)->getValue(); // № п/п
+                $volume = (float)$sheet->getCell('D' . $row)->getCalculatedValue(); // Объем
+                $name = $sheet->getCell('B' . $row)->getValue(); // Описание строки
+
+                preg_match('/\d{2}\.\d{2}\.\d{4}/', $name, $matches);
+                $date = isset($matches[0]) ? date('Y-m-d', strtotime($matches[0])) : null;
+
+                if ($recordNumber && $date) {
+                    $reservoir_id = null;
+                    $isStartVolume = false;
+
+                    // Определяем reservoir_id и тип объема по номеру записи
+                    switch ($recordNumber) {
+                        case '2.1.1':
+                            $reservoir_id = 1;
+                            $isStartVolume = true;
+                            break;
+                        case '2.1.7':
+                            $reservoir_id = 1;
+                            $isStartVolume = false;
+                            break;
+                        // Добавьте другие номера для других резервуаров...
+                    }
+
+                    if ($reservoir_id !== null) {
+                        if (!isset($reservoirData[$reservoir_id])) {
+                            $reservoirData[$reservoir_id] = [
+                                'date' => $date,
+                                'start_volume' => 0,
+                                'end_volume' => 0
+                            ];
+                        }
+
+                        if ($isStartVolume) {
+                            $reservoirData[$reservoir_id]['start_volume'] = $volume;
+                        } else {
+                            $reservoirData[$reservoir_id]['end_volume'] = $volume;
+                        }
+                    }
                 }
             }
 
-            // Вставляем данные в таблицу MaterialReport
-            $stmt = $pdo->prepare("INSERT INTO MaterialReport (record_number, name, contract_info, gross_quantity, net_quantity, mouth_production, year_to_date_production, year_to_date_delivery) VALUES (:record_number, :name, :contract_info, :gross_quantity, :net_quantity, :mouth_production, :year_to_date_production, :year_to_date_delivery)");
+            // Вставляем данные в таблицу reservoirvolumes
+            $stmt = $pdo->prepare("INSERT INTO reservoirvolumes (reservoir_id, date, start_volume, end_volume) VALUES (:reservoir_id, :date, :start_volume, :end_volume)");
 
-            foreach ($data as $row) {
-                $stmt->execute($row);
+            foreach ($reservoirData as $reservoir_id => $data) {
+                $stmt->execute([
+                    ':reservoir_id' => $reservoir_id,
+                    ':date' => $data['date'],
+                    ':start_volume' => $data['start_volume'],
+                    ':end_volume' => $data['end_volume']
+                ]);
             }
 
-            echo "Импорт данных успешно выполнен.";
+            echo "<script>
+                alert('Данные для резервуаров успешно импортированы.');
+                setTimeout(function() {
+                    window.location.href = 'index.php';
+                }, 5000);
+            </script>";
 
         } catch (Exception $e) {
             echo "Ошибка: " . $e->getMessage();
         }
-    } else {
-        echo "Ошибка при загрузке файла.";
     }
+    header('Location: table.php');
+    exit();
 }

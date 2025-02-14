@@ -1,8 +1,8 @@
 <?php
 // db.php
-$host = 'localhost';
+$host = '192.168.1.23:3306';
 $dbname = 'mapoil';
-$user = 'root'; // Ваш пользователь базы данных
+$user = 'user'; // Ваш пользователь базы данных
 $password = ''; // Ваш пароль
 
 try {

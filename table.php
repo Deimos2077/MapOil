@@ -36,6 +36,11 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <div id="content">
     <div class="menu-trigger"></div>
     <h1>Данные о перекачке нефти</h1>
+    <form class="ExcelForm" action="process.php" method="post" enctype="multipart/form-data">
+            <input type="file" name="excelFile" accept=".xlsx, .xls" required>
+            <button type="submit">Импортировать</button>
+            <button type="submit">Сохранить данные</button>
+    </form>
     <table >
       <thead>
         <tr>
@@ -616,11 +621,8 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </tr>
       </tbody>
     </table>
-    <button type="submit">Сохранить данные</button>
   </div>
-
   <script src="js/menu.js"></script>
   <script src="js/table.js"></script>
 </body>
-
 </html>
