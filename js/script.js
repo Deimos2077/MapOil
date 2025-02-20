@@ -85,21 +85,25 @@ async function fetchPipelinesFromDB() {
 async function fetchPointsFromDB() {
     try {
         const response = await fetch('database/getData.php?table=Points');
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-        const points = await response.json();
-        console.log('Данные точек из базы:', points);
-        return points.map(point => ({
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        
+        const text = await response.text();  // Читаем как текст
+        console.log("📄 Ответ от сервера (Points):", text);
+
+        const jsonData = JSON.parse(text); // Пробуем преобразовать в JSON
+        if (jsonData.error) throw new Error(jsonData.error);
+
+        return jsonData.map(point => ({
             id: point.id,
             name: point.name,
-            coords: point.lat && point.lng ? [point.lat, point.lng] : null // Проверка координат
+            coords: point.lat && point.lng ? [point.lat, point.lng] : null
         }));
     } catch (error) {
-        console.error('Ошибка загрузки данных о точках:', error);
+        console.error('❌ Ошибка загрузки данных о точках:', error);
         return [];
     }
 }
+
 
 // Функция для получения данных о передаче нефти
 async function fetchOilTransferFromDB(year, month) {

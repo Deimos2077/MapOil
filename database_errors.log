@@ -1,0 +1,1 @@
+Ошибка подключения к базе данных: SQLSTATE[HY000] [1045] Access denied for user 'user'@'localhost' (using password: NO)

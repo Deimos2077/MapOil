@@ -1,20 +1,57 @@
 <?php
-// database/updateData.php
 header('Content-Type: application/json');
 include 'db.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (isset($data['id'])) {
-    try {
-        $stmt = $pdo->prepare("UPDATE oiltransfer SET date = ?, from_point_id = (SELECT id FROM Points WHERE name = ?), to_point_id = (SELECT id FROM Points WHERE name = ?), to_amount = ?, losses = ? WHERE id = ?");
-        $stmt->execute([$data['date'], $data['from_name'], $data['to_name'], $data['amount'], $data['losses'], $data['id']]);
-        echo json_encode(['success' => true]);
-    } catch (PDOException $e) {
-        echo json_encode(['error' => $e->getMessage()]);
-    }
-} else {
-    echo json_encode(['error' => 'Нет данных для обновления']);
+// Проверяем, переданы ли обязательные данные
+if (!isset($data['id'], $data['table']) || !is_string($data['table'])) {
+    echo json_encode(['error' => 'Некорректные данные']);
+    exit;
 }
 
+// Разрешенные таблицы
+$allowedTables = ['oiltransfer', 'pipelines', 'points', 'reservoirs', 'reservoirvolumes'];
+
+$table = $data['table'];
+
+// Проверяем, разрешена ли таблица
+if (!in_array($table, $allowedTables)) {
+    echo json_encode(['error' => 'Недопустимая таблица']);
+    exit;
+}
+
+// Убираем id из данных, чтобы не обновлять его
+$id = (int) $data['id'];
+unset($data['id']);
+unset($data['table']);
+
+if (empty($data)) {
+    echo json_encode(['error' => 'Нет данных для обновления']);
+    exit;
+}
+
+// Формируем SQL-запрос
+$columns = array_keys($data);
+$updateFields = implode(", ", array_map(fn($col) => "`$col` = :$col", $columns));
+
+$sql = "UPDATE `$table` SET $updateFields WHERE id = :id";
+$stmt = $pdo->prepare($sql);
+
+// Привязываем параметры
+foreach ($data as $col => $value) {
+    $stmt->bindValue(":$col", $value);
+}
+$stmt->bindValue(":id", $id, PDO::PARAM_INT);
+
+try {
+    $stmt->execute();
+    if ($stmt->rowCount() > 0) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['error' => 'Нет изменений или запись не найдена']);
+    }
+} catch (PDOException $e) {
+    echo json_encode(['error' => 'Ошибка БД: ' . $e->getMessage()]);
+}
 ?>
