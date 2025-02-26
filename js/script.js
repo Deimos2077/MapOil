@@ -942,15 +942,14 @@ async function addOutgoingOilAmounts(points, oilTransferData) {
 
 
 
-//---------------------------Таблица с информацией---------------------------
+// --------------------------- Таблица с информацией ---------------------------
 
 // Функция обновления таблицы
 function updateTable(data, pointId) {
     const tableContainer = document.getElementById('info-table-container');
     const tableBody = document.getElementById('info-table').querySelector('tbody');
 
-    // Очищаем таблицу
-    tableBody.innerHTML = '';
+    tableBody.innerHTML = ''; // Очищаем таблицу
 
     if (!data || data.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6">Нет данных для отображения</td></tr>';
@@ -960,38 +959,35 @@ function updateTable(data, pointId) {
         });
     }
 
-    // Показываем таблицу
     tableContainer.style.display = 'block';
 }
 
-// Функция для добавления строки в таблицу
+// Функция добавления строки
 function addTableRow(row, tableBody = null, pointId) {
     if (!tableBody) {
         tableBody = document.getElementById('info-table').querySelector('tbody');
     }
 
     const tr = document.createElement('tr');
-    tr.dataset.id = row.id; // Сохранение ID записи
+    tr.dataset.id = row.id;
 
     tr.innerHTML = `
-        <td contenteditable="true" data-field="route" title="Путь транспортировки">
-            ${row.from_name || 'Источник'} → ${row.to_name || 'Получатель'}
+        <td title="Путь транспортировки">
+            <input type="text" value="${row.from_name || 'Источник'} → ${row.to_name || 'Получатель'}" data-field="route">
         </td>
-        <td contenteditable="true" data-field="amount" title="Объем нефти в тоннах">${row.amount || 0}</td>
-        <td contenteditable="true" data-field="losses" title="Потери нефти при транспортировке">${row.losses || 0}</td>
+        <td><input type="number" value="${row.amount || 0}" data-field="amount"></td>
+        <td><input type="number" value="${row.losses || 0}" data-field="losses"></td>
         <td>
             <button class="save-btn">✔️ Сохранить</button>
             <button class="delete-btn">🗑️ Удалить</button>
         </td>
     `;
 
-    // Добавление обработчиков событий
     tr.querySelector('.save-btn').addEventListener('click', () => saveRow(tr, pointId));
     tr.querySelector('.delete-btn').addEventListener('click', () => deleteRow(tr));
 
     tableBody.appendChild(tr);
 }
-
 
 // Функция сохранения изменений
 function saveRow(row, pointId) {
@@ -1001,31 +997,31 @@ function saveRow(row, pointId) {
         return;
     }
 
-    const routeText = row.querySelector('[data-field="route"]').innerText.split(' → ');
+    // 📌 Данные для отправки
     const updatedData = {
-        id: id,
-        pointId: pointId,
-        from_name: routeText[0] || '',
-        to_name: routeText[1] || '',
+        id: row.dataset.id,
+        table: "oiltransfer",
+        from_name: row.querySelector('[data-field="route"]').innerText.split(' → ')[0],
+        to_name: row.querySelector('[data-field="route"]').innerText.split(' → ')[1],
         amount: row.querySelector('[data-field="amount"]').innerText,
-        losses: row.querySelector('[data-field="losses"]').innerText,
+        losses: row.querySelector('[data-field="losses"]').innerText
     };
 
+    console.log("🚀 Отправляемые данные:", updatedData);
+    
     fetch('database/updateData.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData)
+        body: JSON.stringify(updatedData),
     })
-    .then(response => response.json())
+    .then(response => response.text())  // 👈 читаем как текст, а не JSON
     .then(data => {
-        if (data.success) {
-            alert('Данные обновлены');
-        } else {
-            alert('Ошибка при обновлении данных');
-        }
+        console.log("📩 Ответ от сервера:", data);
     })
-    .catch(error => console.error('Ошибка сохранения:', error));
+    .catch(error => console.error("❌ Ошибка сети:", error));
 }
+
+
 
 
 // Функция удаления строки
@@ -1052,21 +1048,25 @@ function deleteRow(row) {
             alert('Ошибка при удалении');
         }
     })
-    .catch(error => console.error('Ошибка удаления:', error));
+    .catch(error => {
+        console.error('Ошибка удаления:', error);
+        alert('Ошибка сети при удалении');
+    });
 }
 
+// Функция добавления новой строки
 function addNewRow(pointId) {
     const newData = {
         pointId: pointId,
-        pipeline_id: 1, // Здесь укажите существующий ID из таблицы pipelines
-        date: 'Новая дата',
+        pipeline_id: 1, // ID трубопровода можно динамически получать
+        date: new Date().toISOString().split('T')[0], // Текущая дата
         from_name: 'Источник',
         to_name: 'Получатель',
         amount: 0,
         losses: 0
     };
 
-    console.log('Данные для отправки:', newData);
+    console.log('📩 Данные для отправки:', newData);
 
     fetch('database/addData.php', {
         method: 'POST',
@@ -1075,7 +1075,7 @@ function addNewRow(pointId) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Ответ от сервера:', data);
+        console.log('📩 Ответ от сервера:', data);
         if (data.success) {
             newData.id = data.id; // Устанавливаем ID новой записи
             addTableRow(newData, null, pointId);
@@ -1084,12 +1084,15 @@ function addNewRow(pointId) {
             alert('Ошибка при добавлении записи: ' + (data.error || 'Неизвестная ошибка'));
         }
     })
-    .catch(error => console.error('Ошибка добавления:', error));
+    .catch(error => {
+        console.error('❌ Ошибка добавления:', error);
+        alert('Ошибка сети при добавлении записи');
+    });
 }
 
 let currentPointId = null; // Глобальная переменная для текущего ID точки
 
-// Пример добавления маркеров
+// Загрузка точек на карту
 fetch('database/getData.php?table=Points')
     .then(response => response.json())
     .then(points => {
@@ -1104,28 +1107,25 @@ fetch('database/getData.php?table=Points')
                     fillOpacity: 1,
                 }).addTo(map);
 
-                // При клике на маркер сохраняем текущий ID точки
                 marker.on('click', () => {
-                    currentPointId = point.id; // Устанавливаем ID точки
-                    console.log('Выбрана точка с ID:', currentPointId);
+                    currentPointId = point.id;
+                    console.log('📍 Выбрана точка с ID:', currentPointId);
 
                     fetch(`database/TableInfo.php?pointId=${point.id}`)
                         .then(response => response.json())
-                        .then(data => {
-                            updateTable(data, point.id);
-                        })
-                        .catch(error => console.error('Ошибка загрузки данных о точке:', error));
+                        .then(data => updateTable(data, point.id))
+                        .catch(error => console.error('❌ Ошибка загрузки данных о точке:', error));
                 });
             }
         });
     })
-    .catch(error => console.error('Ошибка загрузки данных:', error));
+    .catch(error => console.error('❌ Ошибка загрузки данных:', error));
 
-// Обработчик для кнопки "Добавить запись"
+// Обработчик кнопки "Добавить запись"
 document.getElementById('add-row-btn').addEventListener('click', () => {
-    console.log('Кнопка "Добавить запись" нажата');
+    console.log('🆕 Кнопка "Добавить запись" нажата');
     if (currentPointId) {
-        addNewRow(currentPointId); // Передаём текущий ID точки
+        addNewRow(currentPointId);
     } else {
         alert('Ошибка: не выбрана точка на карте');
     }

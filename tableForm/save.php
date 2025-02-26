@@ -15,7 +15,11 @@ if (!isset($data['table']) || !in_array($data['table'], $allowedTables)) {
     exit;
 }
 
-$table = $data['table'];
+$table = $_POST['table'] ?? $_GET['table'] ?? '';
+
+if (empty($table)) {
+    die(json_encode(["error" => "❌ Не указано имя таблицы"]));
+}
 $id = isset($data['id']) ? (int) $data['id'] : null;
 unset($data['id'], $data['table']);
 

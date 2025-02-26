@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // 🔹 Сохранение данных
             const data = { id, table: tableName };
             
+            if (!tableName) {
+                alert("❌ Ошибка: tableName не определен!");
+                return;
+            }
+            
+
             row.querySelectorAll('td').forEach((td, index) => {
                 const columnName = table.closest('table').querySelectorAll('thead th')[index].textContent;
                 if (columnName !== 'Действия') {
@@ -39,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("📤 Отправляем данные:", data);
 
             try {
-                const response = await fetch("/mapoilds/MapOil/tableForm/save.php", {
+                const response = await fetch("/tableForm/save.php", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
