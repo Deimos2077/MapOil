@@ -1,0 +1,216 @@
+#map {
+    height: 85vh; /* Использовать всю высоту окна */
+    width: 100%; /* Полная ширина */
+    max-width: 100%; /* Ограничить карту в рамках экрана */
+    box-sizing: border-box; /* Включить padding и border в размеры */
+    z-index: 1;
+}
+.leaflet-control-attribution.leaflet-control a:first-child { display: none; }
+#filter-button {
+    top: 20px;
+    left: 350px;
+    z-index: 1;
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.distance-label {
+    display: inline-block; /* Растяжение фона по содержимому текста */
+    padding: 6px 10px; /* Отступы */
+    font-size: 14px; /* Размер текста */
+    line-height: 1; /* Межстрочный интервал */
+    text-align: center; /* Центрирование текста */
+    font-family: 'Arial', sans-serif; /* Современный шрифт */
+    color: #333; /* Цвет текста */
+    max-width: 200px; /* Ограничение ширины текста */
+    white-space: normal; /* Разрешить перенос строк */
+}
+.legend {
+  position: absolute;
+  left: 81%; /* Отступ слева в процентах от ширины экрана */
+  top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.633);
+  padding: 1.5%; /* Внутренние отступы в процентах */
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 0.6rem rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 1rem; /* Базовый размер шрифта */
+  line-height: 1.5;
+  width: 25%; /* Ширина легенды в процентах */
+  max-width: 300px; /* Максимальная ширина */
+}
+
+.legend ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.legend li {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.legend .pipeline {
+  display: inline-block;
+  width: 30px;
+  height: 5px;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+.legend .circle {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+/* Адаптация для экранов с шириной до 1920px */
+@media (max-width: 1920px) {
+  .legend {
+      left: 76%; /* Отступ слева в процентах от ширины экрана */
+      top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
+      padding: 1.2%; /* Уменьшаем внутренние отступы */
+      font-size: 0.9rem; /* Уменьшаем размер шрифта */
+      width: 23%; /* Уменьшаем ширину */
+  }
+
+  .legend .pipeline {
+      width: 25px; /* Уменьшаем длину линии */
+      height: 4px; /* Уменьшаем толщину линии */
+  }
+
+  .legend .circle {
+      width: 12px; /* Уменьшаем диаметр круга */
+      height: 12px;
+  }
+}
+
+/* Адаптация для экранов с шириной до 1440px */
+@media (max-width: 1440px) {
+  .legend {
+      left: 77.5%; /* Ещё больше уменьшаем отступ слева */
+      top: 0.5%; /* Ещё больше уменьшаем отступ сверху */
+      padding: 1%; /* Ещё больше уменьшаем внутренние отступы */
+      font-size: 0.8rem; /* Ещё больше уменьшаем размер шрифта */
+      width: 20%; /* Ещё больше уменьшаем ширину */
+  }
+
+  .legend .pipeline {
+      width: 20px; /* Ещё больше уменьшаем длину линии */
+      height: 3px; /* Ещё больше уменьшаем толщину линии */
+  }
+
+  .legend .circle {
+      width: 10px; /* Ещё больше уменьшаем диаметр круга */
+      height: 10px;
+  }
+}
+
+/* Настройка кнопки Leaflet.easyPrint */
+.leaflet-control-easyPrint {
+  position: absolute !important; /* Принудительное абсолютное позиционирование */
+  top: 5%; /* Отступ сверху в процентах от высоты экрана */
+  left: 2%; /* Отступ слева в процентах от ширины экрана */
+  right: auto; /* Убираем привязку к правому краю */
+  bottom: auto; /* Убираем привязку к нижнему краю */
+}
+
+/* Адаптация для экранов с меньшими разрешениями */
+@media (max-width: 1920px) {
+  .leaflet-control-easyPrint {
+      top: 6%; /* Увеличиваем отступ сверху */
+      left: 3%; /* Увеличиваем отступ слева */
+  }
+}
+
+@media (max-width: 1440px) {
+  .leaflet-control-easyPrint {
+      top: 7%; /* Ещё больший отступ сверху */
+      left: 4%; /* Ещё больший отступ слева */
+  }
+}
+
+#info-table-container {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  background-color: white; /* Белый фон таблицы */
+  padding: 10px; /* Отступы вокруг таблицы */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Лёгкая тень для выделения */
+  margin: 0px auto; /* Отступ сверху */
+}
+
+#info-table {
+  width: 100%; /* Таблица на всю ширину контейнера */
+  border-collapse: collapse; /* Убираем двойные линии между ячейками */
+  margin-top: 10px; /* Отступ сверху внутри контейнера */
+}
+
+#info-table th, #info-table td {
+  border: 1px solid black; /* Чёрные границы ячеек */
+  padding: 8px; /* Внутренние отступы для текста */
+  text-align: center; /* Текст по центру */
+}
+
+#info-table th {
+  background-color: #f2f2f2; /* Фон заголовка */
+}
+
+
+    .marker-label {
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        color: #000;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+        padding: 5px; /* Увеличение отступов для улучшения читаемости */
+        border-radius: 4px;
+        white-space: normal; /* Разрешить перенос текста на несколько строк */
+        text-align: center; /* Центрирование текста */
+        min-width: 120px; /* Минимальная ширина */
+        max-width: 300px; /* Максимальная ширина для предотвращения слишком длинных блоков */
+        line-height: 1.2; /* Межстрочный интервал */
+    }
+    .dashed-line {
+        stroke-dasharray: 10, 10; /* Соответствует dashArray */
+        animation: dashmove 2s linear infinite;
+    }
+
+    @keyframes dashmove {
+        from {
+            stroke-dashoffset: 0;
+        }
+        to {
+            stroke-dashoffset: -20; /* Смещение длины пунктира */
+        }
+    }
+    .cylinder-S {
+        width: 25px; /* Ширина цилиндра */
+        height: 40px; /* Высота цилиндра */
+        background: linear-gradient(to bottom, #e8e8e8, #b1b1b1); /* Градиент для объемного эффекта */
+        border: 2px solid #151515; /* Цвет обводки */
+        border-radius: 10px; /* Закругленные углы */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .cylinder-T {
+        width: 25px; /* Ширина цилиндра */
+        height: 40px; /* Высота цилиндра */
+        background: linear-gradient(to bottom, #ee3333, #993636); /* Градиент для объемного эффекта */
+        border: 2px solid black; /* Цвет обводки */
+        border-radius: 10px; /* Закругленные углы */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
