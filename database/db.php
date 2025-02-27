@@ -1,9 +1,9 @@
 <?php
 // db.php
-$host = 'localhost';
+$host = '192.168.1.23';
 $dbname = 'mapoil';
-$user = 'root'; // Ваш пользователь базы данных
-$password = ''; // Ваш пароль
+$user = 'user'; // Ваш пользователь базы данных
+$password = 'oil4815162342'; // Ваш пароль
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $password);
