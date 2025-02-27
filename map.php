@@ -24,11 +24,11 @@ if (!isset($_SESSION['user_id'])) {
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
-        <li class="events"><a class="menu-href" href="http://localhost/mapoilds/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
-        <li class="timeline"><a class="menu-href" href="http://localhost/mapoilds/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
+        <li class="events"><a class="menu-href" href="http://localhost/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
+        <li class="timeline"><a class="menu-href" href="http://localhost/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
         
         <li class="svg-editor">
-            <a class="menu-href" href="http://localhost/mapoilds/svgedit-master/dist/editor/" target="_blank">
+            <a class="menu-href" href="http://localhost/project/svgedit-master/dist/editor/" target="_blank">
                 Редактировать SVG
             </a>
         </li>
@@ -77,31 +77,9 @@ if (!isset($_SESSION['user_id'])) {
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
             <div id="filter-container">
-                <label for="year-select">Год:</label>
-                <select id="year-select">
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                </select>
-
-                <label for="month-select">Месяц:</label>
-                <select id="month-select">
-                    <option value="1">Январь</option>
-                    <option value="2">Февраль</option>
-                    <option value="3">Март</option>
-                    <option value="4">Апрель</option>
-                    <option value="5">Май</option>
-                    <option value="6">Июнь</option>
-                    <option value="7">Июль</option>
-                    <option value="8">Август</option>
-                    <option value="9">Сентябрь</option>
-                    <option value="10">Октябрь</option>
-                    <option value="11">Ноябрь</option>
-                    <option value="12">Декабрь</option>
-                </select>
-
-                <button id="filter-button">Применить</button>
+            <label for="dateFilter">Выберите месяц:</label>
+<input type="month" id="dateFilter">
+<button id="applyDateFilter">Применить</button>
             </div>
 
         </ul>     
