@@ -21,6 +21,37 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="css/leaflet.legend.css">
 </head>
 <body>
+            <!-- Модальное окно -->
+            <div id="settings-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Настройки</h2>
+                    <ul>
+                        <li>
+                            <span data-i18n="settings_language">Язык интерфейса:</span>
+                            <select id="language-select">
+                                <option value="ru">Русский</option>
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </li>
+                        <li>
+                            <span data-i18n="settings_font_size">Размер шрифта:</span>
+                            <input type="range" id="font-size" min="12" max="24" step="1">
+                        </li>
+                        <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+                        <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+                        <li>
+                            <span data-i18n="settings_email_report">Отчет по email:</span>
+                            <input type="email" id="email" placeholder="Введите email">
+                            <button id="send-report">Отправить</button>
+                        </li>
+                        <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+                        <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+                        <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+                    </ul>
+                </div>
+            </div>
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
@@ -36,32 +67,9 @@ if (!isset($_SESSION['user_id'])) {
         <!-- Настройки -->
         <li class="settings">
             <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
-            <ul id="settings-menu" class="hidden">
-                <li>
-                    <span data-i18n="settings_language">Язык интерфейса:</span>
-                    <select id="language-select">
-                        <option value="ru">Русский</option>
-                        <option value="en">English</option>
-                        <option value="zh">中文</option>
-                    </select>
-                </li>
-                <li>
-                    <span data-i18n="settings_font_size">Размер шрифта:</span>
-                    <input type="range" id="font-size" min="12" max="24" step="1">
-                </li>
-                <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
-                <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
-                <li>
-                    <span data-i18n="settings_email_report">Отчет по email:</span>
-                    <input type="email" id="email" placeholder="Введите email">
-                    <button id="send-report">Отправить</button>
-                </li>
-                <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
-                <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
-                <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
-            </ul>
         </li>
-        
+
+
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
     </ul>
 </nav>
