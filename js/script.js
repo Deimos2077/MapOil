@@ -1007,19 +1007,21 @@ function saveRow(row, pointId) {
         losses: row.querySelector('[data-field="losses"]').innerText
     };
 
-    console.log("🚀 Отправляемые данные:", updatedData);
-    
+    // 📌 Выводим данные перед отправкой
+    console.log("🚀 Отправляемые данные в JSON:", JSON.stringify(updatedData));
+
     fetch('database/updateData.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(updatedData), // Отправка JSON
     })
-    .then(response => response.text())  // 👈 читаем как текст, а не JSON
+    .then(response => response.text()) // Читаем как текст (проверяем, что приходит)
     .then(data => {
         console.log("📩 Ответ от сервера:", data);
     })
     .catch(error => console.error("❌ Ошибка сети:", error));
 }
+
 
 
 
@@ -1110,12 +1112,27 @@ fetch('database/getData.php?table=Points')
                 marker.on('click', () => {
                     currentPointId = point.id;
                     console.log('📍 Выбрана точка с ID:', currentPointId);
-
-                    fetch(`database/TableInfo.php?pointId=${point.id}`)
-                        .then(response => response.json())
-                        .then(data => updateTable(data, point.id))
-                        .catch(error => console.error('❌ Ошибка загрузки данных о точке:', error));
-                });
+                
+                    if (!currentPointId) {
+                        console.error("⚠ Ошибка: `currentPointId` не определен!");
+                        return;
+                    }
+                
+                    fetch(`database/TableInfo.php?pointId=${currentPointId}`)
+                        .then(response => response.text())
+                        .then(text => {
+                            console.log("📄 Ответ от сервера (TableInfo):", text);
+                            return JSON.parse(text);
+                        })
+                        .then(data => {
+                            if (!Array.isArray(data)) {
+                                console.error("❌ Ошибка: `updateTable` ожидал массив, но получил:", data);
+                                return;
+                            }
+                            updateTable(data, currentPointId);
+                        })
+                        .catch(error => console.error("❌ Ошибка загрузки данных о точке:", error));
+                });                
             }
         });
     })
