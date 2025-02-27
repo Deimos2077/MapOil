@@ -85,19 +85,25 @@ if (!isset($_SESSION['user_id'])) {
         </ul>     
     </div>
     <div id="map">
-        <div class="legend">
-            <strong>Легенда:</strong>
-            <ul>
-                <li><span class="pipeline" style="background-color: rgb(3, 198, 252);"></span> Нефтепровод АО КазТрансОйл</li>
-                <li><span class="pipeline" style="background-color: rgb(79, 73, 239);"></span> Нефтепровод ПАО Транснефть</li>
-                <li><span class="pipeline" style="background-color: rgb(5, 186, 53);"></span> Нефтепровод ТОО <br>«Казахстанско-Китайский трубопровод»</li>
-                <li><span class="pipeline" style="background-color: rgb(221, 5, 221);"></span> Нефтепровод АО 'СЗТК' МунайТас'</li>
-                <li><span class="circle" style="background-color: white; border: 2px solid black;"></span> Приемо-сдаточный пункт</li>
-                <li><span class="circle" style="background-color: red; border: 2px solid black;"></span> Приемо-сдаточный пункт с резервуарами для <br>хранения остатков товарной нефти</li><li><span class="cylinder-T" style="background-color: rgb(239, 17, 17)"></span> Резервуар для хранения <br>остатков товарной нефти</li>
-                <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод для хранения <br>остатков технологической нефти</li>
-            </ul>
+        <div id="legend" class="legend">
+                    <div id="legend-header">
+                        <strong>Легенда</strong>
+                        <span id="legend-toggle">▼</span>
+                    </div>
+            <div id="legend-content">
+                <ul>
+                    <li><span class="pipeline" style="background-color: rgb(3, 198, 252);"></span> Нефтепровод АО КазТрансОйл</li>
+                    <li><span class="pipeline" style="background-color: rgb(79, 73, 239);"></span> Нефтепровод ПАО Транснефть</li>
+                    <li><span class="pipeline" style="background-color: rgb(5, 186, 53);"></span> Нефтепровод ТОО <br>«Казахстанско-Китайский трубопровод»</li>
+                    <li><span class="pipeline" style="background-color: rgb(221, 5, 221);"></span> Нефтепровод АО 'СЗТК' МунайТас'</li>
+                    <li><span class="circle" style="background-color: white; border: 2px solid black;"></span> Приемо-сдаточный пункт</li>
+                    <li><span class="circle" style="background-color: red; border: 2px solid black;"></span> Приемо-сдаточный пункт с резервуарами для <br>хранения остатков товарной нефти</li><li><span class="cylinder-T" style="background-color: rgb(239, 17, 17)"></span> Резервуар для хранения <br>остатков товарной нефти</li>
+                    <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод для хранения <br>остатков технологической нефти</li>
+                </ul>
+            </div>
         </div>
     </div>
+
     <div id="info-table-container">
     <h3 data-i18n="info_table_title">Движение нефти по трубопроводам</h3>
     <p data-i18n="info_table_description">В этой таблице представлена информация о перемещении нефти между точками системы.</p>
@@ -117,7 +123,7 @@ if (!isset($_SESSION['user_id'])) {
     <button id="add-row-btn" data-i18n="button_add_record">Добавить новую запись</button>
 </div>
 
-
+<script src="js/legend.js"></script>
 <script src="js/language.js"></script>
 <script src="js/Settings.js"></script>
 <script src="js/export.js"></script>
