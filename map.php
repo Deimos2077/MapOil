@@ -19,6 +19,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/leaflet.legend.css">
+    <link rel="stylesheet" href="css/modal_set.css">
 </head>
 <body>
             <!-- Модальное окно -->
@@ -52,6 +53,7 @@ if (!isset($_SESSION['user_id'])) {
                     </ul>
                 </div>
             </div>
+            
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
@@ -59,9 +61,7 @@ if (!isset($_SESSION['user_id'])) {
         <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
         
         <li class="svg-editor">
-            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">
-                Редактировать SVG
-            </a>
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
         </li>
 
         <!-- Настройки -->
@@ -84,11 +84,12 @@ if (!isset($_SESSION['user_id'])) {
             <li><input type="checkbox" id="checkboxThree" value="Rarity"><label for="checkboxThree">Rarity</label></li>
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
-            <div id="filter-container">
-            <label for="dateFilter">Выберите месяц:</label>
-<input type="month" id="dateFilter">
-<button id="applyDateFilter">Применить</button>
-            </div>
+            
+     <div id="filter-container">
+        <label for="dateFilter">Выберите месяц:</label>
+            <input type="month" id="dateFilter">
+            <button id="applyDateFilter">Применить</button>
+     </div>
 
         </ul>     
     </div>

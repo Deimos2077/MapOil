@@ -19,48 +19,61 @@ try {
     <title>Данные о перекачке нефти</title>
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/modal_set.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/Settings.js"></script>
+    <script src= "js/menu.js"></script>
+
 </head>
 <body>
+
+<!-- Модальное окно -->
+<div id="settings-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Настройки</h2>
+        <ul>
+            <li>
+                <span data-i18n="settings_language">Язык интерфейса:</span>
+                <select id="language-select">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </li>
+            <li>
+                <span data-i18n="settings_font_size">Размер шрифта:</span>
+                <input type="range" id="font-size" min="12" max="24" step="1">
+            </li>
+            <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+            <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+            <li>
+                <span data-i18n="settings_email_report">Отчет по email:</span>
+                <input type="email" id="email" placeholder="Введите email">
+                <button id="send-report">Отправить</button>
+            </li>
+            <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+            <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+            <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+        </ul>
+    </div>
+</div>    
+
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
         <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
         <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
-
+       
         <li class="svg-editor">
-            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">
-                Редактировать SVG
-            </a>
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
         </li>
 
         <!-- Настройки -->
         <li class="settings">
             <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
-            <ul id="settings-menu" class="hidden">
-                <li>
-                    <span data-i18n="settings_language">Язык интерфейса:</span>
-                    <select id="language-select">
-                        <option value="ru">Русский</option>
-                        <option value="en">English</option>
-                        <option value="zh">中文</option>
-                    </select>
-                </li>
-                <li>
-                    <span data-i18n="settings_font_size">Размер шрифта:</span>
-                    <input type="range" id="font-size" min="12" max="24" step="1">
-                </li>
-                <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
-                <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
-                <li>
-                    <span data-i18n="settings_email_report">Отчет по email:</span>
-                    <input type="email" id="email" placeholder="Введите email">
-                    <button id="send-report">Отправить</button>
-                </li>
-                <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
-                <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
-                <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
-            </ul>
         </li>
 
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
@@ -116,6 +129,7 @@ try {
         </table>
     </div>
 
+    
     <script>
         $(document).ready(function() {
             $("td[contenteditable=true]").blur(function() {

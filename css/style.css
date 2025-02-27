@@ -19,15 +19,15 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 .distance-label {
-    display: inline-block; /* Растяжение фона по содержимому текста */
-    padding: 6px 10px; /* Отступы */
-    font-size: 14px; /* Размер текста */
-    line-height: 1; /* Межстрочный интервал */
-    text-align: center; /* Центрирование текста */
-    font-family: 'Arial', sans-serif; /* Современный шрифт */
-    color: #333; /* Цвет текста */
-    max-width: 200px; /* Ограничение ширины текста */
-    white-space: normal; /* Разрешить перенос строк */
+    display: inline-block; 
+    padding: 6px 10px; 
+    font-size: 14px; 
+    line-height: 1; 
+    text-align: center; 
+    font-family: 'Arial', sans-serif; 
+    color: #333; 
+    max-width: 200px; 
+    white-space: normal; 
 }
 /* Легенда */
 .legend {
@@ -35,7 +35,7 @@
   left: 81%;
   top: 0.5%;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.85); /* Полупрозрачный фон */
+  background: rgba(255, 255, 255, 0.85); 
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 0.5rem;
@@ -61,14 +61,14 @@
 }
 
 #legend-header:hover {
-  background: rgba(0, 0, 0, 0.2); /* при наведении становится чуть темнее */
+  background: rgba(0, 0, 0, 0.2); 
 }
 
 /* Контент легенды */
 #legend-content {
   overflow: hidden;
   transition: max-height 0.4s ease, opacity 0.3s ease;
-  max-height: 300px; /* Высота в открытом состоянии */
+  max-height: 300px; 
   opacity: 1;
 }
 
@@ -83,7 +83,6 @@
   transform: rotate(180deg);
   transition: transform 0.3s ease;
 }
-
 
 
 .legend ul {
@@ -117,20 +116,20 @@
 /* Адаптация для экранов с шириной до 1920px */
 @media (max-width: 1920px) {
   .legend {
-      left: 76%; /* Отступ слева в процентах от ширины экрана */
-      top: 0.5%; /* Отступ сверху в процентах от высоты экрана */
-      padding: 1.2%; /* Уменьшаем внутренние отступы */
-      font-size: 0.9rem; /* Уменьшаем размер шрифта */
-      width: 23%; /* Уменьшаем ширину */
+      left: 76%; 
+      top: 0.5%; 
+      padding: 1.2%; 
+      font-size: 0.9rem; 
+      width: 23%; 
   }
 
   .legend .pipeline {
-      width: 25px; /* Уменьшаем длину линии */
-      height: 4px; /* Уменьшаем толщину линии */
+      width: 25px; 
+      height: 4px; 
   }
 
   .legend .circle {
-      width: 12px; /* Уменьшаем диаметр круга */
+      width: 12px; 
       height: 12px;
   }
 }
@@ -138,45 +137,45 @@
 /* Адаптация для экранов с шириной до 1440px */
 @media (max-width: 1440px) {
   .legend {
-      left: 77.5%; /* Ещё больше уменьшаем отступ слева */
-      top: 0.5%; /* Ещё больше уменьшаем отступ сверху */
-      padding: 1%; /* Ещё больше уменьшаем внутренние отступы */
-      font-size: 0.8rem; /* Ещё больше уменьшаем размер шрифта */
-      width: 20%; /* Ещё больше уменьшаем ширину */
+      left: 77.5%; 
+      top: 0.5%; 
+      padding: 1%; 
+      font-size: 0.8rem; 
+      width: 20%; 
   }
 
   .legend .pipeline {
-      width: 20px; /* Ещё больше уменьшаем длину линии */
-      height: 3px; /* Ещё больше уменьшаем толщину линии */
+      width: 20px; 
+      height: 3px; 
   }
 
   .legend .circle {
-      width: 10px; /* Ещё больше уменьшаем диаметр круга */
+      width: 10px; 
       height: 10px;
   }
 }
 
 /* Настройка кнопки Leaflet.easyPrint */
 .leaflet-control-easyPrint {
-  position: absolute !important; /* Принудительное абсолютное позиционирование */
-  top: 5%; /* Отступ сверху в процентах от высоты экрана */
-  left: 2%; /* Отступ слева в процентах от ширины экрана */
-  right: auto; /* Убираем привязку к правому краю */
-  bottom: auto; /* Убираем привязку к нижнему краю */
+  position: absolute !important; 
+  top: 5%; 
+  left: 2%;
+  right: auto; 
+  bottom: auto;
 }
 
 /* Адаптация для экранов с меньшими разрешениями */
 @media (max-width: 1920px) {
   .leaflet-control-easyPrint {
-      top: 6%; /* Увеличиваем отступ сверху */
-      left: 3%; /* Увеличиваем отступ слева */
+      top: 6%; 
+      left: 3%;
   }
 }
 
 @media (max-width: 1440px) {
   .leaflet-control-easyPrint {
-      top: 7%; /* Ещё больший отступ сверху */
-      left: 4%; /* Ещё больший отступ слева */
+      top: 7%; 
+      left: 4%;
   }
 }
 
@@ -184,71 +183,76 @@
   display: block;
   visibility: visible;
   opacity: 1;
-  background-color: white; /* Белый фон таблицы */
-  padding: 10px; /* Отступы вокруг таблицы */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Лёгкая тень для выделения */
-  margin: 0px auto; /* Отступ сверху */
+  background-color: white; 
+  padding: 10px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  margin: 0px auto; 
 }
 
 #info-table {
-  width: 100%; /* Таблица на всю ширину контейнера */
-  border-collapse: collapse; /* Убираем двойные линии между ячейками */
-  margin-top: 10px; /* Отступ сверху внутри контейнера */
+  width: 100%; 
+  border-collapse: collapse;
+  margin-top: 10px; 
 }
 
 #info-table th, #info-table td {
-  border: 1px solid black; /* Чёрные границы ячеек */
-  padding: 8px; /* Внутренние отступы для текста */
-  text-align: center; /* Текст по центру */
+  border: 1px solid black; 
+  padding: 8px; 
+  text-align: center; 
 }
 
 #info-table th {
-  background-color: #f2f2f2; /* Фон заголовка */
+  background-color: #f2f2f2; 
 }
-    .marker-label {
-        font-family: Arial, sans-serif;
-        font-weight: bold;
-        color: #000;
-        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
-        padding: 5px; /* Увеличение отступов для улучшения читаемости */
-        border-radius: 4px;
-        white-space: normal; /* Разрешить перенос текста на несколько строк */
-        text-align: center; /* Центрирование текста */
-        min-width: 120px; /* Минимальная ширина */
-        max-width: 300px; /* Максимальная ширина для предотвращения слишком длинных блоков */
-        line-height: 1.2; /* Межстрочный интервал */
+
+.marker-label {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    color: #000;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+    padding: 5px; 
+    border-radius: 4px;
+    white-space: normal;
+    text-align: center; 
+    min-width: 120px; 
+    max-width: 300px; 
+    line-height: 1.2; 
+}
+    
+.dashed-line {
+    stroke-dasharray: 10, 10; 
+    animation: dashmove 2s linear infinite;
+  }
+
+@keyframes dashmove {
+    from {
+        stroke-dashoffset: 0;
+        }
+
+      to {
+         stroke-dashoffset: -20; 
+        }
     }
-    .dashed-line {
-        stroke-dasharray: 10, 10; /* Соответствует dashArray */
-        animation: dashmove 2s linear infinite;
+    
+.cylinder-S {
+    width: 25px; 
+    height: 40px;
+    background: linear-gradient(to bottom, #e8e8e8, #b1b1b1); 
+    border: 2px solid #151515; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); 
+    display: inline-block;
+    margin-right: 8px;
     }
 
-    @keyframes dashmove {
-        from {
-            stroke-dashoffset: 0;
-        }
-        to {
-            stroke-dashoffset: -20; /* Смещение длины пунктира */
-        }
-    }
-    .cylinder-S {
-        width: 25px; /* Ширина цилиндра */
-        height: 40px; /* Высота цилиндра */
-        background: linear-gradient(to bottom, #e8e8e8, #b1b1b1); /* Градиент для объемного эффекта */
-        border: 2px solid #151515; /* Цвет обводки */
-        border-radius: 10px; /* Закругленные углы */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
-        display: inline-block;
-        margin-right: 8px;
-    }
-    .cylinder-T {
-        width: 25px; /* Ширина цилиндра */
-        height: 40px; /* Высота цилиндра */
-        background: linear-gradient(to bottom, #ee3333, #993636); /* Градиент для объемного эффекта */
-        border: 2px solid black; /* Цвет обводки */
-        border-radius: 10px; /* Закругленные углы */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Тень для объема */
-        display: inline-block;
-        margin-right: 8px;
-    }
+.cylinder-T {
+    width: 25px; 
+    height: 40px;
+    background: linear-gradient(to bottom, #ee3333, #993636); 
+    border: 2px solid black;
+    border-radius: 10px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); 
+    display: inline-block;
+    margin-right: 8px;
+  }
     

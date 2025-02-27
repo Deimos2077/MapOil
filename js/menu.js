@@ -12,27 +12,58 @@
     }
 
 }).call(this);
+
 // modal content
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ DOM загружен");
+
     const modal = document.getElementById("settings-modal");
-    const btn = document.getElementById("settings-toggle");
-    const closeBtn = document.querySelector(".close");
+    const openModalBtn = document.getElementById("settings-toggle");
+    const closeModalBtn = document.querySelector(".close");
+    
+    // Создаем слой размытия
+    let blurBackground = document.getElementById("blur-background");
+    if (!blurBackground) {
+        blurBackground = document.createElement("div");
+        blurBackground.id = "blur-background";
+        document.body.appendChild(blurBackground);
+    }
 
-    // Открываем модальное окно при клике на "Настройки"
-    btn.addEventListener("click", function (event) {
-        event.preventDefault(); // Предотвращаем переход по ссылке
+    if (!modal || !openModalBtn || !closeModalBtn) {
+        console.error("❌ Ошибка: один из элементов не найден!");
+        return;
+    }
+
+    console.log("✅ Все элементы найдены, модальное окно готово к работе!");
+
+    // Открытие модального окна
+    openModalBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        console.log("🔥 Открываем модальное окно!");
         modal.style.display = "block";
+        setTimeout(() => modal.classList.add("show"), 10);
+        blurBackground.classList.add("active");
+        document.body.classList.add("modal-open");
     });
 
-    // Закрываем модальное окно при клике на "x"
-    closeBtn.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
+    // Закрытие модального окна
+    function closeModal() {
+        console.log("❌ Закрываем модальное окно");
+        modal.classList.remove("show");
+        blurBackground.classList.remove("active");
+        document.body.classList.remove("modal-open");
+        setTimeout(() => (modal.style.display = "none"), 300);
+    }
 
-    // Закрываем модальное окно при клике вне его
-    window.addEventListener("click", function (event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
+    closeModalBtn.addEventListener("click", closeModal);
+
+    // Закрытие при клике вне окна
+    blurBackground.addEventListener("click", closeModal);
+
+    // Закрытие через клавишу Escape
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeModal();
         }
     });
 });
