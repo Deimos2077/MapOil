@@ -24,11 +24,11 @@ if (!isset($_SESSION['user_id'])) {
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
-        <li class="events"><a class="menu-href" href="http://localhost/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
-        <li class="timeline"><a class="menu-href" href="http://localhost/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
+        <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
         
         <li class="svg-editor">
-            <a class="menu-href" href="http://localhost/project/svgedit-master/dist/editor/" target="_blank">
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">
                 Редактировать SVG
             </a>
         </li>
@@ -57,8 +57,8 @@ if (!isset($_SESSION['user_id'])) {
                     <button id="send-report">Отправить</button>
                 </li>
                 <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
-                <li><a href="http://localhost/mapoilds/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
-                <li><a href="http://localhost/mapoilds/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+                <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+                <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
             </ul>
         </li>
         

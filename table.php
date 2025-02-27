@@ -25,8 +25,8 @@ try {
     <nav id="slide-menu">
         <ul>
             <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/">Графики</a></li>
-            <li class="events"><a class="menu-href" href="http://localhost/project/MapOil/table.php">МатОтчет</a></li>
-            <li class="timeline"><a class="menu-href" href="http://localhost/project/MapOil/map.php">Карта</a></li>
+            <li class="events"><a class="menu-href" href="/project/MapOil/table.php">МатОтчет</a></li>
+            <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php">Карта</a></li>
             <li class="sep settings"><a href="">Settings</a></li>
             <li class="logout"><a href="logout.php">Logout</a></li>
         </ul>
