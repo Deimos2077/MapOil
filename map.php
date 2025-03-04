@@ -56,7 +56,7 @@ if (!isset($_SESSION['user_id'])) {
             
 <nav id="slide-menu">
     <ul>
-        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/" data-i18n="menu_graphs">Графики</a></li>
         <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
         <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
         <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">"Калькулятор"</a></li>
@@ -71,7 +71,7 @@ if (!isset($_SESSION['user_id'])) {
             <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
         </li>
 
-        <li class="logout"><a href=ы"logout.php" data-i18n="menu_logout">Выход</a></li>
+        <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
     </ul>
 </nav>
 <div id="content">

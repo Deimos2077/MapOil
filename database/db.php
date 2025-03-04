@@ -2,8 +2,8 @@
 // db.php
 $host = 'localhost';
 $dbname = 'mapoil';
-$user = 'root'; // Ваш пользователь базы данных
-// $password = 'oil4815162342'; // Ваш пароль
+$user = 'user'; // Ваш пользователь базы данных
+$password = 'oil4815162342'; // Ваш пароль
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $password);
