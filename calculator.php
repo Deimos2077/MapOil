@@ -11,6 +11,9 @@
             border: 2px solid red;
             font-weight: bold;
         }
+        #date-input{
+            width: 17%;
+        }
     </style>
     <script>
         async function saveData(pipelineId) {
@@ -42,39 +45,44 @@
         }
 
         function calculateLoss(sourceId, pipelineId) {
-        let volume = parseFloat(document.getElementById(`volume-${sourceId}-${pipelineId}`).value) || 0;
-        let percent = parseFloat(document.getElementById(`percent-${sourceId}-${pipelineId}`).value) || 0;
-        let loss = Math.round((volume * percent) / 100);
-        document.getElementById(`loss-${sourceId}-${pipelineId}`).value = loss;
-        return Math.round(volume / (1 - percent / 100));
-    }
-
-    function calculateAll(pipelineId) {
-        let lastVolumeId = pipelineId === "1" ? "pkop" : "atasu-alashankoy";
-
-        let lastVolume = parseFloat(document.getElementById(`volume-${lastVolumeId}-${pipelineId}`).value) || 0;
-        document.getElementById(`loss-${lastVolumeId}-${pipelineId}`).value = Math.round((lastVolume * parseFloat(document.getElementById(`percent-${lastVolumeId}-${pipelineId}`).value)) / 100);
-
-        let previousId = lastVolumeId;
-        let sources = pipelineId === "1"
-            ? ["kumkol", "kenkiyak-transfer", "kenkiyak", "psp45"]
-            : ["atasu-transfer", "atasu", "dzhumagalieva", "kumkol", "kenkiyak-transfer", "kenkiyak", "psp45"];
-
-        for (let source of sources) {
-            let calculatedVolume = calculateLoss(previousId, pipelineId);
-            document.getElementById(`volume-${source}-${pipelineId}`).value = calculatedVolume;
-            previousId = source;
+            let volume = parseFloat(document.getElementById(`volume-${sourceId}-${pipelineId}`).value) || 0;
+            let percent = parseFloat(document.getElementById(`percent-${sourceId}-${pipelineId}`).value) || 0;
+            let loss = Math.round((volume * percent) / 100);
+            document.getElementById(`loss-${sourceId}-${pipelineId}`).value = loss;
+            return Math.round(volume / (1 - percent / 100));
         }
-    }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".main-input").forEach(input => {
-            input.addEventListener("input", function () {
-                let pipelineId = this.id.split("-").pop();
-                calculateAll(pipelineId);
+        function calculateAll(pipelineId) {
+            let lastVolumeId = pipelineId === "1" ? "pkop" : "atasu-alashankoy";
+
+            let lastVolume = parseFloat(document.getElementById(`volume-${lastVolumeId}-${pipelineId}`).value) || 0;
+            document.getElementById(`loss-${lastVolumeId}-${pipelineId}`).value = Math.round((lastVolume * parseFloat(document.getElementById(`percent-${lastVolumeId}-${pipelineId}`).value)) / 100);
+
+            let previousId = lastVolumeId;
+            let sources = pipelineId === "1"
+                ? ["kumkol", "kenkiyak-transfer", "kenkiyak", "zhanazhol-result", "psp45"]
+                : ["atasu-transfer", "atasu", "dzhumagalieva", "kumkol", "kenkiyak-transfer", "kenkiyak", "zhanazhol-result", "psp45"];
+
+            for (let source of sources) {
+                let calculatedVolume = calculateLoss(previousId, pipelineId);
+                document.getElementById(`volume-${source}-${pipelineId}`).value = calculatedVolume;
+                previousId = source;
+            }
+
+            // Calculate Жанажол result
+            let zhanazholInput = parseFloat(document.getElementById(`volume-zhanazhol-input-${pipelineId}`).value) || 0;
+            let psp45 = parseFloat(document.getElementById(`volume-psp45-${pipelineId}`).value) || 0;
+            document.getElementById(`volume-zhanazhol-result-${pipelineId}`).value = zhanazholInput - psp45;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".main-input").forEach(input => {
+                input.addEventListener("input", function () {
+                    let pipelineId = this.id.split("-").pop();
+                    calculateAll(pipelineId);
+                });
             });
         });
-    });
     </script>
 </head>
 <body class="container mt-4">
@@ -129,6 +137,14 @@
 
     <h3 class="mb-4 mt-5">Трубопровод 2</h3>
     <table class="table table-bordered">
+    <thead>
+            <tr class="table-primary">
+                <th>Источник</th>
+                <th>Объем нефти (тонн)</th>
+                <th>Процент потерь (%)</th>
+                <th>Потери (тонн)</th>
+            </tr>
+        </thead>
         <tbody>
         <tr>
                 <td>ПСП 45 км</td>
