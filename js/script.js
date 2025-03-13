@@ -57,7 +57,6 @@
 
 // Создаем слой для резервуаров (Глобальная переменная)
 const reservoirLayerGroup = L.layerGroup().addTo(map);
-const minimalistFlowLayerGroup = L.layerGroup().addTo(map);
 const outgoingFlowLayerGroup = L.layerGroup().addTo(map);
 
 
@@ -663,20 +662,24 @@ function addReservoirs(reservoirData) {
 
 
 
-
-
 //----------------------------------Информация хода нефти с отображением стрелок-------------------------------
 
-
 // Создаем слой для отображения линий и меток
-const flowLayerGroup = L.layerGroup().addTo(map);
+const flowLayerGroup = L.layerGroup();
+const minimalistFlowLayerGroup = L.layerGroup();
+let flowLayerVisible = false; // Изначально слой скрыт
+let dataLoaded = false; // Флаг, чтобы загружать данные только один раз
+
+// Убираем слой при загрузке
+map.removeLayer(minimalistFlowLayerGroup);
+document.getElementById('checkboxOne').checked = false; // Снимаем галочку при загрузке
 
 // Настройки направлений для точек (смещения по широте и долготе)
 const directionOffsets = {
     1: { lat: 0.5, lng: 0.3 },   // Алашанькоу
     2: { lat: 0.2, lng: 0.5 },    // Атасу
     3: { lat: 0.5, lng: 0.3 },    // ПНХЗ
-    4: { lat: 0.5, lng: 0.3},   // Кумколь
+    4: { lat: 0.5, lng: 0.3 },   // Кумколь
     5: { lat: 0.2, lng: 0.5 },   // Кенкияк
     6: { lat: 0.2, lng: 0.3 },   // ПКОП
     7: { lat: 0.4, lng: 0.2 },   // Шманова
@@ -694,7 +697,7 @@ function findFreePosition(coords, layerGroup, pointId) {
         [baseOffset, baseOffset],   // Верхний правый угол
         [baseOffset, -baseOffset],  // Верхний левый угол
         [-baseOffset, baseOffset],  // Нижний правый угол
-        [-baseOffset, -baseOffset], // Нижний левый угол
+        [-baseOffset, -baseOffset]  // Нижний левый угол
     ];
 
     const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
@@ -742,9 +745,8 @@ function findFreePosition(coords, layerGroup, pointId) {
 function addMinimalistFlow(points, oilTransferData) {
     minimalistFlowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
 
-    if (!document.getElementById('checkboxOne').checked) {
-        map.removeLayer(minimalistFlowLayerGroup); // Принудительно скрываем слой
-        return;
+    if (!flowLayerVisible) {
+        return; // Если слой скрыт, ничего не добавляем
     }
 
     const uniqueEntries = new Set(); // Для фильтрации дубликатов
@@ -783,22 +785,22 @@ function addMinimalistFlow(points, oilTransferData) {
         }).addTo(minimalistFlowLayerGroup);
     });
 
-    if (!map.hasLayer(minimalistFlowLayerGroup)) {
-        map.addLayer(minimalistFlowLayerGroup); // Добавляем слой на карту, если чекбокс включен
-    }
+    map.addLayer(minimalistFlowLayerGroup); // Добавляем слой на карту
 }
 
+document.getElementById('checkboxOne').addEventListener('change', async function () {
+    flowLayerVisible = this.checked;
 
-document.getElementById('checkboxOne').addEventListener('change', function () {
-    if (this.checked) {
+    if (flowLayerVisible) {
+        if (!dataLoaded) {
+            await initializeMinimalistFlowMap(); // Загружаем данные только один раз
+            dataLoaded = true;
+        }
         map.addLayer(minimalistFlowLayerGroup); // Показываем слой
-        initializeMinimalistFlow(); // Перерисовываем данные
     } else {
         map.removeLayer(minimalistFlowLayerGroup); // Убираем слой
     }
 });
-
-
 
 // Стили для меток
 const style = document.createElement('style');
@@ -818,7 +820,7 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// Инициализация карты
+// Инициализация карты (загружает данные, но не добавляет слой)
 async function initializeMinimalistFlowMap() {
     const points = await fetchPointsFromDB();
     const oilTransferData = await fetchOilTransferFromDB();
@@ -826,7 +828,7 @@ async function initializeMinimalistFlowMap() {
     console.log('Точки:', points);
     console.log('Данные о нефти:', oilTransferData);
 
-if (points.length === 0 || oilTransferData.length === 0) {
+    if (points.length === 0 || oilTransferData.length === 0) {
         console.error('Недостаточно данных для отрисовки карты.');
         return;
     }
@@ -834,7 +836,6 @@ if (points.length === 0 || oilTransferData.length === 0) {
     addMinimalistFlow(points, oilTransferData);
 }
 
-initializeMinimalistFlowMap();
 
 
 
@@ -1244,7 +1245,9 @@ document.getElementById('add-row-btn').addEventListener('click', () => {
 
 
 const filterButton = document.getElementById('checkboxOne');
-let flowLayerVisible = true;
+
+// Убираем слой с карты при загрузке
+map.removeLayer(flowLayerGroup);
 
 filterButton.addEventListener('click', () => {
     flowLayerVisible = !flowLayerVisible;
@@ -1252,9 +1255,7 @@ filterButton.addEventListener('click', () => {
     // Управляем видимостью слоя
     if (flowLayerVisible) {
         map.addLayer(flowLayerGroup); // Показываем слой
-        
     } else {
         map.removeLayer(flowLayerGroup); // Скрываем слой
-        
     }
 });

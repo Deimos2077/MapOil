@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сохранение данных о потерях нефти</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/modal_set.css">
     <style>
         .main-input {
             background-color: #ffcccc !important;
@@ -86,6 +89,64 @@
     </script>
 </head>
 <body class="container mt-4">
+
+<!-- Модальное окно -->
+<div id="settings-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Настройки</h2>
+        <ul>
+            <li>
+                <span data-i18n="settings_language">Язык интерфейса:</span>
+                <select id="language-select">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </li>
+            <li>
+                <span data-i18n="settings_font_size">Размер шрифта:</span>
+                <input type="range" id="font-size" min="12" max="24" step="1">
+            </li>
+            <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+            <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+            <li>
+                <span data-i18n="settings_email_report">Отчет по email:</span>
+                <input type="email" id="email" placeholder="Введите email">
+                <button id="send-report">Отправить</button>
+            </li>
+            <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+            <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+            <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+        </ul>
+    </div>
+</div>    
+
+<nav id="slide-menu">
+    <ul>
+        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
+        <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">"Калькулятор"</a></li>
+       
+        <li class="svg-editor">
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
+        </li>
+
+        <!-- Настройки -->
+        <li class="settings">
+            <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
+        </li>
+
+        <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
+    </ul>
+</nav>
+
+<div id="content">
+
+<div class="menu-trigger"></div>
+
+
     <h2 class="mb-4">Форма расчета потерь нефти</h2>
     <label for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3">
@@ -203,5 +264,11 @@
         </tbody>
     </table>
     <button class="btn btn-success" onclick="saveData(2)">Сохранить</button>
+<div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/Settings.js"></script>
+    <script src="js/menu.js"></script>
 </body>
 </html>
