@@ -1,7 +1,7 @@
 /* style.css */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #556270;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,7 +12,7 @@ body {
 form {
     background-color: #fff;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     width: 300px;
 }
@@ -23,12 +23,13 @@ input[type="text"], input[type="password"] {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
+    background-color: ghostwhite;
 }
 
 button {
     width: 100%;
     padding: 10px;
-    background-color: #4CAF50;
+    background-color: #59e9df;
     border: none;
     border-radius: 4px;
     color: white;
@@ -37,7 +38,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #44b6af;
 }
 
 h2 {

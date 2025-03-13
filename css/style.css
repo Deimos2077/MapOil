@@ -32,7 +32,7 @@
 /* Легенда */
 .legend {
   position: absolute;
-  left: 81%;
+  right:0;
   top: 0.5%;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.85); 
@@ -116,7 +116,7 @@
 /* Адаптация для экранов с шириной до 1920px */
 @media (max-width: 1920px) {
   .legend {
-      left: 76%; 
+      right:0;
       top: 0.5%; 
       padding: 1.2%; 
       font-size: 0.9rem; 
