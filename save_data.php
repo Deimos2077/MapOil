@@ -1,44 +1,46 @@
 <?php
-require 'database/db.php'; // Подключение к БД
+header("Content-Type: application/json");
 
-// Получаем JSON данные
+$servername = "localhost";
+$username = "user";
+$password = "oil4815162342";
+$dbname = "mapoil";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die(json_encode(["success" => false, "message" => "Ошибка подключения к БД"]));
+}
+
+// Получаем JSON
 $data = json_decode(file_get_contents("php://input"), true);
-$pipeline_id = $_GET['pipeline_id'];
-$date = $data['date'];
-
-if (!$date || !$pipeline_id) {
-    echo "Ошибка: Не указаны дата или pipeline_id!";
-    exit;
+if (!$data || !is_array($data)) {
+    die(json_encode(["success" => false, "message" => "Некорректные данные"]));
 }
 
-// Извлекаем год и месяц из переданной даты
-$year = date('Y', strtotime($date));
-$month = date('m', strtotime($date));
+// Подготовленный SQL-запрос
+$stmt = $conn->prepare("INSERT INTO oiltransfer (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-foreach ($data['losses'] as $loss) {
-    $source = $loss['id']; // ID источника
-    $oil_volume = floatval($loss['volume']);
-    $loss_coefficient = floatval($loss['percent']);
-    $loss_amount = floatval($loss['loss']);
+foreach ($data as $row) {
+    // Принудительно приводим loss_coefficient к float
+    $loss_coefficient = floatval($row["loss_coefficient"]);
 
-    // Проверяем, существует ли запись за тот же месяц
-    $stmt = $pdo->prepare("SELECT id FROM oil_losses WHERE source = ? AND pipeline_id = ? 
-                           AND YEAR(date) = ? AND MONTH(date) = ?");
-    $stmt->execute([$source, $pipeline_id, $year, $month]);
-    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($existing) {
-        // Если запись есть, обновляем её
-        $stmt = $pdo->prepare("UPDATE oil_losses SET oil_volume = ?, loss_coefficient = ?, loss_amount = ?, date = ? 
-                               WHERE id = ?");
-        $stmt->execute([$oil_volume, $loss_coefficient, $loss_amount, $date, $existing['id']]);
-    } else {
-        // Если записи нет, создаем новую
-        $stmt = $pdo->prepare("INSERT INTO oil_losses (source, pipeline_id, oil_volume, loss_coefficient, loss_amount, date) 
-                               VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$source, $pipeline_id, $oil_volume, $loss_coefficient, $loss_amount, $date]);
-    }
+    $stmt->bind_param("siiiidddd", 
+        $row["date"], 
+        $row["pipeline_id"], 
+        $row["piplines_system_id"], 
+        $row["from_point_id"], 
+        $row["to_point_id"], 
+        $row["from_amount"], 
+        $row["losses"], 
+        $row["to_amount"], 
+        $loss_coefficient // используем уже преобразованное значение
+    );
+    
+    $stmt->execute();
 }
 
-echo "Данные сохранены!";
+// Закрываем соединение
+$stmt->close();
+$conn->close();
+echo json_encode(["success" => true]);
 ?>

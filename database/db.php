@@ -1,6 +1,6 @@
 <?php
 // db.php
-$host = '192.168.1.23';
+$host = 'localhost'; // Хост, у нас все локально
 $dbname = 'mapoil';
 $user = 'user'; // Ваш пользователь базы данных
 $password = 'oil4815162342'; // Ваш пароль
