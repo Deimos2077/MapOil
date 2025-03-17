@@ -1,14 +1,35 @@
         // Инициализация карты
         var map = L.map('map', {
-            center: [51.5, 57], // Центр карты
-            zoom: 5.55,          // Начальный зум
-            minZoom: 4,       // Минимальный зум
-            maxZoom: 10,      // Максимальный зум
-            zoomSnap: 0.001,    // Шаг зума: 0.1 для более точного контроля
-            zoomDelta: 0.001,   // Шаг зума при использовании колесика мыши или клавиш
-            zoomControl: false // Отключение стандартных кнопок зума
+            center: [51.5, 57], 
+            zoom: 5.8,          
+            minZoom: 5.8,       
+            maxZoom: 10,      
+            zoomSnap: 0.001,    
+            zoomDelta: 0.001,   
+            zoomControl: false 
             });
-            
+
+        // Установка ограничений карты
+        var southWest = L.latLng(40, 30);  
+        var northEast = L.latLng(60, 85); 
+        var bounds = L.latLngBounds(southWest, northEast);
+        
+        map.setMaxBounds(bounds);
+        
+        // Установка минимального и максимального зума
+        map.options.minZoom = 5.8;  
+        map.options.maxZoom = 10; 
+        
+        map.on('drag', function () {
+            map.panInsideBounds(bounds, { animate: false });
+        });
+        
+        map.on('zoom', function () {
+            if (map.getZoom() < map.options.minZoom) {
+                map.setZoom(map.options.minZoom);
+            }
+        });
+
 
         // Подключение OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -18,9 +39,9 @@
         // Подключение библиотеки Leaflet.easyPrint
         var printer = L.easyPrint({
             title: 'Распечатать карту',
-            position: 'topleft', // Базовое положение в верхнем левом углу
+            position: 'topleft', 
             sizeModes: ['A4Portrait', 'A4Landscape'],
-            exportOnly: false, // Печать напрямую
+            exportOnly: false, 
             hideControlContainer: false,
             customLayout: true,
             scale: 1
@@ -38,10 +59,10 @@
 
 // Общий стиль для всех GeoJSON
     const geoJsonStyle = {
-        color: 'purple',  // Цвет обводки (например, оранжевый)
-        weight: 3,  // Толщина линии
-        opacity: 0.5,        // Прозрачность обводки
-        fillOpacity: 0     // Убираем заливку (только обводка)
+        color: 'purple',  
+        weight: 3,  
+        opacity: 0.5,       
+        fillOpacity: 0     
     };
 
 // Загружаем и добавляем первый GeoJSON
@@ -512,29 +533,29 @@ fetch('database/getData.php?table=Reservoirs')
     })
     .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
 
-// Управление видимостью слоев
-const minZoom = 7.5;
+// // Управление видимостью слоев
+// const minZoom = 7.5;
 
-function updateLayerVisibility() {
-    const currentZoom = map.getZoom();
+// function updateLayerVisibility() {
+//     const currentZoom = map.getZoom();
 
-    if (currentZoom >= minZoom) {
-        if (!map.hasLayer(pointTanksLayer)) map.addLayer(pointTanksLayer);
-        if (!map.hasLayer(technicalTanksLayer)) map.addLayer(technicalTanksLayer);
-    } else {
-        if (map.hasLayer(pointTanksLayer)) map.removeLayer(pointTanksLayer);
-        if (map.hasLayer(technicalTanksLayer)) map.removeLayer(technicalTanksLayer);
-    }
-}
+//     if (currentZoom >= minZoom) {
+//         if (!map.hasLayer(pointTanksLayer)) map.addLayer(pointTanksLayer);
+//         if (!map.hasLayer(technicalTanksLayer)) map.addLayer(technicalTanksLayer);
+//     } else {
+//         if (map.hasLayer(pointTanksLayer)) map.removeLayer(pointTanksLayer);
+//         if (map.hasLayer(technicalTanksLayer)) map.removeLayer(technicalTanksLayer);
+//     }
+// }
 
-// Привязываем обновление видимости слоев к событию изменения зума
-map.on('zoomend', updateLayerVisibility);
+// // Привязываем обновление видимости слоев к событию изменения зума
+// map.on('zoomend', updateLayerVisibility);
 
-// Проверяем начальное состояние видимости
-map.on('load', updateLayerVisibility);
+// // Проверяем начальное состояние видимости
+// map.on('load', updateLayerVisibility);
 
-// Вызываем обновление видимости сразу после инициализации
-updateLayerVisibility();
+// // Вызываем обновление видимости сразу после инициализации
+// updateLayerVisibility();
 
 
 
@@ -694,16 +715,16 @@ const directionOffsets = {
 function findFreePosition(coords, layerGroup, pointId) {
     const baseOffset = 0.5; // Базовое смещение
     const defaultDirections = [
-        [baseOffset, baseOffset],   // Верхний правый угол
-        [baseOffset, -baseOffset],  // Верхний левый угол
-        [-baseOffset, baseOffset],  // Нижний правый угол
-        [-baseOffset, -baseOffset]  // Нижний левый угол
+        [baseOffset, baseOffset],   
+        [baseOffset, -baseOffset],  
+        [-baseOffset, baseOffset],  
+        [-baseOffset, -baseOffset]  
     ];
 
     const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
     const directions = [
-        [customOffset.lat, customOffset.lng], // Индивидуальное смещение для точки
-        ...defaultDirections                  // Остальные стандартные направления
+        [customOffset.lat, customOffset.lng], 
+        ...defaultDirections                 
     ];
 
     for (let i = 0; i < directions.length; i++) {
@@ -733,34 +754,33 @@ function findFreePosition(coords, layerGroup, pointId) {
         });
 
         if (!isOverlapping) {
-            return candidateCoords; // Возвращаем первое свободное место
+            return candidateCoords; 
         }
     }
 
-    // Если нет свободного места, возвращаем стандартное смещение
     return [coords[0] + baseOffset, coords[1] + baseOffset];
 }
 
 // Обновляем вызов addMinimalistFlow
 function addMinimalistFlow(points, oilTransferData) {
-    minimalistFlowLayerGroup.clearLayers(); // Очищаем слой перед добавлением новых элементов
+    minimalistFlowLayerGroup.clearLayers();
 
     if (!flowLayerVisible) {
-        return; // Если слой скрыт, ничего не добавляем
+        return; 
     }
 
-    const uniqueEntries = new Set(); // Для фильтрации дубликатов
+    const uniqueEntries = new Set(); 
 
     oilTransferData.forEach(record => {
-        const toPoint = points.find(point => point.id === record.to_point); // Находим конечную точку
+        const toPoint = points.find(point => point.id === record.to_point); 
 
-        if (!toPoint || !toPoint.coords) return; // Пропускаем если нет координат
+        if (!toPoint || !toPoint.coords) return; 
 
-        const recordKey = `${record.to_point}-${record.to_amount}-${record.source_type || 'pipeline'}`; // Уникальный ключ
+        const recordKey = `${record.to_point}-${record.to_amount}-${record.source_type || 'pipeline'}`; 
 
-        if (uniqueEntries.has(recordKey)) return; // Если запись уже есть, пропускаем
+        if (uniqueEntries.has(recordKey)) return; 
 
-        uniqueEntries.add(recordKey); // Добавляем запись в множество
+        uniqueEntries.add(recordKey);
 
         const labelPosition = findFreePosition(toPoint.coords, minimalistFlowLayerGroup, record.to_point);
 
@@ -785,7 +805,7 @@ function addMinimalistFlow(points, oilTransferData) {
         }).addTo(minimalistFlowLayerGroup);
     });
 
-    map.addLayer(minimalistFlowLayerGroup); // Добавляем слой на карту
+    map.addLayer(minimalistFlowLayerGroup); 
 }
 
 document.getElementById('checkboxOne').addEventListener('change', async function () {
@@ -793,12 +813,12 @@ document.getElementById('checkboxOne').addEventListener('change', async function
 
     if (flowLayerVisible) {
         if (!dataLoaded) {
-            await initializeMinimalistFlowMap(); // Загружаем данные только один раз
+            await initializeMinimalistFlowMap(); 
             dataLoaded = true;
         }
-        map.addLayer(minimalistFlowLayerGroup); // Показываем слой
+        map.addLayer(minimalistFlowLayerGroup); 
     } else {
-        map.removeLayer(minimalistFlowLayerGroup); // Убираем слой
+        map.removeLayer(minimalistFlowLayerGroup); 
     }
 });
 
@@ -808,7 +828,16 @@ style.innerHTML = `
 .flow-label div {
     font-size: 14px;
     font-weight: bold;
-    color: black;
+    color: white; 
+    text-shadow: 
+        -2px -2px 0 black,  
+         2px -2px 0 black,
+        -2px  2px 0 black,
+         2px  2px 0 black,
+        -2px  0px 0 black,
+         2px  0px 0 black,
+         0px -2px 0 black,
+         0px  2px 0 black;
     border-radius: 5px; 
     padding: 5px;
     text-align: center;
@@ -819,6 +848,8 @@ style.innerHTML = `
 }
 `;
 document.head.appendChild(style);
+
+
 
 // Инициализация карты (загружает данные, но не добавляет слой)
 async function initializeMinimalistFlowMap() {
@@ -839,99 +870,99 @@ async function initializeMinimalistFlowMap() {
 
 
 
-//------------------------------Отображение нефти на трубопроводе-------------------
-// Вызов функции
-(async function initializeOutgoingOilAmounts() {
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB();
+// //------------------------------Отображение нефти на трубопроводе-------------------
+// // Вызов функции
+// (async function initializeOutgoingOilAmounts() {
+//     const points = await fetchPointsFromDB();
+//     const oilTransferData = await fetchOilTransferFromDB();
 
-    if (points.length > 0 && oilTransferData.length > 0) {
-        addOutgoingOilAmounts(points, oilTransferData);
-        if (!document.getElementById('checkboxOne').checked) {
-            map.removeLayer(flowLayerGroup); // Если чекбокс выключен, слой изначально скрыт
-        }
-    } else {
-        console.error('Недостаточно данных для отображения исходящих объемов нефти.');
-    }
-})();
+//     if (points.length > 0 && oilTransferData.length > 0) {
+//         addOutgoingOilAmounts(points, oilTransferData);
+//         if (!document.getElementById('checkboxOne').checked) {
+//             map.removeLayer(flowLayerGroup); // Если чекбокс выключен, слой изначально скрыт
+//         }
+//     } else {
+//         console.error('Недостаточно данных для отображения исходящих объемов нефти.');
+//     }
+// })();
 
-document.getElementById('checkboxOne').addEventListener('change', function () {
-    if (this.checked) {
-        flowLayerGroup.addTo(map); // Показываем слой
-    } else {
-        map.removeLayer(flowLayerGroup); // Скрываем слой
-    }
-});
+// document.getElementById('checkboxOne').addEventListener('change', function () {
+//     if (this.checked) {
+//         flowLayerGroup.addTo(map); // Показываем слой
+//     } else {
+//         map.removeLayer(flowLayerGroup); // Скрываем слой
+//     }
+// });
 
-// Функция отображения только количества нефти, исходящей из точки
-async function addOutgoingOilAmounts(points, oilTransferData) {
-    outgoingFlowLayerGroup.clearLayers(); // Очищаем только этот слой
+// // Функция отображения только количества нефти, исходящей из точки
+// async function addOutgoingOilAmounts(points, oilTransferData) {
+//     outgoingFlowLayerGroup.clearLayers(); // Очищаем только этот слой
 
-    const staticLabelPositions = {
-        '4-2': [47.5, 69], // От точки 4 к точке 2
-        '4-3': [49.7, 72.4], // От точки 4 к точке 3
-        '4-6': [45.15, 68.65], // От точки 4 к точке 6
-        '5-7': [48.5, 56], // От точки 5 к точке 7
-        '5-4': [48.5, 57.908], // От точки 5 к точке 4
-        '8-9': [52.22, 48], // От точки 8 к точке 9
-        '8-10': [53.2, 49], // От точки 8 к точке 10
-    };
+//     const staticLabelPositions = {
+//         '4-2': [47.5, 69], // От точки 4 к точке 2
+//         '4-3': [49.7, 72.4], // От точки 4 к точке 3
+//         '4-6': [45.15, 68.65], // От точки 4 к точке 6
+//         '5-7': [48.5, 56], // От точки 5 к точке 7
+//         '5-4': [48.5, 57.908], // От точки 5 к точке 4
+//         '8-9': [52.22, 48], // От точки 8 к точке 9
+//         '8-10': [53.2, 49], // От точки 8 к точке 10
+//     };
 
-    const lineColors = {
-        '4-2': 'rgb(3, 198, 252)',
-        '4-3': 'rgb(3, 198, 252)',
-        '4-6': 'rgb(3, 198, 252)',
-        '5-7': 'rgb(221, 5, 221)',
-        '5-4': 'rgb(5, 186, 53)',
-        '8-9': 'rgb(79, 73, 239)',
-        '8-10': 'rgb(79, 73, 239)',
-    };
+//     const lineColors = {
+//         '4-2': 'rgb(3, 198, 252)',
+//         '4-3': 'rgb(3, 198, 252)',
+//         '4-6': 'rgb(3, 198, 252)',
+//         '5-7': 'rgb(221, 5, 221)',
+//         '5-4': 'rgb(5, 186, 53)',
+//         '8-9': 'rgb(79, 73, 239)',
+//         '8-10': 'rgb(79, 73, 239)',
+//     };
     
-    const multiOutputPoints = [4, 5, 8]; // Точки с несколькими исходящими потоками
+//     const multiOutputPoints = [4, 5, 8]; // Точки с несколькими исходящими потоками
 
-    multiOutputPoints.forEach(pointId => {
-        // Получаем исходящие записи для точки
-        const outgoingTransfers = oilTransferData.filter(record => record.from_point === pointId);
+//     multiOutputPoints.forEach(pointId => {
+//         // Получаем исходящие записи для точки
+//         const outgoingTransfers = oilTransferData.filter(record => record.from_point === pointId);
 
-        if (outgoingTransfers.length > 0) {
-            const fromPoint = points.find(point => point.id === pointId);
+//         if (outgoingTransfers.length > 0) {
+//             const fromPoint = points.find(point => point.id === pointId);
 
-            if (!fromPoint || !fromPoint.coords) {
-                console.warn(`Точка с ID ${pointId} не найдена или не имеет координат.`);
-                return;
-            }
+//             if (!fromPoint || !fromPoint.coords) {
+//                 console.warn(`Точка с ID ${pointId} не найдена или не имеет координат.`);
+//                 return;
+//             }
 
-            outgoingTransfers.forEach(transfer => {
-                const toPoint = points.find(point => point.id === transfer.to_point);
+//             outgoingTransfers.forEach(transfer => {
+//                 const toPoint = points.find(point => point.id === transfer.to_point);
 
-                if (!toPoint || !toPoint.coords) {
-                    console.warn(`Конечная точка с ID ${transfer.to_point} не найдена или не имеет координат.`);
-                    return;
-                }
+//                 if (!toPoint || !toPoint.coords) {
+//                     console.warn(`Конечная точка с ID ${transfer.to_point} не найдена или не имеет координат.`);
+//                     return;
+//                 }
 
-                // Используем статичные позиции, если они заданы
-                const staticKey = `${transfer.from_point}-${transfer.to_point}`;
-                const labelPosition = staticLabelPositions[staticKey] || [
-                    (fromPoint.coords[0] + toPoint.coords[0]) / 2,
-                    (fromPoint.coords[1] + toPoint.coords[1]) / 2,
-                ];
+//                 // Используем статичные позиции, если они заданы
+//                 const staticKey = `${transfer.from_point}-${transfer.to_point}`;
+//                 const labelPosition = staticLabelPositions[staticKey] || [
+//                     (fromPoint.coords[0] + toPoint.coords[0]) / 2,
+//                     (fromPoint.coords[1] + toPoint.coords[1]) / 2,
+//                 ];
 
-                const labelColor = lineColors[staticKey] || 'black';
+//                 const labelColor = lineColors[staticKey] || 'black';
 
-                // Добавляем только метку с количеством нефти
-                L.marker(labelPosition, {
-                    icon: L.divIcon({
-                        className: 'flow-label',
-                        html: `<div style="color: ${labelColor}; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;">${transfer.to_amount} тн</div>`,
-                        iconSize: null,
-                    }),
-                }).addTo(flowLayerGroup);
-            });
-        }
-    });
+//                 // Добавляем только метку с количеством нефти
+//                 L.marker(labelPosition, {
+//                     icon: L.divIcon({
+//                         className: 'flow-label',
+//                         html: `<div style="color: ${labelColor}; text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;">${transfer.to_amount} тн</div>`,
+//                         iconSize: null,
+//                     }),
+//                 }).addTo(flowLayerGroup);
+//             });
+//         }
+//     });
 
-    flowLayerGroup.addTo(map); // Добавляем слой на карту
-}
+//     flowLayerGroup.addTo(map); // Добавляем слой на карту
+// }
 
 
 
@@ -1001,15 +1032,15 @@ function saveRow(row, pointId) {
     const routeText = row.querySelector('[data-field="route"]').innerText.split(' → ');
     const updatedData = {
         id: id,
-        pointId: pointId,  // Возможно, это не нужно, если сервер не требует
+        pointId: pointId,  
         from_name: routeText[0] || '',
         to_name: routeText[1] || '',
-        date: new Date().toISOString().split('T')[0], // Добавьте, если нужно
+        date: new Date().toISOString().split('T')[0], 
         amount: row.querySelector('[data-field="amount"]').innerText.trim(),
         losses: row.querySelector('[data-field="losses"]').innerText.trim(),
     };
 
-    console.log('Отправляем обновленные данные:', updatedData); // Проверяем
+    console.log('Отправляем обновленные данные:', updatedData); 
 
     fetch('database/updateData.php', {
         method: 'POST',
@@ -1018,7 +1049,7 @@ function saveRow(row, pointId) {
     })
     .then(response => response.text())
     .then(text => {
-        console.log('Ответ сервера:', text); // Логируем ответ
+        console.log('Ответ сервера:', text); 
         return JSON.parse(text);
     })
     .then(data => {
@@ -1063,7 +1094,7 @@ function deleteRow(row) {
 function addNewRow(pointId) {
     const newData = {
         pointId: pointId,
-        pipeline_id: 1, // Здесь укажите существующий ID из таблицы pipelines
+        pipeline_id: 1, 
         date: 'Новая дата',
         from_name: 'Источник',
         to_name: 'Получатель',
@@ -1082,7 +1113,7 @@ function addNewRow(pointId) {
     .then(data => {
         console.log('Ответ от сервера:', data);
         if (data.success) {
-            newData.id = data.id; // Устанавливаем ID новой записи
+            newData.id = data.id; 
             addTableRow(newData, null, pointId);
             alert('Запись добавлена');
         } else {
@@ -1092,9 +1123,8 @@ function addNewRow(pointId) {
     .catch(error => console.error('Ошибка добавления:', error));
 }
 
-let currentPointId = null; // Глобальная переменная для текущего ID точки
+let currentPointId = null; 
 
-// Пример добавления маркеров
 fetch('database/getData.php?table=Points')
     .then(response => response.json())
     .then(points => {
@@ -1109,9 +1139,8 @@ fetch('database/getData.php?table=Points')
                     fillOpacity: 1,
                 }).addTo(map);
 
-                // При клике на маркер сохраняем текущий ID точки
                 marker.on('click', () => {
-                    currentPointId = point.id; // Устанавливаем ID точки
+                    currentPointId = point.id; 
                     console.log('Выбрана точка с ID:', currentPointId);
 
                     fetch(`database/TableInfo.php?pointId=${point.id}`)
@@ -1130,7 +1159,7 @@ fetch('database/getData.php?table=Points')
 document.getElementById('add-row-btn').addEventListener('click', () => {
     console.log('Кнопка "Добавить запись" нажата');
     if (currentPointId) {
-        addNewRow(currentPointId); // Передаём текущий ID точки
+        addNewRow(currentPointId); 
     } else {
         alert('Ошибка: не выбрана точка на карте');
     }
@@ -1246,16 +1275,22 @@ document.getElementById('add-row-btn').addEventListener('click', () => {
 
 const filterButton = document.getElementById('checkboxOne');
 
-// Убираем слой с карты при загрузке
 map.removeLayer(flowLayerGroup);
+map.removeLayer(pointTanksLayer);
+map.removeLayer(technicalTanksLayer);
+
+let layersVisible = false; 
 
 filterButton.addEventListener('click', () => {
-    flowLayerVisible = !flowLayerVisible;
+    layersVisible = !layersVisible; 
 
-    // Управляем видимостью слоя
-    if (flowLayerVisible) {
-        map.addLayer(flowLayerGroup); // Показываем слой
+    if (layersVisible) {
+        map.addLayer(flowLayerGroup); 
+        map.addLayer(pointTanksLayer); 
+        map.addLayer(technicalTanksLayer); 
     } else {
-        map.removeLayer(flowLayerGroup); // Скрываем слой
+        map.removeLayer(flowLayerGroup); 
+        map.removeLayer(pointTanksLayer); 
+        map.removeLayer(technicalTanksLayer); 
     }
 });
