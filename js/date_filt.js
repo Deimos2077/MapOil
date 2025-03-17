@@ -1,28 +1,27 @@
 document.addEventListener("DOMContentLoaded", async function () {
     console.log("📅 Фильтрация данных загружается...");
 
-    // Загружаем доступные даты при загрузке страницы
-    await fetchAvailableDates();
+    const filterButton = document.getElementById('applyDateFilter');
+    const dateInput = document.getElementById('dateFilter');
 
-    const filterButton = document.getElementById('filter-button');
-    if (!filterButton) {
-        console.error("❌ Ошибка: кнопка фильтрации не найдена в DOM!");
+    if (!filterButton || !dateInput) {
+        console.error("❌ Ошибка: элементы фильтрации не найдены в DOM!");
         return;
     }
 
     filterButton.addEventListener('click', async () => {
-        const selectedYear = document.getElementById('year-select').value;
-        const selectedMonth = document.getElementById('month-select').value;
-
-        if (!selectedYear || !selectedMonth) {
-            alert("⚠ Пожалуйста, выберите год и месяц!");
+        if (!dateInput.value) {
+            alert("⚠ Пожалуйста, выберите дату!");
             return;
         }
 
-        console.log(`📅 Фильтрация данных на ${selectedYear}-${selectedMonth}`);
-        await updateMapData(selectedYear, selectedMonth);
+        const [year, month] = dateInput.value.split('-');
+
+        console.log(`📅 Фильтрация данных на ${year}-${month}`);
+        await updateMapData(year, month);
     });
 });
+
 
 // Функция загрузки доступных дат (годов и месяцев)
 async function fetchAvailableDates() {

@@ -1,17 +1,17 @@
         // Инициализация карты
         var map = L.map('map', {
-            center: [51.5, 57], // Центр карты
-            zoom: 5.8,          // Начальный зум
-            minZoom: 5.8,       // Минимальный зум
-            maxZoom: 10,      // Максимальный зум
-            zoomSnap: 0.001,    // Шаг зума: 0.1 для более точного контроля
-            zoomDelta: 0.001,   // Шаг зума при использовании колесика мыши или клавиш
-            zoomControl: false // Отключение стандартных кнопок зума
+            center: [51.5, 57], 
+            zoom: 5.8,          
+            minZoom: 5.8,       
+            maxZoom: 10,      
+            zoomSnap: 0.001,    
+            zoomDelta: 0.001,   
+            zoomControl: false 
             });
 
         // Установка ограничений карты
-        var southWest = L.latLng(40, 30);  // Юго-западный угол
-        var northEast = L.latLng(60, 85); // Северо-восточный угол
+        var southWest = L.latLng(40, 30);  
+        var northEast = L.latLng(60, 85); 
         var bounds = L.latLngBounds(southWest, northEast);
         
         map.setMaxBounds(bounds);
@@ -59,10 +59,10 @@
 
 // Общий стиль для всех GeoJSON
     const geoJsonStyle = {
-        color: 'purple',  // Цвет обводки (например, оранжевый)
-        weight: 3,  // Толщина линии
-        opacity: 0.5,        // Прозрачность обводки
-        fillOpacity: 0     // Убираем заливку (только обводка)
+        color: 'purple',  
+        weight: 3,  
+        opacity: 0.5,       
+        fillOpacity: 0     
     };
 
 // Загружаем и добавляем первый GeoJSON
