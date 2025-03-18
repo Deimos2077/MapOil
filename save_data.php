@@ -17,13 +17,21 @@ if (!$data || !is_array($data)) {
     die(json_encode(["success" => false, "message" => "Некорректные данные"]));
 }
 
-// Подготовленный SQL-запрос
+// Получаем дату из первого элемента массива (предполагается, что все записи имеют одинаковую дату)
+$date = $data[0]["date"];
+
+// Удаляем старые записи по этой дате
+$deleteStmt = $conn->prepare("DELETE FROM oiltransfer WHERE date = ?");
+$deleteStmt->bind_param("s", $date);
+$deleteStmt->execute();
+$deleteStmt->close();
+
+// Подготовленный SQL-запрос для вставки
 $stmt = $conn->prepare("INSERT INTO oiltransfer (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 foreach ($data as $row) {
-    // Принудительно приводим loss_coefficient к float
     $loss_coefficient = floatval($row["loss_coefficient"]);
-
+    
     $stmt->bind_param("siiiidddd", 
         $row["date"], 
         $row["pipeline_id"], 
@@ -33,7 +41,7 @@ foreach ($data as $row) {
         $row["from_amount"], 
         $row["losses"], 
         $row["to_amount"], 
-        $loss_coefficient // используем уже преобразованное значение
+        $loss_coefficient
     );
     
     $stmt->execute();

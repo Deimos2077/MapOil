@@ -1,8 +1,8 @@
         // Инициализация карты
         var map = L.map('map', {
             center: [51.5, 57], 
-            zoom: 5.8,          
-            minZoom: 5.8,       
+            zoom: 5,          
+            minZoom: 5,       
             maxZoom: 10,      
             zoomSnap: 0.001,    
             zoomDelta: 0.001,   
@@ -17,7 +17,7 @@
         map.setMaxBounds(bounds);
         
         // Установка минимального и максимального зума
-        map.options.minZoom = 5.8;  
+        map.options.minZoom = 5;  
         map.options.maxZoom = 10; 
         
         map.on('drag', function () {
