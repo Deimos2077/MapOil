@@ -20,6 +20,38 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/leaflet.legend.css">
     <link rel="stylesheet" href="css/modal_set.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+
+        .highlight-date {
+            background: #ffcc00 !important; /* Цвет фона */
+            color: black !important;
+            border-radius: 50%;
+        }
+        #date-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#date-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+label[for="date-input"] {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+    </style>
 </head>
 <body>
             <!-- Модальное окно -->
@@ -81,15 +113,14 @@ if (!isset($_SESSION['user_id'])) {
     <div class="btnList">
         <ul class="ks-cboxtags">
             <li><input type="checkbox" id="checkboxOne" value="Oil" checked><label for="checkboxOne">Нефть</label></li>
-            <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy"><label for="checkboxTwo">Cotton Candy</label></li>
+            <!-- <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy"><label for="checkboxTwo">Cotton Candy</label></li>
             <li><input type="checkbox" id="checkboxThree" value="Rarity"><label for="checkboxThree">Rarity</label></li>
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
-            <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li>
+            <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li> -->
             
      <div id="filter-container">
-        <label for="dateFilter">Выберите месяц:</label>
-            <input type="month" id="dateFilter">
-            <button id="applyDateFilter">Применить</button>
+     <label  for="date-input">Дата:</label>
+     <input type="date" id="date-input" class="form-control mb-3">
      </div>
 
         </ul>     
@@ -132,7 +163,26 @@ if (!isset($_SESSION['user_id'])) {
 
     <button id="add-row-btn" data-i18n="button_add_record">Добавить новую запись</button>
 </div>
-
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("get_dates.php") // Загружаем даты с сервера
+            .then(response => response.json())
+            .then(dates => {
+                flatpickr("#date-input", {
+                    dateFormat: "Y-m-d",
+                    locale: "ru",
+                    onDayCreate: function(dObj, dStr, fp, dayElem) {
+                        let dateStr = dayElem.dateObj.toLocaleDateString("sv-SE"); // YYYY-MM-DD без часового пояса
+                        if (dates.includes(dateStr)) {
+                            dayElem.classList.add("highlight-date"); // Подсвечиваем дату
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error("Ошибка загрузки дат:", error));
+    });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="js/legend.js"></script>
 <script src="js/language.js"></script>
 <script src="js/Settings.js"></script>

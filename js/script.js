@@ -10,7 +10,7 @@
             });
 
         // Установка ограничений карты
-        var southWest = L.latLng(40, 30);  
+        var southWest = L.latLng(40, 27);  
         var northEast = L.latLng(60, 85); 
         var bounds = L.latLngBounds(southWest, northEast);
         
@@ -59,7 +59,7 @@
 
 // Общий стиль для всех GeoJSON
     const geoJsonStyle = {
-        color: 'purple',  
+        color: 'red',  
         weight: 3,  
         opacity: 0.5,       
         fillOpacity: 0     
