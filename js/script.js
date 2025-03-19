@@ -135,14 +135,41 @@ async function fetchOilTransferFromDB(year, month) {
             return [];
         }
 
-        return data.map(record => ({
-            id: record.id,
-            from_point: record.from_point_id,
-            to_point: record.to_point_id,
-            from_amount: record.from_amount,
-            to_amount: record.to_amount,
-            losses: record.losses || 0
-        }));
+        let results = [];
+
+        data.forEach(record => {
+            let isSpecialSource = (record.from_point_id == 12 || record.from_point_id == 11); // ПСП 45 и Жана Жол
+
+            // Кенкияк (id = 5) не отображается, но участвует в расчетах
+            if (record.to_point_id === 5) {
+                console.log(`📌 Кенкияк (id 5) получит нефть от ${record.from_point_id}: ${record.from_amount} тн`);
+            }
+
+            // Обычная запись (перемещение нефти)
+            results.push({
+                id: record.id,
+                from_point: record.from_point_id,
+                to_point: record.to_point_id,
+                from_amount: record.from_amount,
+                to_amount: record.to_amount,
+                losses: record.losses || 0
+            });
+
+            // Специально добавляем ПСП 45 и Жана Жол в визуализацию
+            if (isSpecialSource) {
+                results.push({
+                    id: `${record.id}-sent`,
+                    from_point: record.from_point_id,
+                    to_point: record.to_point_id, // Оставляем конечную точку, нефть должна визуализироваться
+                    from_amount: record.from_amount,
+                    to_amount: record.from_amount, // Дублируем, чтобы корректно отображалось
+                    losses: 0
+                });
+            }
+        });
+
+        console.log("📊 Итоговый массив данных для визуализации:", results);
+        return results;
     } catch (error) {
         console.error('❌ Ошибка загрузки данных о передаче нефти:', error);
         return [];
@@ -688,12 +715,12 @@ function addReservoirs(reservoirData) {
 // Создаем слой для отображения линий и меток
 const flowLayerGroup = L.layerGroup();
 const minimalistFlowLayerGroup = L.layerGroup();
-let flowLayerVisible = false; // Изначально слой скрыт
-let dataLoaded = false; // Флаг, чтобы загружать данные только один раз
+let flowLayerVisible = false; 
+let dataLoaded = false; 
 
 // Убираем слой при загрузке
 map.removeLayer(minimalistFlowLayerGroup);
-document.getElementById('checkboxOne').checked = false; // Снимаем галочку при загрузке
+document.getElementById('checkboxOne').checked = false; 
 
 // Настройки направлений для точек (смещения по широте и долготе)
 const directionOffsets = {
@@ -707,12 +734,16 @@ const directionOffsets = {
     8: { lat: 0.2, lng: 0.2 },   // Самара
     9: { lat: -0.5, lng: -0.5 },   // Новороссийск
     10: { lat: 0.2, lng: 0.3 },  // Усть-Луга
+    11: { lat: 0, lng: 0 }, // Жана Жол
+    12: { lat: 0, lng: 0 }, // ПСП 45 
     19: { lat: -0.3, lng: -0.2 },  // Касымова
     24: { lat: -0.3, lng: 0.6 },  // 1235
 };
 
 // Обновленная функция поиска свободного места
 function findFreePosition(coords, layerGroup, pointId) {
+    if (pointId === 5) return null; // Исключаем Кенкияк
+
     const baseOffset = 0.5; // Базовое смещение
     const defaultDirections = [
         [baseOffset, baseOffset],   
@@ -743,7 +774,6 @@ function findFreePosition(coords, layerGroup, pointId) {
                 );
             }
             if (layer instanceof L.Polyline) {
-                // Проверяем пересечение с линиями
                 const latlngs = layer.getLatLngs();
                 return latlngs.some(latlng =>
                     Math.abs(latlng.lat - candidateCoords[0]) < baseOffset / 2 &&
@@ -765,36 +795,51 @@ function findFreePosition(coords, layerGroup, pointId) {
 function addMinimalistFlow(points, oilTransferData) {
     minimalistFlowLayerGroup.clearLayers();
 
-    if (!flowLayerVisible) {
-        return; 
-    }
+    if (!flowLayerVisible) return;
 
     const uniqueEntries = new Set(); 
 
     oilTransferData.forEach(record => {
-        const toPoint = points.find(point => point.id === record.to_point); 
+        let isSpecialSource = (record.from_point === 12 || record.from_point === 11);
 
-        if (!toPoint || !toPoint.coords) return; 
+        // ⚠️ Исключаем Кенкияк (5), но сохраняем отправку из ПСП 45 и Жана Жол
+        if (record.to_point === 5) {
+            console.log(`⛔ Кенкияк (id 5) исключен, но отправка из ${record.from_point} сохраняется.`);
+        }
 
-        const recordKey = `${record.to_point}-${record.to_amount}-${record.source_type || 'pipeline'}`; 
+        // Используем `from_point`, если точка отправитель
+        const point = points.find(p => 
+            isSpecialSource ? p.id === record.from_point : p.id === record.to_point
+        );
+
+        if (!point || !point.coords) {
+            console.warn(`⚠️ Координаты не найдены: ${isSpecialSource ? record.from_point : record.to_point}`);
+            return; 
+        }
+
+        console.log(`✅ Обрабатываем точку ${point.id}: ${isSpecialSource ? 'Отправка' : 'Прием'} - ${record.from_amount} тн`);
+
+        const recordKey = `${point.id}-${record.from_amount}`;
 
         if (uniqueEntries.has(recordKey)) return; 
 
         uniqueEntries.add(recordKey);
 
-        const labelPosition = findFreePosition(toPoint.coords, minimalistFlowLayerGroup, record.to_point);
+        // Обновленный поиск свободного места
+        const labelPosition = findFreePosition(point.coords, minimalistFlowLayerGroup, point.id);
+        if (!labelPosition) return;
 
-        const markerHtml = `<div>${record.to_amount} тн</div>`;
+        const markerHtml = `<div>${record.from_amount} тн</div>`;
 
-        // Линия от точки к метке
-        L.polyline([toPoint.coords, labelPosition], {
+        // ЧЕРНАЯ линия для отправки из ПСП 45 и Жана Жол
+        L.polyline([point.coords, labelPosition], {
             color: 'black',
             weight: 2,
             dashArray: '5, 5',
             opacity: 0.8,
         }).addTo(minimalistFlowLayerGroup);
 
-        // Метка с количеством нефти
+        // Метка с объемом нефти
         L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label',
@@ -808,19 +853,8 @@ function addMinimalistFlow(points, oilTransferData) {
     map.addLayer(minimalistFlowLayerGroup); 
 }
 
-document.getElementById('checkboxOne').addEventListener('change', async function () {
-    flowLayerVisible = this.checked;
 
-    if (flowLayerVisible) {
-        if (!dataLoaded) {
-            await initializeMinimalistFlowMap(); 
-            dataLoaded = true;
-        }
-        map.addLayer(minimalistFlowLayerGroup); 
-    } else {
-        map.removeLayer(minimalistFlowLayerGroup); 
-    }
-});
+
 
 // Стили для меток
 const style = document.createElement('style');
@@ -843,29 +877,200 @@ style.innerHTML = `
     text-align: center;
     white-space: nowrap;
 }
-.flow-label span {
-    font-weight: normal;
+
+.flow-label.sent div {
+    color: red !important;
+    text-shadow: 
+        -2px -2px 0 black,  
+         2px -2px 0 black,
+        -2px  2px 0 black,
+         2px  2px 0 black;
 }
 `;
 document.head.appendChild(style);
 
 
 
-// Инициализация карты (загружает данные, но не добавляет слой)
-async function initializeMinimalistFlowMap() {
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB();
+// // Инициализация карты
+// async function initializeMinimalistFlowMap() {
 
-    console.log('Точки:', points);
-    console.log('Данные о нефти:', oilTransferData);
 
-    if (points.length === 0 || oilTransferData.length === 0) {
-        console.error('Недостаточно данных для отрисовки карты.');
+//     const points = await fetchPointsFromDB();
+//     const oilTransferData = await fetchOilTransferFromDB();
+//     console.log("✅ Проверяем, есть ли ПСП 45 и Жана Жол в загруженных данных...");
+
+// const psp45Data = oilTransferData.filter(record => record.from_point === 12 || record.to_point === 12);
+// const janaJolData = oilTransferData.filter(record => record.from_point === 11 || record.to_point === 11);
+
+// console.log("🔍 ПСП 45:", psp45Data);
+// console.log("🔍 Жана Жол:", janaJolData);
+//     console.log('Точки:', points);
+//     console.log('Данные о нефти:', oilTransferData);
+
+//     if (points.length === 0 || oilTransferData.length === 0) {
+//         console.error('Недостаточно данных для отрисовки карты.');
+//         return;
+//     }
+
+//     addMinimalistFlow(points, oilTransferData);
+// }
+
+// document.getElementById('checkboxOne').addEventListener('change', async function () {
+//     flowLayerVisible = this.checked;
+
+//     if (flowLayerVisible) {
+//         if (!dataLoaded) {
+//             await initializeMinimalistFlowMap(); 
+//             dataLoaded = true;
+//         }
+//         map.addLayer(minimalistFlowLayerGroup); 
+//     } else {
+//         map.removeLayer(minimalistFlowLayerGroup); 
+//     }
+// });
+document.getElementById('checkboxOne').addEventListener('change', async function () {
+    flowLayerVisible = this.checked;
+
+    if (flowLayerVisible) {
+        if (!dataLoaded) {
+            await initializeFlowMap(); // Теперь запускаем объединенную функцию
+            dataLoaded = true;
+        }
+        map.addLayer(minimalistFlowLayerGroup); 
+    } else {
+        map.removeLayer(minimalistFlowLayerGroup); 
+    }
+});
+
+
+
+//--------------------------------------Сумма для Кенкияка--------------------------------------------
+async function fetchKenkiyakOilTotal(year, month) {
+    try {
+        const response = await fetch(`database/getKenkiyakTotal.php?year=${year}&month=${month}`);
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        console.log(`📊 Всего нефти в Кенкияк за ${month}/${year}:`, data.total_oil);
+        return data.total_oil;
+    } catch (error) {
+        console.error('❌ Ошибка загрузки данных по нефти в Кенкияк:', error);
+        return 0;
+    }
+}
+
+
+
+async function displayKenkiyakOilTotal(year, month, points) {
+    const totalOil = await fetchKenkiyakOilTotal(year, month);
+    
+    if (totalOil === 0) {
+        console.warn("⚠️ Нет данных о нефти для Кенкияка.");
         return;
     }
 
-    addMinimalistFlow(points, oilTransferData);
+    // Ищем координаты Кенкияка (id = 5)
+    const kenkiyakPoint = points.find(p => p.id === 5);
+    if (!kenkiyakPoint || !kenkiyakPoint.coords) {
+        console.error("❌ Координаты Кенкияка не найдены!");
+        return;
+    }
+
+    console.log("📌 Проверка координат Кенкияка:", kenkiyakPoint);
+
+    // Поиск свободного места для метки
+    let labelPosition = findFreePosition(kenkiyakPoint.coords, minimalistFlowLayerGroup, 5);
+    
+    if (!labelPosition) {
+        console.warn("⚠️ Используем резервное место для метки Кенкияка.");
+        labelPosition = [kenkiyakPoint.coords[0] + 0.5, kenkiyakPoint.coords[1] + 0.5]; 
+    }
+
+    console.log(`✅ Метка добавляется в Кенкияк: ${totalOil} тн, позиция:`, labelPosition);
+
+    // Обычная черная линия от Кенкияка к метке
+    L.polyline([kenkiyakPoint.coords, labelPosition], {
+        color: 'black',
+        weight: 2,
+        dashArray: '5, 5',
+        opacity: 0.8,
+    }).addTo(minimalistFlowLayerGroup);
+
+    // Метка с объемом нефти
+    L.marker(labelPosition, {
+        icon: L.divIcon({
+            className: 'flow-label',
+            html: `<div>${totalOil} тн</div>`,
+            iconSize: null,
+            iconAnchor: [4, 18],
+        }),
+    }).addTo(minimalistFlowLayerGroup);
 }
+
+
+
+
+
+async function initializeFlowMap() {
+    const points = await fetchPointsFromDB();
+    const oilTransferData = await fetchOilTransferFromDB();
+
+    console.log('📌 Загружены точки:', points);
+    console.log('📊 Загружены данные о нефти:', oilTransferData);
+
+    if (points.length === 0 || oilTransferData.length === 0) {
+        console.error('❌ Недостаточно данных для отрисовки карты.');
+        return;
+    }
+
+    // Добавляем стрелки и линии потока нефти
+    addMinimalistFlow(points, oilTransferData);
+
+    // Получаем текущую дату
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    console.log(`✅ Отображаем данные по Кенкияку за ${currentMonth}/${currentYear}`);
+    
+    // Добавляем суммарную нефть в Кенкияке
+    await displayKenkiyakOilTotal(currentYear, currentMonth, points);
+}
+
+
+
+
+
+// Проверяем, есть ли уже стили flow-label, чтобы не дублировать
+if (!document.getElementById('flow-label-style')) {
+    const style = document.createElement('style');
+    style.id = 'flow-label-style'; // Устанавливаем ID, чтобы не дублировать
+    style.innerHTML = `
+    .flow-label div {
+        font-size: 14px;
+        font-weight: bold;
+        color: white; 
+        text-shadow: 
+            -2px -2px 0 black,  
+             2px -2px 0 black,
+            -2px  2px 0 black,
+             2px  2px 0 black,
+            -2px  0px 0 black,
+             2px  0px 0 black,
+             0px -2px 0 black,
+             0px  2px 0 black;
+        border-radius: 5px; 
+        padding: 5px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    `;
+    document.head.appendChild(style);
+}
+
+
+
 
 
 
@@ -1276,21 +1481,28 @@ document.getElementById('add-row-btn').addEventListener('click', () => {
 const filterButton = document.getElementById('checkboxOne');
 
 map.removeLayer(flowLayerGroup);
+map.removeLayer(minimalistFlowLayerGroup); 
 map.removeLayer(pointTanksLayer);
 map.removeLayer(technicalTanksLayer);
 
 let layersVisible = false; 
 
-filterButton.addEventListener('click', () => {
-    layersVisible = !layersVisible; 
+filterButton.addEventListener('change', () => { 
+    layersVisible = filterButton.checked; 
 
     if (layersVisible) {
         map.addLayer(flowLayerGroup); 
+        map.addLayer(minimalistFlowLayerGroup); 
         map.addLayer(pointTanksLayer); 
         map.addLayer(technicalTanksLayer); 
     } else {
         map.removeLayer(flowLayerGroup); 
+        map.removeLayer(minimalistFlowLayerGroup);
         map.removeLayer(pointTanksLayer); 
         map.removeLayer(technicalTanksLayer); 
     }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    initializeOilFlowMap();
 });
