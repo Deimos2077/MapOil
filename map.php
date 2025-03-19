@@ -59,7 +59,7 @@ if (!isset($_SESSION['user_id'])) {
         <li class="timeline"><a class="menu-href" href="/project/" data-i18n="menu_graphs">Графики</a></li>
         <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
         <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">"Калькулятор"</a></li>
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Реализация нефти</a></li>
 
         
         <li class="svg-editor">

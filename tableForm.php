@@ -26,86 +26,184 @@
     </style>
         
 <script>
-    async function saveData() {
-        const date = document.getElementById("date-input").value;
-        if (!date) {
-            alert("Пожалуйста, выберите дату.");
+async function saveData() {
+    const date = document.getElementById("date-input").value;
+    if (!date) {
+        alert("Пожалуйста, выберите дату.");
+        return;
+    }
+
+    let oiltransfers = [];
+    let reservoirs = [];
+
+    const pipelineTables = document.querySelectorAll("table[data-type='pipelines']");
+    const reservoirTables = document.querySelectorAll("table[data-type='reservoirs']");
+
+    console.log("Найдено таблиц трубопроводов:", pipelineTables.length);
+    console.log("Найдено таблиц резервуаров:", reservoirTables.length);
+
+    pipelineTables.forEach(table => {
+        const pipelinesSystemId = table.getAttribute("data-pipelines-system-id");
+        table.querySelectorAll("tbody tr").forEach(row => {
+            const pipelineId = row.getAttribute("data-pipeline-id");
+            const fromPointId = row.getAttribute("data-from-id");
+            const toPointId = row.getAttribute("data-to-id");
+
+            if (!pipelineId || !fromPointId || !toPointId) {
+                console.warn("Пропущена строка, отсутствуют data-* атрибуты:", row);
+                return;
+            }
+
+            const getNumber = (selector) => {
+                let input = row.querySelector(selector);
+                return input && input.value.trim() !== "" ? parseFloat(input.value.replace(',', '.')) || 0 : 0;
+            };
+
+            oiltransfers.push({
+                date,
+                pipeline_id: parseInt(pipelineId),
+                piplines_system_id: parseInt(pipelinesSystemId),
+                from_point_id: parseInt(fromPointId),
+                to_point_id: parseInt(toPointId),
+                loss_coefficient: getNumber("[id^='percent-']"),
+                from_amount: getNumber("[id^='volume-']"),
+                losses: getNumber("[id^='loss-']"),
+                to_amount: getNumber("[id^='volume2-']")
+            });
+        });
+    });
+
+    reservoirTables.forEach(table => {
+        table.querySelectorAll("tbody tr").forEach(row => {
+            const reservoirId = row.getAttribute("reservoir_id");
+            if (!reservoirId) {
+                console.warn("Пропущена строка, отсутствует reservoir_id:", row);
+                return;
+            }
+
+            reservoirs.push({
+                date,
+                reservoir_id: parseInt(reservoirId),
+                start_volume: parseInt(row.querySelector("[id^='start-volume']")?.value || "0"),
+                end_volume: parseInt(row.querySelector("[id^='end-volume']")?.value || "0")
+            });
+        });
+    });
+
+    console.log("Отправляемые oiltransfers:", oiltransfers);
+    console.log("Отправляемые reservoirs:", reservoirs);
+
+    const data = { oiltransfers, reservoirs };
+
+    const response = await fetch('save_data.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+});
+
+const text = await response.text();
+console.log("Ответ сервера:", text);
+
+try {
+    const result = JSON.parse(text);
+    if (result.success) {
+        alert("Данные успешно сохранены!");
+    } else {
+        alert("Ошибка: " + result.message);
+    }
+} catch (error) {
+    alert("Ошибка обработки JSON: " + error);
+}
+}
+
+// загрузка данных
+
+async function loadData() {
+    const dateInput = document.getElementById("date-input");
+    const date = dateInput.value;
+
+    if (!date) {
+        alert("Пожалуйста, выберите дату.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`load_data.php?date=${date}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            alert("Ошибка: " + result.message);
             return;
         }
 
+        console.log("Загруженные данные:", result);
 
-        const tables = document.querySelectorAll("table");
-        let data = [];
-
-        tables.forEach(table => {
-            const pipelinesSystemId = table.getAttribute("data-pipelines-system-id");
-            const rows = table.querySelectorAll("tbody tr");
-
-            rows.forEach(row => {
-                const pipelineId = row.getAttribute("data-pipeline-id");
-                const fromPointId = row.getAttribute("data-from-id");
-                const toPointId = row.getAttribute("data-to-id");
-
-                // Получаем input и приводим к числу
-                const getNumber = (selector) => {
-                    let input = row.querySelector(selector);
-                    if (!input || input.value.trim() === "") return 0;  // Если пусто → 0
-                    let value = input.value.replace(',', '.'); // Меняем запятую на точку
-                    return isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-                };
-
-                const lossCoefficient = getNumber("[id^='percent-']");
-                const fromAmount = getNumber("[id^='volume-']");
-                const losses = getNumber("[id^='loss-']");
-                const toAmount = getNumber("[id^='volume2-']");
-
-                data.push({
-                    date: date,
-                    pipeline_id: parseInt(pipelineId),
-                    piplines_system_id: parseInt(pipelinesSystemId),
-                    from_point_id: parseInt(fromPointId),
-                    to_point_id: parseInt(toPointId),
-                    loss_coefficient: lossCoefficient,
-                    from_amount: fromAmount,
-                    losses: losses,
-                    to_amount: toAmount
-                });
+        // Заполняем данные для трубопроводов
+        result.oiltransfers.forEach(row => {
+            let rows = document.querySelectorAll(`tr[data-pipeline-id="${row.pipeline_id}"]`);
+            rows.forEach(tr => {
+                tr.querySelector("[id^='percent-']").value = row.loss_coefficient ?? "";
+                tr.querySelector("[id^='volume-']").value = row.from_amount ?? "";
+                tr.querySelector("[id^='loss-']").value = row.losses ?? "";
+                tr.querySelector("[id^='volume2-']").value = row.to_amount ?? "";
             });
         });
 
-        // Логируем перед отправкой
-        console.log("Отправляемые данные:", JSON.stringify(data, null, 2));
-
-        try {
-            const response = await fetch('save_data.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+        // Заполняем данные для резервуаров
+        result.reservoirs.forEach(row => {
+            let rows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
+            rows.forEach(tr => {
+                tr.querySelector("[id^='start-volume']").value = row.start_volume ?? "";
+                tr.querySelector("[id^='end-volume']").value = row.end_volume ?? "";
             });
+        });
 
-            const result = await response.json();
-            if (result.success) {
-                alert("Данные успешно сохранены!");
-            } else {
-                alert("Ошибка: " + result.message);
-            }
-        } catch (error) {
-            alert("Ошибка при отправке данных: " + error);
-        }
+    } catch (error) {
+        alert("Ошибка при загрузке данных: " + error);
     }
+}
+
+
 </script>
-
-
-
-
 </head>
 <body class="container mt-4">
+                <!-- Модальное окно -->
+                <div id="settings-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Настройки</h2>
+                    <ul>
+                        <li>
+                            <span data-i18n="settings_language">Язык интерфейса:</span>
+                            <select id="language-select">
+                                <option value="ru">Русский</option>
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </li>
+                        <li>
+                            <span data-i18n="settings_font_size">Размер шрифта:</span>
+                            <input type="range" id="font-size" min="12" max="24" step="1">
+                        </li>
+                        <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+                        <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+                        <li>
+                            <span data-i18n="settings_email_report">Отчет по email:</span>
+                            <input type="email" id="email" placeholder="Введите email">
+                            <button id="send-report">Отправить</button>
+                        </li>
+                        <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+                        <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+                        <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+                    </ul>
+                </div>
+            </div>
 <nav id="slide-menu">
     <ul>
         <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
         <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
         <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">"Калькулятор"</a></li>
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Реализация нефти</a></li>
         <li class="svg-editor"><a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a></li>
         <li class="settings"><a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a></li>
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
@@ -116,10 +214,67 @@
 
     <h2 class="mb-4">Форма расчета потерь нефти</h2>
     <label style="display:block" for="date-input">Дата:</label>
-    <input type="date" id="date-input" class="form-control mb-3">
+    <input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
 
+
+    <h3 class="mb-4">Остатки</h3>
+    <table class="table table-bordered" data-type="reservoirs">
+        <thead>
+            <tr class="table-primary">
+                <th>Резеруары</th>
+                <th>Начало месяца</th>
+                <th>Конец месяца</th>
+                <th>Взято</th>
+                <th>Отдано</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr reservoir_id="1">
+            <td>ПСП 45 км</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr>
+        <tr reservoir_id="2">
+            <td>НПС им. Шманова</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr>
+        <tr reservoir_id="3">
+            <td>ГНПС Кумколь</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr>
+        <!-- <tr reservoir_id="4">
+            <td>ПСП Самара</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr> -->
+        <tr reservoir_id="5">
+            <td>Технический резервуар 1</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr>
+        <tr reservoir_id="6">
+            <td>Технический резервуар 2</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr>
+        </tbody>
+    </table>
     <h3 class="mb-4">Внутренний рынок (ПКОП)</h3>
-    <table class="table table-bordered" data-pipelines-system-id="1">
+    <table class="table table-bordered" data-pipelines-system-id="1" data-type="pipelines">
         <thead>
             <tr class="table-primary">
                 <th>ОТ</th>
@@ -147,7 +302,7 @@
             <td><input type="number" id="loss-zhanazhol-1" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazhol-1" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="0" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyak-transfer-1" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyak-transfer-1" class="form-control"></td>
@@ -174,7 +329,7 @@
     </table>
 
     <h3 class="mb-4">КНР</h3>
-    <table class="table table-bordered" data-pipelines-system-id="2">
+    <table class="table table-bordered" data-pipelines-system-id="2" data-type="pipelines">
         <thead>
             <tr class="table-primary">
                 <th>ОТ</th>
@@ -202,7 +357,7 @@
             <td><input type="number" id="loss-zhanazhol-2" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazhol-2" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="0" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyak-transfer-2" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyak-transfer-2" class="form-control"></td>
@@ -233,7 +388,7 @@
                 <td><input type="number" id="loss-dzhumagalieva-2" class="form-control"></td>
                 <td><input type="number" id="volume2-dzhumagalieva-2 " class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="0" data-from-id="26" data-to-id="26">
+            <tr data-pipeline-id="1" data-from-id="26" data-to-id="26">
                 <td colspan="2">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
                 <td><input type="number" id="percent-atasuTransfer-2" class="form-control" step="0.0001" value="0.0051"></td>
                 <td><input type="number" id="volume-atasuTransfer-2" class="form-control"></td>
@@ -252,7 +407,7 @@
     </table>
 
     <h3 class="mb-4">Европа (Усть-Луга)</h3>
-    <table class="table table-bordered" data-pipelines-system-id="3">
+    <table class="table table-bordered" data-pipelines-system-id="3" data-type="pipelines">
         <thead>
             <tr class="table-primary">
                 <th>ОТ</th>
@@ -280,7 +435,7 @@
             <td><input type="number" id="loss-zhanazhol-3" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazhol-3" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="0" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyak-transfer-3" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyak-transfer-3" class="form-control"></td>
@@ -319,7 +474,7 @@
                 <td><input type="number" id="loss-samara-3" class="form-control"></td>
                 <td><input type="number" id="volume2-samara-3" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="0" data-from-id="27" data-to-id="27">
+            <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
                 <td colspan="2">СамараСамара БСН (на Дружбу) (перевалка)</td>
                 <td><input type="number" id="percent-samaraTransfer-3" class="form-control" step="0.0001" value="0.0137"></td>
                 <td><input type="number" id="volume-samaraTransfer-3" class="form-control"></td>
@@ -361,7 +516,7 @@
     </table>
 
     <h3 class="mb-4">Ответ.хранение</h3>
-    <table class="table table-bordered" data-pipelines-system-id="4">
+    <table class="table table-bordered" data-pipelines-system-id="4" data-type="pipelines">
         <thead>
             <tr class="table-primary">
                 <th>ОТ</th>
@@ -389,7 +544,7 @@
             <td><input type="number" id="loss-zhanazhol-4" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazhol-4" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="0" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyak-transfer-4" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyak-transfer-4" class="form-control"></td>
@@ -408,7 +563,7 @@
     </table>
 
     <h3 class="mb-4">Европа (Новороссийск)</h3>
-    <table class="table table-bordered" data-pipelines-system-id="5">
+    <table class="table table-bordered" data-pipelines-system-id="5" data-type="pipelines">
         <thead>
             <tr class="table-primary">
                 <th>ОТ</th>
@@ -475,7 +630,7 @@
                 <td><input type="number" id="loss-samara-5" class="form-control"></td>
                 <td><input type="number" id="volume2-samara-5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="0" data-from-id="27" data-to-id="27">
+            <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
                 <td colspan="2">Самара БСН (на Дружбу) (перевалка)</td>
                 <td><input type="number" id="percent-samaraTransfer-5" class="form-control" step="0.0001" value="0.0137"></td>
                 <td><input type="number" id="volume-samaraTransfer-5" class="form-control"></td>

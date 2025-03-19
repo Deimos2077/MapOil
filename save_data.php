@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 header("Content-Type: application/json");
 
 $servername = "localhost";
@@ -13,42 +16,72 @@ if ($conn->connect_error) {
 
 // Получаем JSON
 $data = json_decode(file_get_contents("php://input"), true);
-if (!$data || !is_array($data)) {
+if (!$data || !isset($data["oiltransfers"]) || !isset($data["reservoirs"])) {
     die(json_encode(["success" => false, "message" => "Некорректные данные"]));
 }
 
-// Получаем дату из первого элемента массива (предполагается, что все записи имеют одинаковую дату)
-$date = $data[0]["date"];
+// Если есть данные по трубопроводам
+if (!empty($data["oiltransfers"])) {
+    $date = $data["oiltransfers"][0]["date"];
 
-// Удаляем старые записи по этой дате
-$deleteStmt = $conn->prepare("DELETE FROM oiltransfer WHERE date = ?");
-$deleteStmt->bind_param("s", $date);
-$deleteStmt->execute();
-$deleteStmt->close();
+    // Удаляем старые записи по этой дате
+    $deleteStmt = $conn->prepare("DELETE FROM oiltransfer WHERE date = ?");
+    $deleteStmt->bind_param("s", $date);
+    $deleteStmt->execute();
+    $deleteStmt->close();
 
-// Подготовленный SQL-запрос для вставки
-$stmt = $conn->prepare("INSERT INTO oiltransfer (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    // Подготовленный SQL-запрос для вставки
+    $stmt = $conn->prepare("INSERT INTO oiltransfer (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-foreach ($data as $row) {
-    $loss_coefficient = floatval($row["loss_coefficient"]);
-    
-    $stmt->bind_param("siiiidddd", 
-        $row["date"], 
-        $row["pipeline_id"], 
-        $row["piplines_system_id"], 
-        $row["from_point_id"], 
-        $row["to_point_id"], 
-        $row["from_amount"], 
-        $row["losses"], 
-        $row["to_amount"], 
-        $loss_coefficient
-    );
-    
-    $stmt->execute();
+    foreach ($data["oiltransfers"] as $row) {
+        $loss_coefficient = floatval($row["loss_coefficient"]);
+        
+        $stmt->bind_param("siiiidddd", 
+            $row["date"], 
+            $row["pipeline_id"], 
+            $row["piplines_system_id"], 
+            $row["from_point_id"], 
+            $row["to_point_id"], 
+            $row["from_amount"], 
+            $row["losses"], 
+            $row["to_amount"], 
+            $loss_coefficient
+        );
+        
+        $stmt->execute();
+    }
+
+    $stmt->close();
+}
+
+// Если есть данные по резервуарам
+if (!empty($data["reservoirs"])) {
+    $date = $data["reservoirs"][0]["date"];
+
+    // Удаляем старые записи по этой дате
+    $deleteStmt = $conn->prepare("DELETE FROM reservoirvolumes WHERE date = ?");
+    $deleteStmt->bind_param("s", $date);
+    $deleteStmt->execute();
+    $deleteStmt->close();
+
+    // Подготовленный SQL-запрос для вставки
+    $stmt = $conn->prepare("INSERT INTO reservoirvolumes (date, reservoir_id, start_volume, end_volume) VALUES (?, ?, ?, ?)");
+
+    foreach ($data["reservoirs"] as $row) {
+        $stmt->bind_param("siid", 
+            $row["date"], 
+            $row["reservoir_id"], 
+            $row["start_volume"], 
+            $row["end_volume"]
+        );
+
+        $stmt->execute();
+    }
+
+    $stmt->close();
 }
 
 // Закрываем соединение
-$stmt->close();
 $conn->close();
 echo json_encode(["success" => true]);
 ?>
