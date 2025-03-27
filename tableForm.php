@@ -327,9 +327,9 @@ async function loadData() {
             </tr>
         </tbody>
     </table>
-    <!-- <button class="btn btn-success" onclick="calculate(1)">Расчитать</button> -->
+    
 
-<!-- <h3 class="mb-4">КНР</h3>
+<h3 class="mb-4">КНР</h3>
     <table class="table table-bordered" data-pipelines-system-id="2" data-type="pipelines">
         <thead>
             <tr class="table-primary">
@@ -345,64 +345,64 @@ async function loadData() {
         <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
-            <td><input type="number" id="percent-psp45-2" class="form-control" step="0.0001" value="0.332"></td>
-            <td><input type="number" id="volume-psp45-2" class="form-control"></td>
-            <td><input type="number" id="loss-psp45-2" class="form-control"></td>
-            <td><input type="number" id="volume2-psp45-2" class="form-control"></td>
+            <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
+            <td><input type="number" id="volume-psp45end2" class="form-control"></td>
+            <td><input type="number" id="loss-psp2P" class="form-control"></td>
+            <td><input type="number" id="volume2-psp45first2" class="form-control"></td>
         </tr>
         <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
-            <td><input type="number" id="percent-zhanazhol-2" class="form-control" step="0.0001" value="0.0377"></td>
-            <td><input type="number" id="volume-zhanazhol-2" class="form-control"></td>
-            <td><input type="number" id="loss-zhanazhol-2" class="form-control"></td>
-            <td><input type="number" id="volume2-zhanazhol-2" class="form-control"></td>
+            <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
+            <td><input type="number" id="volume-zhanazhol2" class="form-control"></td>
+            <td><input type="number" id="loss-zhanazhol2P" class="form-control"></td>
+            <td><input type="number" id="volume2-zhanazholedit2" class="form-control"></td>
         </tr>
             <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
-                <td><input type="number" id="percent-kenkiyak-transfer-2" class="form-control" step="0.0001" value="0.0077"></td>
-                <td><input type="number" id="volume-kenkiyak-transfer-2" class="form-control"></td>
-                <td><input type="number" id="loss-kenkiyak-transfer-2" class="form-control"></td>
-                <td><input type="number" id="volume2-kenkiyak-transfer-2" class="form-control"></td>
+                <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
+                <td><input type="number" id="volume-kenkiyakTransfer2" class="form-control"></td>
+                <td><input type="number" id="loss-kenkiyakTransfer2P" class="form-control"></td>
+                <td><input type="number" id="volume2-kenkiyak2" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="19" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
-                <td><input type="number" id="percent-kenkiyak-2" class="form-control" step="0.0001" value="0.0794"></td>
-                <td><input type="number" id="volume-kenkiyak-2" class="form-control"></td>
-                <td><input type="number" id="loss-kenkiyak-2" class="form-control"></td>
-                <td><input type="number" id="volume2-kenkiyak-2" class="form-control"></td>
+                <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
+                <td><input type="number" id="volume-kenkiyak2" class="form-control"></td>
+                <td><input type="number" id="loss-kenkiyak2P" class="form-control"></td>
+                <td><input type="number" id="volume2-kumkol2" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="15" data-from-id="4" data-to-id="14">
                 <td>ГНПС Кумколь</td>
                 <td>ГНПС им. Б. Джумагалиева</td>
-                <td><input type="number" id="percent-kumkol-2" class="form-control" step="0.0001" value="0.0525"></td>
-                <td><input type="number" id="volume-kumkol-2" class="form-control"></td>
-                <td><input type="number" id="loss-kumkol-2" class="form-control"></td>
-                <td><input type="number" id="volume2-kumkol-2 " class="form-control"></td>
+                <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0794"></td>
+                <td><input type="number" id="volume-kumkol2" class="form-control"></td>
+                <td><input type="number" id="loss-kumkol2P" class="form-control"></td>
+                <td><input type="number" id="volume2-dzhumagalieva" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="13" data-from-id="14" data-to-id="2">
                 <td>ГНПС им. Б. Джумагалиева</td>
                 <td>ГНПС Атасу</td>
-                <td><input type="number" id="percent-dzhumagalieva-2" class="form-control" step="0.0001" value="0.0754"></td>
-                <td><input type="number" id="volume-dzhumagalieva-2" class="form-control"></td>
-                <td><input type="number" id="loss-dzhumagalieva-2" class="form-control"></td>
-                <td><input type="number" id="volume2-dzhumagalieva-2 " class="form-control"></td>
+                <td><input type="number" id="percent-dzhumagalievaPP" class="form-control" step="0.0001" value="0.0754"></td>
+                <td><input type="number" id="volume-dzhumagalieva" class="form-control"></td>
+                <td><input type="number" id="loss-dzhumagalievaP" class="form-control"></td>
+                <td><input type="number" id="volume2-atasuTransfer" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="1" data-from-id="26" data-to-id="26">
                 <td colspan="2">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
-                <td><input type="number" id="percent-atasuTransfer-2" class="form-control" step="0.0001" value="0.0051"></td>
-                <td><input type="number" id="volume-atasuTransfer-2" class="form-control"></td>
-                <td><input type="number" id="loss-atasuTransfer-2" class="form-control"></td>
-                <td><input type="number" id="volume2-atasuTransfer-2 " class="form-control"></td>
+                <td><input type="number" id="percent-atasuTransferPP" class="form-control" step="0.0001" value="0.0051"></td>
+                <td><input type="number" id="volume-atasuTransfer" class="form-control"></td>
+                <td><input type="number" id="loss-atasuTransferP" class="form-control"></td>
+                <td><input type="number" id="volume2-atasu" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="11" data-from-id="2" data-to-id="1">
                 <td>ГНПС Атасу</td>
                 <td>Алашанькоу</td>
-                <td><input type="number" id="percent-alashankou-2" class="form-control" step="0.0001" value="0.0965"></td>
-                <td><input type="number" id="volume-alashankou-2" class="form-control main-input"></td>
-                <td><input type="number" id="loss-alashankou-2" class="form-control"></td>
-                <td><input type="number" id="volume2-alashankou-2 " class="form-control"></td>
+                <td><input type="number" id="percent-alashankouPP" class="form-control" step="0.0001" value="0.0965"></td>
+                <td><input type="number" id="volume-alashankou" class="form-control main-input"></td>
+                <td><input type="number" id="loss-alashankouP" class="form-control"></td>
+                <td><input type="number" id="volume2-alashankou" class="form-control"></td>
             </tr>
         </tbody>
     </table>
@@ -423,25 +423,25 @@ async function loadData() {
         <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
-            <td><input type="number" id="percent-psp45-3" class="form-control" step="0.0001" value="0.332"></td>
-            <td><input type="number" id="volume-psp45-3" class="form-control"></td>
-            <td><input type="number" id="loss-psp45-3" class="form-control"></td>
-            <td><input type="number" id="volume2-psp45-3" class="form-control"></td>
+            <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
+            <td><input type="number" id="volume-psp45end2" class="form-control"></td>
+            <td><input type="number" id="loss-psp2P" class="form-control"></td>
+            <td><input type="number" id="volume2-psp45first2" class="form-control"></td>
         </tr>
         <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
-            <td><input type="number" id="percent-zhanazhol-3" class="form-control" step="0.0001" value="0.0377"></td>
-            <td><input type="number" id="volume-zhanazhol-3" class="form-control"></td>
-            <td><input type="number" id="loss-zhanazhol-3" class="form-control"></td>
-            <td><input type="number" id="volume2-zhanazhol-3" class="form-control"></td>
+            <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
+            <td><input type="number" id="volume-zhanazhol2" class="form-control"></td>
+            <td><input type="number" id="loss-zhanazhol2P" class="form-control"></td>
+            <td><input type="number" id="volume2-zhanazholedit2" class="form-control"></td>
         </tr>
             <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
-                <td><input type="number" id="percent-kenkiyak-transfer-3" class="form-control" step="0.0001" value="0.0077"></td>
-                <td><input type="number" id="volume-kenkiyak-transfer-3" class="form-control"></td>
-                <td><input type="number" id="loss-kenkiyak-transfer-3" class="form-control"></td>
-                <td><input type="number" id="volume2-kenkiyak-transfer-3" class="form-control"></td>
+                <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
+                <td><input type="number" id="volume-kenkiyakTransfer2" class="form-control"></td>
+                <td><input type="number" id="loss-kenkiyakTransfer2P" class="form-control"></td>
+                <td><input type="number" id="volume2-kenkiyak2" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="19" data-from-id="5" data-to-id="7">
                 <td>ГНПС Кенкияк</td>
@@ -686,256 +686,13 @@ async function loadData() {
                 <td><input type="number" id="volume2-grushavaiTransfer-5" class="form-control"></td>
             </tr>
         </tbody>
-    </table> -->
+    </table>
 
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
 <div>
-<!-- <script>
-    function calculate() {
-    // Получаем значения из input-полей
-    const pkop = parseFloat(document.getElementById("pkop").value) || 0;
-    const zhanazholedit = parseFloat(document.getElementById("zhanazholedit").value) || 0;
-
-    // Получаем проценты из таблицы
-    const psp45PP = parseFloat(document.getElementById("psp45PP").value) || 0;
-    const zhanazholPP = parseFloat(document.getElementById("zhanazholPP").value) || 0;
-    const kenkiyakTransferPP = parseFloat(document.getElementById("kenkiyakTransferPP").value) || 0;
-    const kenkiyakPP = parseFloat(document.getElementById("kenkiyakPP").value) || 0;
-    const pkopPP = parseFloat(document.getElementById("pkopPP").value) || 0;
-
-    // Расчеты
-    const pkopP = Math.round(pkopPP * (pkop / 100));
-    const kumkol = pkop + pkopP;
-    const kenkiyakP = Math.round(kenkiyakPP * (kumkol / 100));
-    const kenkiyak = kumkol + kenkiyakP;
-    const kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-    const kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    const zhanazholP = Math.round(zhanazholPP * (zhanazholedit / 100));
-    const zhanazhol = zhanazholedit + zhanazholP;
-    const psp45first = kenkiyakTransfer - zhanazhol;
-    const pspP = Math.round(psp45PP * (psp45first / 100));
-    const psp45end = psp45first + pspP;
-
-    // Заполняем таблицу результатами
-    document.getElementById("psp45end").value = psp45end;
-    document.getElementById("pspP").value = pspP;
-    document.getElementById("psp45first").value = psp45first;
-
-    document.getElementById("zhanazhol").value = zhanazhol;
-    document.getElementById("zhanazholP").value = zhanazholP;
-
-    document.getElementById("kenkiyakTransfer").value = kenkiyakTransfer;
-    document.getElementById("kenkiyakTransferP").value = kenkiyakTransferP;
-    document.getElementById("kenkiyak-first").value = kenkiyak;
-    document.getElementById("kenkiyak-second").value = kenkiyak;
-
-    document.getElementById("kumkol-first").value = kumkol;
-    document.getElementById("kumkol-second").value = kumkol;
 
 
-    document.getElementById("kenkiyakP").value = kenkiyakP;
-    
-    document.getElementById("pkopP").value = pkopP;
 
-    console.log("Расчет завершен!");
-    }
-
-
-    </script> -->
-<!-- <script>
-    document.addEventListener("DOMContentLoaded", function () {
-    let inputs = document.querySelectorAll("input");
-
-    // Добавляем обработчик на все input'ы
-    inputs.forEach(input => {
-        input.addEventListener("input", function () {
-            calculate();
-        });
-    });
-
-    calculate(); // Первичный расчёт при загрузке страницы
-    });
-
-    function calculate() {
-    // Получаем значения из input-полей
-    const pkop = parseFloat(document.getElementById("pkop").value) || 0;
-    const zhanazholedit = parseFloat(document.getElementById("zhanazholedit").value) || 0;
-
-    // Получаем проценты из таблицы
-    const psp45PP = parseFloat(document.getElementById("psp45PP").value) || 0;
-    const zhanazholPP = parseFloat(document.getElementById("zhanazholPP").value) || 0;
-    const kenkiyakTransferPP = parseFloat(document.getElementById("kenkiyakTransferPP").value) || 0;
-    const kenkiyakPP = parseFloat(document.getElementById("kenkiyakPP").value) || 0;
-    const pkopPP = parseFloat(document.getElementById("pkopPP").value) || 0;
-
-    // Расчеты
-    const pkopP = Math.round(pkopPP * (pkop / 100));
-    const kumkol = pkop + pkopP;
-    const kenkiyakP = Math.round(kenkiyakPP * (kumkol / 100));
-    const kenkiyak = kumkol + kenkiyakP;
-    const kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-    const kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    const zhanazholP = Math.round(zhanazholPP * (zhanazholedit / 100));
-    const zhanazhol = zhanazholedit + zhanazholP;
-    const psp45first = kenkiyakTransfer - zhanazhol;
-    const pspP = Math.round(psp45PP * (psp45first / 100));
-    const psp45end = psp45first + pspP;
-
-    // Заполняем таблицу результатами
-    document.getElementById("psp45end").value = psp45end;
-    document.getElementById("pspP").value = pspP;
-    document.getElementById("psp45first").value = psp45first;
-    document.getElementById("zhanazhol").value = zhanazhol;
-    document.getElementById("zhanazholP").value = zhanazholP;
-    document.getElementById("kenkiyakTransfer").value = kenkiyakTransfer;
-    document.getElementById("kenkiyakTransferP").value = kenkiyakTransferP;
-    document.getElementById("kenkiyak-first").value = kenkiyak;
-    document.getElementById("kenkiyak-second").value = kenkiyak;
-    document.getElementById("kumkol-first").value = kumkol;
-    document.getElementById("kumkol-second").value = kumkol;
-    document.getElementById("kenkiyakP").value = kenkiyakP;
-    document.getElementById("pkopP").value = pkopP;
-    }
-</script> -->
-
-<script >
-    document.addEventListener("DOMContentLoaded", function () {
-    let inputs = document.querySelectorAll("input");
-
-    // Обрабатываем ввод: при потере фокуса или нажатии Enter пересчитываем
-    inputs.forEach(input => {
-        // input.addEventListener("blur", function () {
-        //     handleInput(this.id);
-        // });
-
-        input.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                handleInput(this.id);
-            }
-        });
-    });
-
-    calculateFrom(); // Первичный расчёт при загрузке страницы
-});
-
-function handleInput(inputId) {
-    if (["loss-pkopP", "loss-kenkiyakP", "loss-kenkiyakTransferP", "loss-pspP", "loss-zhanazholP"].includes(inputId)) {
-        calculateFrom(inputId);
-    } else {
-        calculateFrom();
-    }
-}
-
-function calculateFrom(startId = null) {
-    // Получаем исходные значения
-    let pkop = parseFloat(document.getElementById("volume2-pkop").value) || 0;
-    let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value) || 0;
-
-    // Получаем проценты
-    let psp45PP = parseFloat(document.getElementById("percent-psp45PP").value) || 0;
-    let zhanazholPP = parseFloat(document.getElementById("percent-zhanazholPP").value) || 0;
-    let kenkiyakTransferPP = parseFloat(document.getElementById("percent-kenkiyakTransferPP").value) || 0;
-    let kenkiyakPP = parseFloat(document.getElementById("percent-kenkiyakPP").value) || 0;
-    let pkopPP = parseFloat(document.getElementById("percent-pkopPP").value) || 0;
-
-    // Получаем сохранённые значения или вычисляем по формуле
-    let pkopP = parseFloat(document.getElementById("loss-pkopP").value) || Math.round(pkopPP * (pkop / 100));
-    let kumkol = pkop + pkopP;
-    let kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || Math.round(kenkiyakPP * (kumkol / 100));
-    let kenkiyak = kumkol + kenkiyakP;
-    let kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-    let kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    let zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || Math.round(zhanazholPP * (zhanazholedit / 100));
-    let zhanazhol = zhanazholedit + zhanazholP;
-    let psp45first = kenkiyakTransfer - zhanazhol;
-    let pspP = parseFloat(document.getElementById("loss-pspP").value) || Math.round(psp45PP * (psp45first / 100));
-    let psp45end = psp45first + pspP;
-
-    // 🔹 Динамическое обновление значений по цепочке
-    if (startId === "loss-pkopP") {
-    pkopP = parseFloat(document.getElementById("loss-pkopP").value) || 0;
-    kumkol = pkop + pkopP;
-
-    // Обновляем процент
-    let newPercent = (pkopP / pkop) * 100;
-    document.getElementById("percent-pkopPP").value = newPercent.toFixed(2);
-
-    kenkiyakP = Math.round(kenkiyakPP * (kumkol / 100));
-    kenkiyak = kumkol + kenkiyakP;
-    kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    psp45first = kenkiyakTransfer - zhanazhol;
-    pspP = Math.round(psp45PP * (psp45first / 100));
-    psp45end = psp45first + pspP;
-}
-
-if (startId === "loss-kenkiyakP") {
-    kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || 0;
-    kenkiyak = kumkol + kenkiyakP;
-
-    // Обновляем процент
-    let newPercent = (kenkiyakP / kumkol) * 100;
-    document.getElementById("percent-kenkiyakPP").value = newPercent.toFixed(2);
-
-    kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    psp45first = kenkiyakTransfer - zhanazhol;
-    pspP = Math.round(psp45PP * (psp45first / 100));
-    psp45end = psp45first + pspP;
-}
-
-if (startId === "loss-kenkiyakTransferP") {
-    kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || 0;
-    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-
-    // Обновляем процент
-    let newPercent = (kenkiyakTransferP / kenkiyak) * 100;
-    document.getElementById("percent-kenkiyakTransferPP").value = newPercent.toFixed(2);
-
-    psp45first = kenkiyakTransfer - zhanazhol;
-    pspP = Math.round(psp45PP * (psp45first / 100));
-    psp45end = psp45first + pspP;
-}
-
-if (startId === "loss-zhanazholP") {
-    zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || 0;
-    zhanazhol = zhanazholedit + zhanazholP;
-
-    // Обновляем процент
-    let newPercent = (zhanazholP / zhanazholedit) * 100;
-    document.getElementById("percent-zhanazholPP").value = newPercent.toFixed(2);
-
-    psp45first = kenkiyakTransfer - zhanazhol;
-    pspP = Math.round(psp45PP * (psp45first / 100));
-    psp45end = psp45first + pspP;
-}
-
-if (startId === "loss-pspP") {
-    pspP = parseFloat(document.getElementById("loss-pspP").value) || 0;
-    psp45end = psp45first + pspP;
-
-    // Обновляем процент
-    let newPercent = (pspP / psp45first) * 100;
-    document.getElementById("percent-psp45PP").value = newPercent.toFixed(2);
-}
-
-
-    // 🔹 Заполняем только изменённые значения
-    document.getElementById("volume-psp45end").value = psp45end;
-    document.getElementById("loss-pspP").value = pspP;
-    document.getElementById("volume2-psp45first").value = psp45first;
-    document.getElementById("volume-zhanazhol").value = zhanazhol;
-    document.getElementById("loss-zhanazholP").value = zhanazholP;
-    document.getElementById("volume-kenkiyakTransfer").value = kenkiyakTransfer;
-    document.getElementById("loss-kenkiyakTransferP").value = kenkiyakTransferP;
-    document.getElementById("volume-kenkiyak").value = kenkiyak;
-    document.getElementById("volume2-kenkiyak").value = kenkiyak;
-    document.getElementById("volume-kumkol").value = kumkol;
-    document.getElementById("volume2-kumkol").value = kumkol;
-    document.getElementById("loss-kenkiyakP").value = kenkiyakP;
-    document.getElementById("loss-pkopP").value = pkopP;
-}
-</script>
 
 
     <script>
@@ -962,5 +719,6 @@ if (startId === "loss-pspP") {
     <script src="js/language.js"></script>
     <script src="js/Settings.js"></script>
     <script src="js/menu.js"></script>
+    <script src="js/calculate.js"></script>
 </body>
 </html>

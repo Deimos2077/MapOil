@@ -3,13 +3,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Обрабатываем ввод: при потере фокуса или нажатии Enter пересчитываем
     inputs.forEach(input => {
-        input.addEventListener("blur", function () {
-            handleInput(this.id);
-        });
+        // input.addEventListener("blur", function () {
+        //     handleInput(this.id);
+        // });
 
         input.addEventListener("keypress", function (event) {
             if (event.key === "Enter") {
-                this.blur();
+                handleInput(this.id);
             }
         });
     });
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function handleInput(inputId) {
-    if (["pkopP", "kenkiyakP", "kenkiyakTransferP", "pspP", "zhanazholP"].includes(inputId)) {
+    if (["loss-pkopP", "loss-kenkiyakP", "loss-kenkiyakTransferP", "loss-pspP", "loss-zhanazholP"].includes(inputId)) {
         calculateFrom(inputId);
     } else {
         calculateFrom();
@@ -27,91 +27,110 @@ function handleInput(inputId) {
 
 function calculateFrom(startId = null) {
     // Получаем исходные значения
-    let pkop = parseFloat(document.getElementById("pkop").value) || 0;
-    let zhanazholedit = parseFloat(document.getElementById("zhanazholedit").value) || 0;
+    let pkop = parseFloat(document.getElementById("volume2-pkop").value) || 0;
+    let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value) || 0;
 
     // Получаем проценты
-    let psp45PP = parseFloat(document.getElementById("psp45PP").value) || 0;
-    let zhanazholPP = parseFloat(document.getElementById("zhanazholPP").value) || 0;
-    let kenkiyakTransferPP = parseFloat(document.getElementById("kenkiyakTransferPP").value) || 0;
-    let kenkiyakPP = parseFloat(document.getElementById("kenkiyakPP").value) || 0;
-    let pkopPP = parseFloat(document.getElementById("pkopPP").value) || 0;
+    let psp45PP = parseFloat(document.getElementById("percent-psp45PP").value) || 0;
+    let zhanazholPP = parseFloat(document.getElementById("percent-zhanazholPP").value) || 0;
+    let kenkiyakTransferPP = parseFloat(document.getElementById("percent-kenkiyakTransferPP").value) || 0;
+    let kenkiyakPP = parseFloat(document.getElementById("percent-kenkiyakPP").value) || 0;
+    let pkopPP = parseFloat(document.getElementById("percent-pkopPP").value) || 0;
 
     // Получаем сохранённые значения или вычисляем по формуле
-    let pkopP = parseFloat(document.getElementById("pkopP").value) || Math.round(pkopPP * (pkop / 100));
+    let pkopP = parseFloat(document.getElementById("loss-pkopP").value) || Math.round(pkopPP * (pkop / 100));
     let kumkol = pkop + pkopP;
-    let kenkiyakP = parseFloat(document.getElementById("kenkiyakP").value) || Math.round(kenkiyakPP * (kumkol / 100));
+    let kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || Math.round(kenkiyakPP * (kumkol / 100));
     let kenkiyak = kumkol + kenkiyakP;
-    let kenkiyakTransferP = parseFloat(document.getElementById("kenkiyakTransferP").value) || Math.round(kenkiyakTransferPP * (kenkiyak / 100));
+    let kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || Math.round(kenkiyakTransferPP * (kenkiyak / 100));
     let kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-    let zhanazholP = parseFloat(document.getElementById("zhanazholP").value) || Math.round(zhanazholPP * (zhanazholedit / 100));
+    let zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || Math.round(zhanazholPP * (zhanazholedit / 100));
     let zhanazhol = zhanazholedit + zhanazholP;
     let psp45first = kenkiyakTransfer - zhanazhol;
-    let pspP = parseFloat(document.getElementById("pspP").value) || Math.round(psp45PP * (psp45first / 100));
+    let pspP = parseFloat(document.getElementById("loss-pspP").value) || Math.round(psp45PP * (psp45first / 100));
     let psp45end = psp45first + pspP;
 
     // 🔹 Динамическое обновление значений по цепочке
-    if (startId === "pkopP") {
-        pkopP = parseFloat(document.getElementById("pkopP").value) || 0;
-        kumkol = pkop + pkopP;
-        kenkiyakP = Math.round(kenkiyakPP * (kumkol / 100));
-        kenkiyak = kumkol + kenkiyakP;
-        kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = Math.round(psp45PP * (psp45first / 100));
-        psp45end = psp45first + pspP;
-    }
+    if (startId === "loss-pkopP") {
+    pkopP = parseFloat(document.getElementById("loss-pkopP").value) || 0;
+    kumkol = pkop + pkopP;
 
-    if (startId === "kenkiyakP") {
-        pkopP = parseFloat(document.getElementById("pkopP").value) || 0;
-        kenkiyakP = parseFloat(document.getElementById("kenkiyakP").value) || 0;
-        kenkiyak = kumkol + kenkiyakP;
-        kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = Math.round(psp45PP * (psp45first / 100));
-        psp45end = psp45first + pspP;
-    }
+    // Обновляем процент
+    let newPercent = (pkopP / pkop) * 100;
+    document.getElementById("percent-pkopPP").value = newPercent.toFixed(2);
 
-    if (startId === "kenkiyakTransferP") {
-        pkopP = parseFloat(document.getElementById("pkopP").value) || 0;
-        kenkiyakP = parseFloat(document.getElementById("kenkiyakP").value) || 0;
-        kenkiyakTransferP = parseFloat(document.getElementById("kenkiyakTransferP").value) || 0;
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = Math.round(psp45PP * (psp45first / 100));
-        psp45end = psp45first + pspP;
-    }
+    kenkiyakP = Math.round(kenkiyakPP * (kumkol / 100));
+    kenkiyak = kumkol + kenkiyakP;
+    kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
+    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+    psp45first = kenkiyakTransfer - zhanazhol;
+    pspP = Math.round(psp45PP * (psp45first / 100));
+    psp45end = psp45first + pspP;
+}
 
-    if (startId === "zhanazholP") {
-        zhanazholP = parseFloat(document.getElementById("zhanazholP").value) || 0;
-        zhanazhol = zhanazholedit + zhanazholP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = Math.round(psp45PP * (psp45first / 100));
-        psp45end = psp45first + pspP;
-    }
+if (startId === "loss-kenkiyakP") {
+    kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || 0;
+    kenkiyak = kumkol + kenkiyakP;
 
-    if (startId === "pspP") {
-        pkopP = parseFloat(document.getElementById("pkopP").value) || 0;
-        kenkiyakP = parseFloat(document.getElementById("kenkiyakP").value) || 0;
-        kenkiyakTransferP = parseFloat(document.getElementById("kenkiyakTransferP").value) || 0;
-        pspP = parseFloat(document.getElementById("pspP").value) || 0;
-        psp45end = psp45first + pspP;
-    }
+    // Обновляем процент
+    let newPercent = (kenkiyakP / kumkol) * 100;
+    document.getElementById("percent-kenkiyakPP").value = newPercent.toFixed(2);
+
+    kenkiyakTransferP = Math.round(kenkiyakTransferPP * (kenkiyak / 100));
+    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+    psp45first = kenkiyakTransfer - zhanazhol;
+    pspP = Math.round(psp45PP * (psp45first / 100));
+    psp45end = psp45first + pspP;
+}
+
+if (startId === "loss-kenkiyakTransferP") {
+    kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || 0;
+    kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+
+    // Обновляем процент
+    let newPercent = (kenkiyakTransferP / kenkiyak) * 100;
+    document.getElementById("percent-kenkiyakTransferPP").value = newPercent.toFixed(2);
+
+    psp45first = kenkiyakTransfer - zhanazhol;
+    pspP = Math.round(psp45PP * (psp45first / 100));
+    psp45end = psp45first + pspP;
+}
+
+if (startId === "loss-zhanazholP") {
+    zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || 0;
+    zhanazhol = zhanazholedit + zhanazholP;
+
+    // Обновляем процент
+    let newPercent = (zhanazholP / zhanazholedit) * 100;
+    document.getElementById("percent-zhanazholPP").value = newPercent.toFixed(2);
+
+    psp45first = kenkiyakTransfer - zhanazhol;
+    pspP = Math.round(psp45PP * (psp45first / 100));
+    psp45end = psp45first + pspP;
+}
+
+if (startId === "loss-pspP") {
+    pspP = parseFloat(document.getElementById("loss-pspP").value) || 0;
+    psp45end = psp45first + pspP;
+
+    // Обновляем процент
+    let newPercent = (pspP / psp45first) * 100;
+    document.getElementById("percent-psp45PP").value = newPercent.toFixed(2);
+}
+
 
     // 🔹 Заполняем только изменённые значения
-    document.getElementById("psp45end").value = psp45end;
-    document.getElementById("pspP").value = pspP;
-    document.getElementById("psp45first").value = psp45first;
-    document.getElementById("zhanazhol").value = zhanazhol;
-    document.getElementById("zhanazholP").value = zhanazholP;
-    document.getElementById("kenkiyakTransfer").value = kenkiyakTransfer;
-    document.getElementById("kenkiyakTransferP").value = kenkiyakTransferP;
-    document.getElementById("kenkiyak-first").value = kenkiyak;
-    document.getElementById("kenkiyak-second").value = kenkiyak;
-    document.getElementById("kumkol-first").value = kumkol;
-    document.getElementById("kumkol-second").value = kumkol;
-    document.getElementById("kenkiyakP").value = kenkiyakP;
-    document.getElementById("pkopP").value = pkopP;
+    document.getElementById("volume-psp45end").value = psp45end;
+    document.getElementById("loss-pspP").value = pspP;
+    document.getElementById("volume2-psp45first").value = psp45first;
+    document.getElementById("volume-zhanazhol").value = zhanazhol;
+    document.getElementById("loss-zhanazholP").value = zhanazholP;
+    document.getElementById("volume-kenkiyakTransfer").value = kenkiyakTransfer;
+    document.getElementById("loss-kenkiyakTransferP").value = kenkiyakTransferP;
+    document.getElementById("volume-kenkiyak").value = kenkiyak;
+    document.getElementById("volume2-kenkiyak").value = kenkiyak;
+    document.getElementById("volume-kumkol").value = kumkol;
+    document.getElementById("volume2-kumkol").value = kumkol;
+    document.getElementById("loss-kenkiyakP").value = kenkiyakP;
+    document.getElementById("loss-pkopP").value = pkopP;
 }

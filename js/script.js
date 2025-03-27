@@ -225,30 +225,36 @@ fetch('database/getData.php?table=Points')
 
         // Смещения для 1920x1080
         const labelOffsets_1920 = {
-            "ПСП 45 км": { offsetLat: 0.15, offsetLng: 0 },
-            "КПОУ Жана Жол": { offsetLat: -0.35, offsetLng: 0 },
-            "НПС им. Шманова": { offsetLat: -0.25, offsetLng: 1.8 },
-            "НПС им. Касымова": { offsetLat: -0.1, offsetLng: -2.1 },
-            "Новороссийск": { offsetLat: 0.1, offsetLng: -1.4 },
-            "Грушовая": { offsetLat: -0.15, offsetLng: 1.15 },
-            "Унеча": { offsetLat: -0.25, offsetLng: 0 },
-            "Никольское": { offsetLat: 0.15, offsetLng: 0 },
-            "Алашанькоу": { offsetLat: -0.1, offsetLng: 1.4 },
-            "ГНПС Атасу": { offsetLat: -0.1, offsetLng: 1.4 },
-            "ПНХЗ": { offsetLat: 0.15, offsetLng: 0 },
-            "ГНПС Кумколь": { offsetLat: -0.35, offsetLng: 0 },
-            "ГНПС Кенкияк": { offsetLat: -0.1, offsetLng: 1.6 },
-            "ПКОП": { offsetLat: -0.4, offsetLng: 0 },
-            "ПСП Самара": { offsetLat: 0, offsetLng: 1.3 },
-            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.1 },
-            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 1.15 },
-            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.2, offsetLng: 1.5 },
-            "Клин": { offsetLat: 0.15, offsetLng: 0 },
-            "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 1.5 },
-            "Красноармейск": { offsetLat: -0.1, offsetLng: 1.7 },
-            "Родионовская": { offsetLat: -0.1, offsetLng: 1.5 },
-            "Тихорецк": { offsetLat: -0.1, offsetLng: 1 },
-            "1235,3 км": { offsetLat: -0.07, offsetLng: 1.1 }
+            "ПСП 45 км": { offsetLat: 0.3, offsetLng: 0 },
+            "КПОУ Жана Жол": { offsetLat: -0.5, offsetLng: 0 },
+            "НПС им. Шманова": { offsetLat: -0.5, offsetLng: 1.8 },
+            "НПС им. Касымова": { offsetLat: -0.1, offsetLng: -3.1 },
+            "Новороссийск": { offsetLat: 0.1, offsetLng: -2.4 },
+            "Грушовая": { offsetLat: -0.15, offsetLng: 2.15 },
+            "Унеча": { offsetLat: -0.36, offsetLng: 0 },
+            "Никольское": { offsetLat: 0.3, offsetLng: 0 },
+            "Алашанькоу": { offsetLat: -0.1, offsetLng: 2.4 },
+            "ГНПС Атасу": { offsetLat: -0.1, offsetLng: 2.4 },
+            "ПНХЗ": { offsetLat: 0.3, offsetLng: 0 },
+            "ГНПС Кумколь": { offsetLat: -0.5, offsetLng: 0 },
+            "ГНПС Кенкияк": { offsetLat: -0.1, offsetLng: 2.3 },
+            "ПКОП": { offsetLat: -0.6, offsetLng: 0 },
+            "ПСП Самара": { offsetLat: 0, offsetLng: 1.8 },
+            "Усть-Луга": { offsetLat: -0.05, offsetLng: 1.5 },
+            "Большая Черниговка": { offsetLat: 0.1, offsetLng: 2 },
+            "ГНПС им. Б. Джумагалиева": { offsetLat: 0.2, offsetLng: 2.5 },
+            "Клин": { offsetLat: 0.5, offsetLng: 0 },
+            "915 км н/пр.КЛ": { offsetLat: -0.2, offsetLng: 2.25 },
+            "Красноармейск": { offsetLat: -0.50, offsetLng: 1.7 },
+            "Родионовская": { offsetLat: -0.1, offsetLng: 2.5 },
+            "Тихорецк": { offsetLat: -0.1, offsetLng: 1.5 },
+            "1235,3 км": { offsetLat: -0.50, offsetLng: 1.5 },
+            "Лопатино": { offsetLat: -0.5, offsetLng: 0 },
+            "Калейкино": { offsetLat: -0.1, offsetLng: 1.5 },
+            "Воротынец": { offsetLat: -0.05, offsetLng: 1.8 },
+            "Горький": { offsetLat: 0.2, offsetLng: 1.3 },
+            "Залесье": { offsetLat: -0.1, offsetLng: 1.2 },
+            "Андреаполь": { offsetLat: 0.1, offsetLng: 2 },
         };
 
         const labelCloseOffsets_1920 = {
@@ -1482,8 +1488,8 @@ const filterButton = document.getElementById('checkboxOne');
 
 map.removeLayer(flowLayerGroup);
 map.removeLayer(minimalistFlowLayerGroup); 
-map.removeLayer(pointTanksLayer);
-map.removeLayer(technicalTanksLayer);
+// map.removeLayer(pointTanksLayer);
+// map.removeLayer(technicalTanksLayer);
 
 let layersVisible = false; 
 
@@ -1493,13 +1499,13 @@ filterButton.addEventListener('change', () => {
     if (layersVisible) {
         map.addLayer(flowLayerGroup); 
         map.addLayer(minimalistFlowLayerGroup); 
-        map.addLayer(pointTanksLayer); 
-        map.addLayer(technicalTanksLayer); 
+        // map.addLayer(pointTanksLayer); 
+        // map.addLayer(technicalTanksLayer); 
     } else {
         map.removeLayer(flowLayerGroup); 
         map.removeLayer(minimalistFlowLayerGroup);
-        map.removeLayer(pointTanksLayer); 
-        map.removeLayer(technicalTanksLayer); 
+        // map.removeLayer(pointTanksLayer); 
+        // map.removeLayer(technicalTanksLayer); 
     }
 });
 
