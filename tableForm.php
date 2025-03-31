@@ -424,98 +424,98 @@ async function loadData() {
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
-            <td><input type="number" id="volume-psp45end2" class="form-control"></td>
-            <td><input type="number" id="loss-psp2P" class="form-control"></td>
-            <td><input type="number" id="volume2-psp45first2" class="form-control"></td>
+            <td><input type="number" id="volume-psp45end3" class="form-control"></td>
+            <td><input type="number" id="loss-psp3P" class="form-control"></td>
+            <td><input type="number" id="volume2-psp45first3" class="form-control"></td>
         </tr>
         <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
-            <td><input type="number" id="volume-zhanazhol2" class="form-control"></td>
-            <td><input type="number" id="loss-zhanazhol2P" class="form-control"></td>
-            <td><input type="number" id="volume2-zhanazholedit2" class="form-control"></td>
+            <td><input type="number" id="volume-zhanazhol3" class="form-control"></td>
+            <td><input type="number" id="loss-zhanazhol3P" class="form-control"></td>
+            <td><input type="number" id="volume2-zhanazholedit3" class="form-control"></td>
         </tr>
             <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
-                <td><input type="number" id="volume-kenkiyakTransfer2" class="form-control"></td>
-                <td><input type="number" id="loss-kenkiyakTransfer2P" class="form-control"></td>
-                <td><input type="number" id="volume2-kenkiyak2" class="form-control"></td>
+                <td><input type="number" id="volume-kenkiyakTransfer3" class="form-control"></td>
+                <td><input type="number" id="loss-kenkiyakTransfer3P" class="form-control"></td>
+                <td><input type="number" id="volume2-kenkiyak3" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="19" data-from-id="5" data-to-id="7">
                 <td>ГНПС Кенкияк</td>
                 <td>НПС им. Шманова</td>
-                <td><input type="number" id="percent-kenkiyak-3" class="form-control" step="0.0001" value="0.0429"></td>
-                <td><input type="number" id="volume-kenkiyak-3" class="form-control"></td>
-                <td><input type="number" id="loss-kenkiyak-3" class="form-control"></td>
-                <td><input type="number" id="volume2-kenkiyak-3" class="form-control"></td>
+                <td><input type="number" id="percent-shmanovaPP" class="form-control" step="0.0001" value="0.0429"></td>
+                <td><input type="number" id="volume-kenkiyak3" class="form-control"></td>
+                <td><input type="number" id="loss-kenkiyak3P" class="form-control"></td>
+                <td><input type="number" id="volume2-shmanova" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="1" data-from-id="7" data-to-id="19">
                 <td>НПС им. Шманова</td>
                 <td>НПС им. Касымова</td>
-                <td><input type="number" id="percent-kumkol-3" class="form-control" step="0.0001" value="0.0455"></td>
-                <td><input type="number" id="volume-kumkol-3" class="form-control"></td>
-                <td><input type="number" id="loss-kumkol-3" class="form-control"></td>
-                <td><input type="number" id="volume2-kumkol-3 " class="form-control"></td>
+                <td><input type="number" id="percent-kasimovaPP" class="form-control" step="0.0001" value="0.0455"></td>
+                <td><input type="number" id="volume-shmanova" class="form-control"></td>
+                <td><input type="number" id="loss-shmanovaP" class="form-control"></td>
+                <td><input type="number" id="volume2-kasimova" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="20" data-from-id="19" data-to-id="24">
                 <td>НПС им. Касымова</td>
                 <td>1235,3 км граница (РК/РФ)</td>
-                <td><input type="number" id="percent-dzhumagalieva-3" class="form-control" step="0.0001" value="0.1122"></td>
-                <td><input type="number" id="volume-dzhumagalieva-3" class="form-control"></td>
-                <td><input type="number" id="loss-dzhumagalieva-3" class="form-control"></td>
-                <td><input type="number" id="volume2-dzhumagalieva-3 " class="form-control main-input"></td>
+                <td><input type="number" id="percent-km1235PP" class="form-control" step="0.0001" value="0.1122"></td>
+                <td><input type="number" id="volume-kasimova" class="form-control"></td>
+                <td><input type="number" id="loss-kasimovaP" class="form-control"></td>
+                <td><input type="number" id="volume2-km1235" class="form-control main-input"></td>
             </tr>
             <tr data-pipeline-id="23" data-from-id="24" data-to-id="8">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Самара</td>
-                <td><input type="number" id="percent-samara-3" class="form-control" step="0.0001" value="0.0192"></td>
-                <td><input type="number" id="volume-samara-3" class="form-control"></td>
-                <td><input type="number" id="loss-samara-3" class="form-control"></td>
-                <td><input type="number" id="volume2-samara-3" class="form-control"></td>
+                <td><input type="number" id="percent-samaraPP" class="form-control" step="0.0001" value="0.0192"></td>
+                <td><input type="number" id="volume-km1235" class="form-control"></td>
+                <td><input type="number" id="loss-samaraP" class="form-control"></td>
+                <td><input type="number" id="volume2-samara" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
                 <td colspan="2">СамараСамара БСН (на Дружбу) (перевалка)</td>
-                <td><input type="number" id="percent-samaraTransfer-3" class="form-control" step="0.0001" value="0.0137"></td>
-                <td><input type="number" id="volume-samaraTransfer-3" class="form-control"></td>
-                <td><input type="number" id="loss-samaraTransfer-3" class="form-control"></td>
-                <td><input type="number" id="volume2-samaraTransfer-3 " class="form-control"></td>
+                <td><input type="number" id="percent-samaraTransferPP" class="form-control" step="0.0001" value="0.0137"></td>
+                <td><input type="number" id="volume-samara" class="form-control"></td>
+                <td><input type="number" id="loss-samaraTransferP" class="form-control"></td>
+                <td><input type="number" id="volume2-samaraTransfer" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="2" data-from-id="8" data-to-id="16">
                 <td>Самара</td>
                 <td>Клин</td>
-                <td><input type="number" id="percent-klin-3" class="form-control" step="0.0001" value="0.0000"></td>
-                <td><input type="number" id="volume-klin-3" class="form-control"></td>
-                <td><input type="number" id="loss-klin-3" class="form-control"></td>
-                <td><input type="number" id="volume2-klin-3" class="form-control"></td>
+                <td><input type="number" id="percent-klinPP" class="form-control" step="0.0001" value="0.0000"></td>
+                <td><input type="number" id="volume-samaraTransfer" class="form-control"></td>
+                <td><input type="number" id="loss-klinP" class="form-control"></td>
+                <td><input type="number" id="volume2-klin" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="3" data-from-id="16" data-to-id="20">
                 <td>Клин</td>
                 <td>Никольское</td>
-                <td><input type="number" id="percent-nikolski-3" class="form-control" step="0.0001" value="0.0065"></td>
-                <td><input type="number" id="volume-nikolski-3" class="form-control"></td>
-                <td><input type="number" id="loss-nikolski-3" class="form-control"></td>
-                <td><input type="number" id="volume2-nikolski-3 " class="form-control"></td>
+                <td><input type="number" id="percent-nikolskiPP" class="form-control" step="0.0001" value="0.0065"></td>
+                <td><input type="number" id="volume-klin" class="form-control"></td>
+                <td><input type="number" id="loss-nikolskiP" class="form-control"></td>
+                <td><input type="number" id="volume2-nikolski" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="4" data-from-id="20" data-to-id="23">
                 <td>Никольское</td>
                 <td>Унеча (на Андреаполь)</td>
-                <td><input type="number" id="percent-unecha-3" class="form-control" step="0.0001" value="0.0458"></td>
-                <td><input type="number" id="volume-unecha-3" class="form-control"></td>
-                <td><input type="number" id="loss-unecha-3" class="form-control"></td>
-                <td><input type="number" id="volume2-unecha-3 " class="form-control"></td>
+                <td><input type="number" id="percent-unechaPP" class="form-control" step="0.0001" value="0.0458"></td>
+                <td><input type="number" id="volume-nikolski" class="form-control"></td>
+                <td><input type="number" id="loss-unechaP" class="form-control"></td>
+                <td><input type="number" id="volume2-unecha" class="form-control"></td>
             </tr>
             <tr data-pipeline-id="22" data-from-id="23" data-to-id="10">
                 <td colspan="2">НБ Усть-Луга (перевалка)</td>
-                <td><input type="number" id="percent-ustlugaTransfer-3" class="form-control" step="0.0001" value="0.0258"></td>
-                <td><input type="number" id="volume-ustlugaTransfer-3" class="form-control"></td>
-                <td><input type="number" id="loss-ustlugaTransfer-3" class="form-control"></td>
-                <td><input type="number" id="volume2-ustlugaTransfer-3" class="form-control"></td>
+                <td><input type="number" id="percent-ustlugaTransferPP" class="form-control" step="0.0001" value="0.0258"></td>
+                <td><input type="number" id="volume-unecha" class="form-control"></td>
+                <td><input type="number" id="loss-ustlugaTransferP" class="form-control"></td>
+                <td><input type="number" id="volume2-ustlugaTransfer" class="form-control"></td>
             </tr>
         </tbody>
     </table>
-
+<!-- 
     <h3 class="mb-4">Ответ.хранение</h3>
     <table class="table table-bordered" data-pipelines-system-id="4" data-type="pipelines">
         <thead>
@@ -689,7 +689,7 @@ async function loadData() {
     </table>
 
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
-<div>
+<div> -->
 
 
 
@@ -719,6 +719,8 @@ async function loadData() {
     <script src="js/language.js"></script>
     <script src="js/Settings.js"></script>
     <script src="js/menu.js"></script>
-    <script src="js/calculate.js"></script>
+    <script src="js/calculate.js">
+        
+    </script>
 </body>
 </html>
