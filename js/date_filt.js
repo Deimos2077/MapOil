@@ -75,26 +75,26 @@ function clearAllDataLayers() {
 
 
 
-// Загрузка данных резервуаров за указанный месяц
 async function fetchReservoirVolumesFromDB(year, month) {
     try {
-        const response = await fetch(`database/getData.php?table=reservoirvolumes&year=${year}&month=${month}`);
+        const response = await fetch(`database/getReservoirData.php?year=${year}&month=${month}`);
         if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
 
-        const reservoirVolumes = await response.json();
+        const reservoirData = await response.json();
 
-        if (!Array.isArray(reservoirVolumes)) {
-            console.error("❌ Ошибка: данные резервуаров не массив!", reservoirVolumes);
+        if (!Array.isArray(reservoirData)) {
+            console.error("❌ Ошибка: данные резервуаров не массив!", reservoirData);
             return [];
         }
 
-        console.log(`📊 Данные о резервуарах (${year}-${month}):`, reservoirVolumes);
-        return reservoirVolumes;
+        console.log(`📊 Объединённые данные о резервуарах (${year}-${month}):`, reservoirData);
+        return reservoirData;
     } catch (error) {
-        console.error("❌ Ошибка загрузки данных резервуаров:", error);
+        console.error("❌ Ошибка загрузки резервуаров:", error);
         return [];
     }
 }
+
 
 
 // Получаем последнюю доступную дату из базы
