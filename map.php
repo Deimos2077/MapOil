@@ -118,10 +118,11 @@ label[for="date-input"] {
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li> -->
             
-     <div id="filter-container">
-     <label  for="date-input">Дата:</label>
-     <input type="date" id="date-input" class="form-control mb-3">
-     </div>
+<div id="filter-container">
+    <label for="month-input">Месяц:</label>
+    <input type="month" id="month-input" class="form-control mb-3">
+</div>
+
 
         </ul>     
     </div>

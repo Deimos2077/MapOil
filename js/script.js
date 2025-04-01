@@ -1020,28 +1020,32 @@ async function displayKenkiyakOilTotal(year, month, points) {
 
 
 async function initializeFlowMap() {
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB();
-
-    console.log('📌 Загружены точки:', points);
-    console.log('📊 Загружены данные о нефти:', oilTransferData);
-
-    if (points.length === 0 || oilTransferData.length === 0) {
-        console.error('❌ Недостаточно данных для отрисовки карты.');
+    const monthInput = document.getElementById('month-input');
+    if (!monthInput || !monthInput.value) {
+        console.warn("⚠ Невозможно определить текущий месяц для фильтрации.");
         return;
     }
 
-    // Добавляем стрелки и линии потока нефти
+    const [year, month] = monthInput.value.split('-');
+
+    const points = await fetchPointsFromDB();
+    const oilTransferData = await fetchOilTransferFromDB(year, month);
+
+    console.log(`📌 Загружены точки:`, points);
+    console.log(`📊 Загружены данные за ${year}-${month}:`, oilTransferData);
+
+    clearAllDataLayers(); // очищаем все слои на всякий случай
+
+    if (points.length === 0 || oilTransferData.length === 0) {
+        console.warn('❌ Недостаточно данных для отрисовки карты.');
+        dataLoaded = false;
+        return;
+    }
+
     addMinimalistFlow(points, oilTransferData);
+    await displayKenkiyakOilTotal(year, month, points);
 
-    // Получаем текущую дату
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    console.log(`✅ Отображаем данные по Кенкияку за ${currentMonth}/${currentYear}`);
-    
-    // Добавляем суммарную нефть в Кенкияке
-    await displayKenkiyakOilTotal(currentYear, currentMonth, points);
+    dataLoaded = true;
 }
 
 

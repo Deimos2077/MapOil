@@ -1,122 +1,81 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    console.log("📅 Фильтрация данных загружается...");
+    console.log("📅 Инициализация фильтра...");
 
-    const filterButton = document.getElementById('applyDateFilter');
-    const dateInput = document.getElementById('dateFilter');
-
-    if (!filterButton || !dateInput) {
-        console.error("❌ Ошибка: элементы фильтрации не найдены в DOM!");
+    const monthInput = document.getElementById('month-input');
+    if (!monthInput) {
+        console.error("❌ Элемент #month-input не найден");
         return;
     }
 
-    filterButton.addEventListener('click', async () => {
-        if (!dateInput.value) {
-            alert("⚠ Пожалуйста, выберите дату!");
-            return;
-        }
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+    const monthStr = `${currentYear}-${currentMonth}`;
 
-        const [year, month] = dateInput.value.split('-');
+    monthInput.value = monthStr;
 
-        console.log(`📅 Фильтрация данных на ${year}-${month}`);
-        await updateMapData(year, month);
+    const [year, month] = monthStr.split('-');
+    await updateMapData(year, month);
+
+    monthInput.addEventListener('change', async () => {
+        const [selectedYear, selectedMonth] = monthInput.value.split('-');
+        await updateMapData(selectedYear, selectedMonth);
     });
 });
 
 
-// Функция загрузки доступных дат (годов и месяцев)
-async function fetchAvailableDates() {
-    try {
-        const response = await fetch('database/getAvailableDates.php'); // PHP-скрипт для получения годов и месяцев
-        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
-
-        const dates = await response.json();
-        
-        const yearSelect = document.getElementById('year-select');
-        const monthSelect = document.getElementById('month-select');
-
-        if (!yearSelect || !monthSelect) {
-            console.error("❌ Ошибка: селекторы года и месяца не найдены!");
-            return;
-        }
-
-        // Очищаем списки перед обновлением
-        yearSelect.innerHTML = "";
-        monthSelect.innerHTML = "";
-
-        // Добавляем уникальные годы
-        [...new Set(dates.map(date => date.year))].forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearSelect.appendChild(option);
-        });
-
-        // Добавляем уникальные месяцы
-        [...new Set(dates.map(date => date.month))].forEach(month => {
-            const option = document.createElement('option');
-            option.value = month;
-            option.textContent = month;
-            monthSelect.appendChild(option);
-        });
-
-    } catch (error) {
-        console.error('❌ Ошибка загрузки доступных дат:', error);
-    }
-}
-
-// Функция обновления карты с фильтром по дате
 async function updateMapData(year, month) {
-    console.log(`📊 Обновляем данные карты на ${year}-${month}`);
+    console.log(`📊 Загружаем данные за ${year}-${month}`);
 
     const points = await fetchPointsFromDB();
     const oilTransferData = await fetchOilTransferFromDB(year, month);
     const reservoirs = await fetchReservoirVolumesFromDB(year, month);
 
-    if (points.length === 0 || oilTransferData.length === 0) {
-        console.warn("⚠ Недостаточно данных для отображения.");
+    // Очищаем все слои (включая стрелки, резервуары и подписи)
+    clearAllDataLayers();
+
+    // Проверка: если нет данных — не отображаем ничего
+    if (oilTransferData.length === 0 && reservoirs.length === 0) {
+        console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
+        dataLoaded = false;
+
+        // Показываем уведомление (если есть элемент)
+        const msg = document.getElementById('no-data-message');
+        if (msg) msg.style.display = 'block';
+
         return;
     }
 
-    // Очищаем карту перед добавлением новых данных
-    flowLayerGroup.clearLayers();
+    // Скрываем уведомление, если ранее было показано
+    const msg = document.getElementById('no-data-message');
+    if (msg) msg.style.display = 'none';
 
-    // Обновляем данные
-    addMinimalistFlow(points, oilTransferData);
-    addReservoirs(reservoirs);
+    // Визуализация
+    if (oilTransferData.length > 0) {
+        addMinimalistFlow(points, oilTransferData);
+        await displayKenkiyakOilTotal(year, month, points); // если нужно
+    }
 
+    if (reservoirs.length > 0) {
+        addReservoirs(reservoirs);
+    }
+
+    dataLoaded = true; // Только если данные реально отобразились
     console.log("✅ Карта обновлена");
 }
 
-// Функция загрузки данных о нефти с учетом фильтрации по году и месяцу
-async function fetchOilTransferFromDB(year, month) {
-    try {
-        const response = await fetch(`database/getData.php?table=oiltransfer&year=${year}&month=${month}`);
-        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
 
-        const oilTransferData = await response.json();
-
-        if (!Array.isArray(oilTransferData)) {
-            console.error("❌ Ошибка: данные о нефти не массив!", oilTransferData);
-            return [];
-        }
-
-        console.log(`📊 Данные о нефти (${year}-${month}):`, oilTransferData);
-        
-        return oilTransferData.map(record => ({
-            id: record.id,
-            from_point: record.from_point_id,
-            to_point: record.to_point_id,
-            from_amount: record.from_amount,
-            to_amount: record.to_amount,
-            losses: record.losses || 0
-        }));
-    } catch (error) {
-        console.error("❌ Ошибка загрузки данных о нефти:", error);
-        return [];
-    }
+function clearAllDataLayers() {
+    flowLayerGroup.clearLayers();
+    minimalistFlowLayerGroup.clearLayers();
+    reservoirLayerGroup.clearLayers();
+    pointTanksLayer.clearLayers();
+    technicalTanksLayer.clearLayers();
 }
 
-// Функция загрузки данных резервуаров с учетом фильтрации
+
+
+// Загрузка данных резервуаров за указанный месяц
 async function fetchReservoirVolumesFromDB(year, month) {
     try {
         const response = await fetch(`database/getData.php?table=reservoirvolumes&year=${year}&month=${month}`);
@@ -134,5 +93,26 @@ async function fetchReservoirVolumesFromDB(year, month) {
     } catch (error) {
         console.error("❌ Ошибка загрузки данных резервуаров:", error);
         return [];
+    }
+}
+
+
+// Получаем последнюю доступную дату из базы
+async function getLatestAvailableMonth() {
+    try {
+        const response = await fetch('database/getAvailableDates.php');
+        if (!response.ok) throw new Error("Ошибка загрузки дат");
+
+        const dates = await response.json();
+        if (dates.length === 0) return null;
+
+        const latest = dates[0]; // Самая новая дата
+        return {
+            year: latest.year,
+            month: latest.month
+        };
+    } catch (error) {
+        console.error("❌ Ошибка при получении последнего месяца:", error);
+        return null;
     }
 }
