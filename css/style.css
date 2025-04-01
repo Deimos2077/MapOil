@@ -256,3 +256,27 @@
     margin-right: 8px;
   }
     
+
+  .reservoir-container {
+    border: 2px solid white;
+    background: #ccc;
+    position: relative;
+    box-shadow: 0 0 2px black;
+    transition: width 0.2s ease, height 0.2s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.reservoir-fill {
+    background: black;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    transition: height 0.3s ease;
+}
+
+.technical .reservoir-fill {
+    background: #aaa;
+}
