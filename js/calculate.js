@@ -236,7 +236,7 @@ function calculateLoss(percentage, volume) {
 function handleInput(inputId) {
     if (["loss-pkopP", "loss-kenkiyakP", "loss-kenkiyakTransferP", "loss-pspP", "loss-zhanazholP",
          "loss-samaraP", "loss-samaraTransferP", "loss-klinP", "loss-nikolskiP", "loss-unechaP", "loss-ustlugaTransferP",
-         "loss-kasimovaP", "loss-shmanovaP", "loss-kenkiyak3P", "loss-kenkiyakTransfer3P", "loss-zhanazhol3P", "loss-psp3P"].includes(inputId)) {
+         "loss-kasimovaP", "loss-shmanovaP", "loss-kenkiyak3P", "loss-kenkiyakTransfer3P", "loss-zhanazhol3P", "loss-psp3P",].includes(inputId)) {
         calculateFrom(inputId);
     } else {
         calculateFrom();
@@ -244,6 +244,7 @@ function handleInput(inputId) {
 }
 
 function calculateFrom(startId = null) {
+    // ========== ПКОП ==========
     // Get initial values
     let pkop = parseFloat(document.getElementById("volume2-pkop").value) || 0;
     let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value) || 0;
@@ -255,7 +256,7 @@ function calculateFrom(startId = null) {
     let kenkiyakPP = parseFloat(document.getElementById("percent-kenkiyakPP").value) || 0;
     let pkopPP = parseFloat(document.getElementById("percent-pkopPP").value) || 0;
 
-    // Get saved values or calculate using formula
+    // расчет значений
     let pkopP = parseFloat(document.getElementById("loss-pkopP").value) || calculateLoss(pkopPP, pkop);
     let kumkol = pkop + pkopP;
     let kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || calculateLoss(kenkiyakPP, kumkol);
@@ -268,7 +269,37 @@ function calculateFrom(startId = null) {
     let pspP = parseFloat(document.getElementById("loss-pspP").value) || calculateLoss(psp45PP, psp45first);
     let psp45end = psp45first + pspP;
 
-    // ========== NEW CALCULATIONS ==========
+    // ========== КНР ==========
+    let atasu = parseFloat(document.getElementById("volume-atasu").value) || 0;
+    let zhanazholedit2 = parseFloat(document.getElementById("volume2-zhanazholedit2").value) || 0;
+    
+    // Получение процентных значений
+    let alashankouPP = parseFloat(document.getElementById("percent-alashankouPP").value) || 0;
+    let atasuTransferPP = parseFloat(document.getElementById("percent-atasuTransferPP").value) || 0;
+    let dzhumagalievaPP = parseFloat(document.getElementById("percent-dzhumagalievaPP").value) || 0;
+    let kumkolPP = parseFloat(document.getElementById("percent-kumkolPP").value) || 0;
+
+    
+    // Расчет значений
+    let alashankouP = parseFloat(document.getElementById("loss-alashankouP").value) || calculateLoss(alashankouPP, atasu);
+    let alashankou = atasu - alashankouP;
+    let atasuTransferP = parseFloat(document.getElementById("loss-atasuTransferP").value) || calculateLoss(atasuTransferPP, alashankou);
+    let atasuTransfer = alashankou + atasuTransferP;
+    let dzhumagalievaP = parseFloat(document.getElementById("loss-dzhumagalievaP").value) || calculateLoss(dzhumagalievaPP, atasuTransfer);
+    let dzhumagalieva = atasuTransfer + dzhumagalievaP;
+    let kumkol2P = parseFloat(document.getElementById("loss-kumkol2P").value) || calculateLoss(kumkolPP, dzhumagalieva);
+    let kumkol2 = dzhumagalieva + kumkol2P;
+    let kenkiyak2P = parseFloat(document.getElementById("loss-kenkiyak2P").value) || calculateLoss(kenkiyakPP, kumkol2);
+    let kenkiyak2 = kumkol2 + kenkiyak2P;
+    let kenkiyakTransfer2P = parseFloat(document.getElementById("loss-kenkiyakTransfer2P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak2);
+    let kenkiyakTransfer2 = kenkiyak2 + kenkiyakTransfer2P;
+    let zhanazhol2P = parseFloat(document.getElementById("loss-zhanazhol2P").value) || calculateLoss(zhanazholPP, zhanazholedit2);
+    let zhanazhol2 = zhanazholedit2 + zhanazhol2P;
+    let psp45first2 = kenkiyakTransfer2 - zhanazhol2;
+    let psp2P = parseFloat(document.getElementById("loss-psp2P").value) || calculateLoss(psp45PP, psp45first2);
+    let psp45end2 = psp45first2 + psp2P;
+
+    // ========== УСТ-ЛУГА ==========
     // Constants and initial values
     let km1235 = parseFloat(document.getElementById("volume2-km1235").value) || 0;
     let zhanazholedit3 = parseFloat(document.getElementById("volume2-zhanazholedit3").value) || 0;
@@ -284,7 +315,7 @@ function calculateFrom(startId = null) {
     let kasimovaPP = parseFloat(document.getElementById("percent-kasimovaPP").value) || 0;
     let shmanovaPP = parseFloat(document.getElementById("percent-shmanovaPP").value) || 0;
 
-    // First calculation chain
+    // Расчет значений
     let samaraP = parseFloat(document.getElementById("loss-samaraP").value) || calculateLoss(samaraPP, km1235);
     let samara = km1235 - samaraP;
     let samaraTransferP = parseFloat(document.getElementById("loss-samaraTransferP").value) || calculateLoss(samaraTransferPP, samara);
@@ -298,7 +329,6 @@ function calculateFrom(startId = null) {
     let ustlugaTransferP = parseFloat(document.getElementById("loss-ustlugaTransferP").value) || calculateLoss(ustlugaTransferPP, unecha);
     let ustlugaTransfer = unecha - ustlugaTransferP;
 
-    // Second calculation chain
     let kasimovaP = parseFloat(document.getElementById("loss-kasimovaP").value) || calculateLoss(km1235PP, km1235);
     let kasimova = km1235 + kasimovaP;
     let shmanovaP = parseFloat(document.getElementById("loss-shmanovaP").value) || calculateLoss(kasimovaPP, kasimova);
@@ -313,82 +343,183 @@ function calculateFrom(startId = null) {
     let psp3P = parseFloat(document.getElementById("loss-psp3P").value) || calculateLoss(psp45PP, psp45first3);
     let psp45end3 = psp45first3 + psp3P;
 
-    // 🔹 Dynamic update of values along the chain
-    if (startId === "loss-pkopP") {
-        pkopP = parseFloat(document.getElementById("loss-pkopP").value) || 0;
-        kumkol = pkop + pkopP;
+    // ========== ответ хранение ==========
+    let kumkol4 = parseFloat(document.getElementById("volume2-kumkol4").value) || 0;
+    let zhanazholedit4 = parseFloat(document.getElementById("volume2-zhanazholedit4").value) || 0;
 
-        // Update percentage
-        let newPercent = (pkopP / pkop) * 100;
-        document.getElementById("percent-pkopPP").value = newPercent.toFixed(2);
+    let kenkiyak4P = parseFloat(document.getElementById("loss-kenkiyak4P").value) || calculateLoss(kenkiyakPP, kumkol4);
+    let kenkiyak4 = kumkol4 + kenkiyak4P;
+    let kenkiyakTransfer4P = parseFloat(document.getElementById("loss-kenkiyakTransfer4P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak4);
+    let kenkiyakTransfer4 = kenkiyak4 + kenkiyakTransfer4P;
+    let zhanazhol4P = parseFloat(document.getElementById("loss-zhanazhol4P").value) || calculateLoss(zhanazholPP, zhanazholedit4);
+    let zhanazhol4 = zhanazholedit4 + zhanazhol4P;
+    let psp45first4 = kenkiyakTransfer4 - zhanazhol4;
+    let psp4P = parseFloat(document.getElementById("loss-psp4P").value) || calculateLoss(psp45PP, psp45first4);
+    let psp45end4 = psp45first4 + psp4P;
 
-        kenkiyakP = calculateLoss(kenkiyakPP, kumkol);
-        kenkiyak = kumkol + kenkiyakP;
-        kenkiyakTransferP = calculateLoss(kenkiyakTransferPP, kenkiyak);
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = calculateLoss(psp45PP, psp45first);
-        psp45end = psp45first + pspP;
-    }
+    // ========== ПНХЗ ==========
+    let pnhzPP = parseFloat(document.getElementById("percent-pnhzPP").value) || 0;
 
-    if (startId === "loss-kenkiyakP") {
-        kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || 0;
-        kenkiyak = kumkol + kenkiyakP;
+    let atasu5 = parseFloat(document.getElementById("volume-atasu5").value) || 0;
+    let zhanazholedit5 = parseFloat(document.getElementById("volume2-zhanazholedit5").value) || 0;
 
-        // Update percentage
-        let newPercent = (kenkiyakP / kumkol) * 100;
-        document.getElementById("percent-kenkiyakPP").value = newPercent.toFixed(2);
+    let pnhzP = parseFloat(document.getElementById("loss-pnhzP").value) || calculateLoss(pnhzPP, atasu5);
+    let pnhz = atasu5 + pnhzP;
+    let atasuTransfer5P = parseFloat(document.getElementById("loss-atasuTransfer5P").value) || calculateLoss(atasuTransferPP, pnhz);
+    let atasuTransfer5 = pnhz + atasuTransfer5P;
+    let dzhumagalieva5P = parseFloat(document.getElementById("loss-dzhumagalieva5P").value) || calculateLoss(dzhumagalievaPP, atasuTransfer5);
+    let dzhumagalieva5 = atasuTransfer5 + dzhumagalieva5P;
+    let kumkol5P = parseFloat(document.getElementById("loss-kumkol5P").value) || calculateLoss(kumkolPP, dzhumagalieva5);
+    let kumkol5 = dzhumagalieva5 + kumkol5P;
+    let kenkiyak5P = parseFloat(document.getElementById("loss-kenkiyak5P").value) || calculateLoss(kenkiyakPP, kumkol5);
+    let kenkiyak5 = kumkol5 + kenkiyak5P;
+    let kenkiyakTransfer5P = parseFloat(document.getElementById("loss-kenkiyakTransfer5P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak5);
+    let kenkiyakTransfer5 = kenkiyak5 + kenkiyakTransfer5P;
+    let zhanazhol5P = parseFloat(document.getElementById("loss-zhanazhol5P").value) || calculateLoss(zhanazholPP, zhanazholedit5);
+    let zhanazhol5 = zhanazholedit5 + zhanazhol5P;
+    let psp45first5 = kenkiyakTransfer5 - zhanazhol5;
+    let psp5P = parseFloat(document.getElementById("loss-psp5P").value) || calculateLoss(psp45PP, psp45first5);
+    let psp45end5 = psp45first5 + psp5P;
 
-        kenkiyakTransferP = calculateLoss(kenkiyakTransferPP, kenkiyak);
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = calculateLoss(psp45PP, psp45first);
-        psp45end = psp45first + pspP;
-    }
+    // ========== Новороссийск ==========
+    let km915PP = parseFloat(document.getElementById("percent-km915PP").value) || 0;
+    let radionovskiPP = parseFloat(document.getElementById("percent-radionovskiPP").value) || 0;
+    let texareckPP = parseFloat(document.getElementById("percent-texareckPP").value) || 0;
+    let grushavaiPP = parseFloat(document.getElementById("percent-grushavaiPP").value) || 0;
+    let grushavaiTransferPP = parseFloat(document.getElementById("percent-grushavaiTransferPP").value) || 0;
+    let krasnoarmPP = parseFloat(document.getElementById("percent-krasnoarmPP").value) || 0;
 
-    if (startId === "loss-kenkiyakTransferP") {
-        kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || 0;
-        kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
 
-        // Update percentage
-        let newPercent = (kenkiyakTransferP / kenkiyak) * 100;
-        document.getElementById("percent-kenkiyakTransferPP").value = newPercent.toFixed(2);
+    let km12356 = parseFloat(document.getElementById("volume2-km12356").value) || 0;
+    let zhanazholedit6 = parseFloat(document.getElementById("volume2-zhanazholedit6").value) || 0;
+    let samara6P = parseFloat(document.getElementById("loss-samara6P").value) || calculateLoss(samaraPP, km12356);
+    let samara6 = km12356 - samara6P;
+    let samaraTransfer6P = parseFloat(document.getElementById("loss-samaraTransfer6P").value) || calculateLoss(samaraTransferPP, samara6);
+    let samaraTransfer6 = samara6 - samaraTransfer6P;
+    let krasnoarmP = parseFloat(document.getElementById("loss-krasnoarmP").value) || calculateLoss(krasnoarmPP, samaraTransfer6);
+    let krasnoarm = samaraTransfer6 - krasnoarmP;
+    let km915P = parseFloat(document.getElementById("loss-km915P").value) || calculateLoss(km915PP, krasnoarm);
+    let km915 = krasnoarm - km915P;
+    let radionovskiP = parseFloat(document.getElementById("loss-radionovskiP").value) || calculateLoss(radionovskiPP, km915);
+    let radionovski = km915 - radionovskiP;
+    let texareckP = parseFloat(document.getElementById("loss-texareckP").value) || calculateLoss(texareckPP, radionovski);
+    let texareck = radionovski - texareckP;
+    let grushavaiP = parseFloat(document.getElementById("loss-grushavaiP").value) || calculateLoss(grushavaiPP, texareck);
+    let grushavai = texareck - grushavaiP;
+    let grushavaiTransferP = parseFloat(document.getElementById("loss-grushavaiTransferP").value) || calculateLoss(grushavaiTransferPP, grushavai);
+    let grushavaiTransfer = grushavai - grushavaiTransferP;
+    let kasimova6P = parseFloat(document.getElementById("loss-kasimova6P").value) || calculateLoss(km1235PP, km12356);
+    let kasimova6 = km12356 + kasimova6P;
+    let shmanova6P = parseFloat(document.getElementById("loss-shmanova6P").value) || calculateLoss(kasimovaPP, kasimova6);
+    let shmanova6 = kasimova6 + shmanova6P;
+    let kenkiyak6P = parseFloat(document.getElementById("loss-kenkiyak6P").value) || calculateLoss(shmanovaPP, shmanova6);
+    let kenkiyak6 = shmanova6 + kenkiyak6P;
+    let kenkiyakTransfer6P = parseFloat(document.getElementById("loss-kenkiyakTransfer6P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak6);
+    let kenkiyakTransfer6 = kenkiyak6 + kenkiyakTransfer6P;
+    let zhanazhol6P = parseFloat(document.getElementById("loss-zhanazhol6P").value) || calculateLoss(zhanazholPP, zhanazholedit6);
+    let zhanazhol6 = zhanazholedit6 + zhanazhol6P;
+    let psp45first6 = kenkiyakTransfer6 - zhanazhol6;
+    let psp6P = parseFloat(document.getElementById("loss-psp6P").value) || calculateLoss(psp45PP, psp45first6);
+    let psp45end6 = psp45first6 + psp6P;
+    
 
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = calculateLoss(psp45PP, psp45first);
-        psp45end = psp45first + pspP;
-    }
+    // ========== Остатки ==========
+    let start_volumePsp=parseFloat(document.getElementById("loss-start_volumePsp").value) || 0;
+    let start_volumeShmanova = parseFloat(document.getElementById("start_volumeShmanova").value) || 0;
+    let start_volumeKumkol = parseFloat(document.getElementById("start_volumeKumkol").value) || 0;
+    let start_volume1 = parseFloat(document.getElementById("start_volume1").value) || 0;
+    let start_volume2 = parseFloat(document.getElementById("start_volume2").value) || 0;
 
-    if (startId === "loss-zhanazholP") {
-        zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || 0;
-        zhanazhol = zhanazholedit + zhanazholP;
+    let end_volumePsp = psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-;
+    // let kenkiyak4P = parseFloat(document.getElementById("loss-kenkiyak4P").value) || calculateLoss(kenkiyakPP, kumkol4);
+    // let kenkiyak4 = kumkol4 + kenkiyak4P;
+    // let kenkiyakTransfer4P = parseFloat(document.getElementById("loss-kenkiyakTransfer4P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak4);
+    // let kenkiyakTransfer4 = kenkiyak4 + kenkiyakTransfer4P;
+    // let zhanazhol4P = parseFloat(document.getElementById("loss-zhanazhol4P").value) || calculateLoss(zhanazholPP, zhanazholedit4);
+    // let zhanazhol4 = zhanazholedit4 + zhanazhol4P;
+    // let psp45first4 = kenkiyakTransfer4 - zhanazhol4;
+    // let psp4P = parseFloat(document.getElementById("loss-psp4P").value) || calculateLoss(psp45PP, psp45first4);
+    // let psp45end4 = psp45first4 + psp4P;
 
-        // Update percentage
-        let newPercent = (zhanazholP / zhanazholedit) * 100;
-        document.getElementById("percent-zhanazholPP").value = newPercent.toFixed(2);
 
-        psp45first = kenkiyakTransfer - zhanazhol;
-        pspP = calculateLoss(psp45PP, psp45first);
-        psp45end = psp45first + pspP;
-    }
+    // // 🔹 Dynamic update of values along the chain
 
-    if (startId === "loss-pspP") {
-        pspP = parseFloat(document.getElementById("loss-pspP").value) || 0;
-        psp45end = psp45first + pspP;
+    // if (startId === "loss-pkopP") {
+    //     pkopP = parseFloat(document.getElementById("loss-pkopP").value) || 0;
+    //     kumkol = pkop + pkopP;
 
-        // Update percentage
-        let newPercent = (pspP / psp45first) * 100;
-        document.getElementById("percent-psp45PP").value = newPercent.toFixed(2);
-    }
+    //     // Update percentage
+    //     let newPercent = (pkopP / pkop) * 100;
+    //     document.getElementById("percent-pkopPP").value = newPercent.toFixed(2);
 
-    // You would add more handlers for the new input fields similarly
-    // For example:
-    if (startId === "loss-samaraP") {
-        // Handle manual change of samaraP value
-        // Update other values in the chain
-    }
+    //     kenkiyakP = calculateLoss(kenkiyakPP, kumkol);
+    //     kenkiyak = kumkol + kenkiyakP;
+    //     kenkiyakTransferP = calculateLoss(kenkiyakTransferPP, kenkiyak);
+    //     kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+    //     psp45first = kenkiyakTransfer - zhanazhol;
+    //     pspP = calculateLoss(psp45PP, psp45first);
+    //     psp45end = psp45first + pspP;
+    // }
 
-    // 🔹 Fill in only changed values - original values
+    // if (startId === "loss-kenkiyakP") {
+    //     kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || 0;
+    //     kenkiyak = kumkol + kenkiyakP;
+
+    //     // Update percentage
+    //     let newPercent = (kenkiyakP / kumkol) * 100;
+    //     document.getElementById("percent-kenkiyakPP").value = newPercent.toFixed(2);
+
+    //     kenkiyakTransferP = calculateLoss(kenkiyakTransferPP, kenkiyak);
+    //     kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+    //     psp45first = kenkiyakTransfer - zhanazhol;
+    //     pspP = calculateLoss(psp45PP, psp45first);
+    //     psp45end = psp45first + pspP;
+    // }
+
+    // if (startId === "loss-kenkiyakTransferP") {
+    //     kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || 0;
+    //     kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+
+    //     // Update percentage
+    //     let newPercent = (kenkiyakTransferP / kenkiyak) * 100;
+    //     document.getElementById("percent-kenkiyakTransferPP").value = newPercent.toFixed(2);
+
+    //     psp45first = kenkiyakTransfer - zhanazhol;
+    //     pspP = calculateLoss(psp45PP, psp45first);
+    //     psp45end = psp45first + pspP;
+    // }
+
+    // if (startId === "loss-zhanazholP") {
+    //     zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || 0;
+    //     zhanazhol = zhanazholedit + zhanazholP;
+
+    //     // Update percentage
+    //     let newPercent = (zhanazholP / zhanazholedit) * 100;
+    //     document.getElementById("percent-zhanazholPP").value = newPercent.toFixed(2);
+
+    //     psp45first = kenkiyakTransfer - zhanazhol;
+    //     pspP = calculateLoss(psp45PP, psp45first);
+    //     psp45end = psp45first + pspP;
+    // }
+
+    // if (startId === "loss-pspP") {
+    //     pspP = parseFloat(document.getElementById("loss-pspP").value) || 0;
+    //     psp45end = psp45first + pspP;
+
+    //     // Update percentage
+    //     let newPercent = (pspP / psp45first) * 100;
+    //     document.getElementById("percent-psp45PP").value = newPercent.toFixed(2);
+    // }
+
+    // // You would add more handlers for the new input fields similarly
+    // // For example:
+    // if (startId === "loss-samaraP") {
+    //     // Handle manual change of samaraP value
+    //     // Update other values in the chain
+    // }
+
+
+    // ПКОП вывод
     document.getElementById("volume-psp45end").value = psp45end;
     document.getElementById("loss-pspP").value = pspP;
     document.getElementById("volume2-psp45first").value = psp45first;
@@ -403,7 +534,30 @@ function calculateFrom(startId = null) {
     document.getElementById("loss-kenkiyakP").value = kenkiyakP;
     document.getElementById("loss-pkopP").value = pkopP;
 
-    // 🔹 Fill in new values - first chain
+    // КНР вывод
+    document.getElementById("volume2-atasu").value = atasu;
+    document.getElementById("volume2-alashankou").value = alashankou;
+    document.getElementById("loss-alashankouP").value = alashankouP;
+    document.getElementById("volume2-atasuTransfer").value = atasuTransfer;
+    document.getElementById("volume-atasuTransfer").value = atasuTransfer;
+    document.getElementById("loss-atasuTransferP").value = atasuTransferP;
+    document.getElementById("volume2-dzhumagalieva").value = dzhumagalieva;
+    document.getElementById("volume-dzhumagalieva").value = dzhumagalieva;
+    document.getElementById("loss-dzhumagalievaP").value = dzhumagalievaP;
+    document.getElementById("volume2-kumkol2").value = kumkol2;
+    document.getElementById("volume-kumkol2").value = kumkol2;
+    document.getElementById("loss-kumkol2P").value = kumkol2P;
+    document.getElementById("volume2-kenkiyak2").value = kenkiyak2;
+    document.getElementById("volume-kenkiyak2").value = kenkiyak2;
+    document.getElementById("loss-kenkiyak2P").value = kenkiyak2P;
+    document.getElementById("volume-kenkiyakTransfer2").value = kenkiyakTransfer2;
+    document.getElementById("loss-kenkiyakTransfer2P").value = kenkiyakTransfer2P;
+    document.getElementById("volume-zhanazhol2").value = zhanazhol2;
+    document.getElementById("loss-zhanazhol2P").value = zhanazhol2P;
+    document.getElementById("volume2-psp45first2").value = psp45first2;
+    document.getElementById("volume-psp45end2").value = psp45end2;
+    document.getElementById("loss-psp2P").value = psp2P;
+    // Уст-ЛУГА вывод
     document.getElementById("volume-samara").value = samara; 
     document.getElementById("loss-samaraP").value = samaraP;
     document.getElementById("volume2-samara").value = samara;
@@ -422,8 +576,7 @@ function calculateFrom(startId = null) {
     document.getElementById("loss-ustlugaTransferP").value = ustlugaTransferP;
     document.getElementById("volume2-ustlugaTransfer").value = ustlugaTransfer;
     document.getElementById("volume-km1235").value = km1235;
-    
-    // 🔹 Fill in new values - second chain
+
     document.getElementById("volume-kasimova").value = kasimova;
     document.getElementById("loss-kasimovaP").value = kasimovaP;
     document.getElementById("volume2-kasimova").value = kasimova;
@@ -440,6 +593,91 @@ function calculateFrom(startId = null) {
     document.getElementById("loss-psp3P").value = psp3P;
     document.getElementById("volume2-psp45first3").value = psp45first3;
     document.getElementById("volume-psp45end3").value = psp45end3;
+
+    // Ответ хранение вывод
+    document.getElementById("volume2-kumkol4").value = kumkol4;
+    document.getElementById("loss-kenkiyak4P").value = kenkiyak4P;
+    document.getElementById("volume-kenkiyak4").value = kenkiyak4;
+    document.getElementById("volume2-kenkiyak4").value = kenkiyak4;
+    document.getElementById("loss-kenkiyakTransfer4P").value = kenkiyakTransfer4P;
+    document.getElementById("volume-kenkiyakTransfer4").value = kenkiyakTransfer4;
+    document.getElementById("loss-zhanazhol4P").value = zhanazhol4P;
+    document.getElementById("volume-zhanazhol4").value = zhanazhol4;
+    document.getElementById("loss-psp4P").value = psp4P;
+    document.getElementById("volume2-psp45first4").value = psp45first4;
+    document.getElementById("volume-psp45end4").value = psp45end4;
+
+    // ПНХЗ вывод
+    document.getElementById("volume2-atasu5").value = atasu5;
+    document.getElementById("loss-pnhzP").value = pnhzP;
+    document.getElementById("volume2-pnhz").value = pnhz;
+    document.getElementById("loss-atasuTransfer5P").value = atasuTransfer5P;
+    document.getElementById("volume-atasuTransfer5").value = atasuTransfer5;
+    document.getElementById("volume2-atasuTransfer5").value = atasuTransfer5;
+    document.getElementById("loss-dzhumagalieva5P").value = dzhumagalieva5P;
+    document.getElementById("volume-dzhumagalieva5").value = dzhumagalieva5;
+    document.getElementById("volume2-dzhumagalieva5").value = dzhumagalieva5;
+    document.getElementById("loss-kumkol5P").value = kumkol5P;
+    document.getElementById("volume-kumkol5").value = kumkol5;
+    document.getElementById("volume2-kumkol5").value = kumkol5;
+    document.getElementById("loss-kenkiyak5P").value = kenkiyak5P;
+    document.getElementById("volume-kenkiyak5").value = kenkiyak5;
+    document.getElementById("volume2-kenkiyak5").value = kenkiyak5;
+    document.getElementById("loss-kenkiyakTransfer5P").value = kenkiyakTransfer5P;
+    document.getElementById("volume-kenkiyakTransfer5").value = kenkiyakTransfer5;
+    document.getElementById("loss-zhanazhol5P").value = zhanazhol5P;
+    document.getElementById("volume-zhanazhol5").value = zhanazhol5;
+    document.getElementById("loss-psp5P").value = psp5P;
+    document.getElementById("volume2-psp45first5").value = psp45first5;
+    document.getElementById("volume-psp45end5").value = psp45end5;
+
+    // КНР вывод
+    document.getElementById("volume-km12356").value = km12356;
+    document.getElementById("loss-samara6P").value = samara6P;
+    document.getElementById("volume-samara6").value = samara6;
+    document.getElementById("volume2-samara6").value = samara6;
+    document.getElementById("loss-samaraTransfer6P").value = samaraTransfer6P;
+    document.getElementById("volume2-samaraTransfer6").value = samaraTransfer6;
+    document.getElementById("volume-samaraTransfer6").value = samaraTransfer6;
+    document.getElementById("volume-krasnoarm").value = krasnoarm;
+    document.getElementById("loss-krasnoarmP").value = krasnoarmP;
+    document.getElementById("volume2-krasnoarm").value = krasnoarm;
+    document.getElementById("loss-km915P").value = km915P;
+    document.getElementById("volume-km915").value = km915;
+    document.getElementById("volume2-km915").value = km915;
+    document.getElementById("loss-radionovskiP").value = radionovskiP;
+    document.getElementById("volume-radionovski").value = radionovski;
+    document.getElementById("volume2-radionovski").value = radionovski;
+    document.getElementById("loss-texareckP").value = texareckP;
+    document.getElementById("volume-texareck").value = texareck;
+    document.getElementById("volume2-texareck").value = texareck;
+    document.getElementById("loss-grushavaiP").value = grushavaiP;
+    document.getElementById("volume-texareck").value = texareck;
+    document.getElementById("volume2-texareck").value = texareck;
+    document.getElementById("loss-grushavaiP").value = grushavaiP;
+    document.getElementById("volume-grushavai").value = grushavai;
+    document.getElementById("volume2-grushavai").value = grushavai;
+    document.getElementById("loss-grushavaiTransferP").value = grushavaiTransferP;
+    document.getElementById("volume-grushavaiTransfer").value = grushavaiTransfer;
+    document.getElementById("volume2-grushavaiTransfer").value = grushavaiTransfer;
+
+    document.getElementById("loss-kasimova6P").value = kasimova6P;
+    document.getElementById("volume2-kasimova6").value = kasimova6;
+    document.getElementById("volume-kasimova6").value = kasimova6;
+
+    document.getElementById("loss-shmanova6P").value = shmanova6P;
+    document.getElementById("volume-shmanova6").value = shmanova6;
+    document.getElementById("volume2-shmanova6").value = shmanova6;
+    document.getElementById("loss-kenkiyak6P").value = kenkiyak6P;
+    document.getElementById("volume-kenkiyak6").value = kenkiyak6;
+    document.getElementById("volume2-kenkiyak6").value = kenkiyak6;
+    document.getElementById("loss-kenkiyakTransfer6P").value = kenkiyakTransfer6P;
+    document.getElementById("volume-kenkiyakTransfer6").value = kenkiyakTransfer6;
+    document.getElementById("loss-zhanazhol6P").value = zhanazhol6P;
+    document.getElementById("volume-zhanazhol6").value = zhanazhol6;
+    document.getElementById("loss-psp6P").value = psp6P;
+    document.getElementById("volume2-psp45first6").value = psp45first6;
+    document.getElementById("volume-psp45end6").value = psp45end6;
 }
 
 
