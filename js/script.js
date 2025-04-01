@@ -424,6 +424,7 @@ fetch('database/getData.php?table=Points')
     .catch(error => console.error('Ошибка загрузки данных:', error));
 
 
+    
 //--------------------------Резервуары----------------------------
 
 // Настройка смещения для каждого резервуара
@@ -436,10 +437,35 @@ const reservoirOffsets = {
     6: { start: { lat: 0.1, lng: -0.1 }, end: { lat: 0.1, lng: 0.1 } }, // Для технических резервуаров
 };
 
+
 // Функция для расчёта процента заполненности
 function getFillPercentage(volume, maxCapacity) {
     return Math.min(100, (volume / maxCapacity) * 100); // Не больше 100%
 }
+
+function getReservoirSizeByZoom(zoom) {
+    if (zoom >= 10) return { width: 30, height: 50 };
+    if (zoom >= 8) return { width: 22, height: 40 };
+    if (zoom >= 6) return { width: 16, height: 30 };
+    return { width: 10, height: 20 };
+}
+
+function createReservoirIcon(fillPercent, type, zoom) {
+    const size = getReservoirSizeByZoom(zoom);
+
+    return L.divIcon({
+        html: `
+            <div class="reservoir-container ${type === 1 ? 'technical' : ''}" 
+                 style="width: ${size.width}px; height: ${size.height}px;">
+                <div class="reservoir-fill" style="height: ${fillPercent}%;"></div>
+            </div>
+        `,
+        className: '',
+        iconSize: null
+    });
+}
+
+
 
 // Функция создания иконки с черным/белым заполнением для двух типов резервуаров
 function createReservoirIcon(fillPercentage, width, height, type) {
@@ -460,111 +486,245 @@ function createReservoirIcon(fillPercentage, width, height, type) {
 // Создаём слои для резервуаров
 const pointTanksLayer = L.layerGroup(); // Точечные резервуары
 const technicalTanksLayer = L.layerGroup(); // Технические резервуары
-
-// Получаем данные резервуаров и их объемов из базы
-fetch('database/getData.php?table=Reservoirs')
-    .then(response => response.json())
-    .then(reservoirs => {
-        fetch('database/getData.php?table=reservoirvolumes')
-            .then(response => response.json())
-            .then(volumes => {
-                const latestVolumes = {};
-                volumes.forEach(volume => {
-                    latestVolumes[volume.reservoir_id] = {
-                        start_volume: volume.start_volume,
-                        end_volume: volume.end_volume
-                    };
-                });
-
-                reservoirs.forEach(reservoir => {
-                    const volumeData = latestVolumes[reservoir.id] || { start_volume: 0, end_volume: 0 };
-                    const coordStart = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
-                    const coordEnd = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
-
-                    const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
-                    const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
-                    const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
+let cachedReservoirs = [];
 
 
-                    //--------------------------------------------------------Тут проработать колчиество по резервуарам!!!!
-                    let maxCapacity = 10000; // По умолчанию 10 тыс. тонн
-                    if (reservoir.name.includes("Кенкияк-Шманова")) {
-                        maxCapacity = 5000;
-                    } else if (reservoir.name.includes("Кенкияк-Кумоль")) {
-                        maxCapacity = 15000;
-                    }
+function addReservoirs(reservoirs) {
+    pointTanksLayer.clearLayers();
+    technicalTanksLayer.clearLayers();
 
-                    const startFillPercentage = getFillPercentage(volumeData.start_volume, maxCapacity);
-                    const endFillPercentage = getFillPercentage(volumeData.end_volume, maxCapacity);
+    const zoom = map.getZoom();
 
-                    if (reservoir.type === 0) {
-                        // Точечные резервуары (красная рамка)
-                        L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 25, 40, reservoir.type) })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
-                            .addTo(pointTanksLayer);
-                    
-                        L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 25, 40, reservoir.type) })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
-                            .addTo(pointTanksLayer);
-                    } else if (reservoir.type === 1) {
-                        // Технические резервуары (коричневая рамка)
-                        L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 35, 25, reservoir.type) })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
-                            .addTo(technicalTanksLayer);
-                    
-                        L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 35, 25, reservoir.type) })
-                            .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
-                            .addTo(technicalTanksLayer);
-                    }
-                    
+    reservoirs.forEach(reservoir => {
+        const volumeData = {
+            start_volume: reservoir.start_volume || 0,
+            end_volume: reservoir.end_volume || 0
+        };
 
-                    // Линии между точками (для всех типов)
-                    L.polyline([coordStart, coordEnd], {
-                        color: '#722600',
-                        weight: 4,
-                        opacity: 0.7
-                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+        const coordStart = [reservoir.lat, reservoir.lng];
+        const coordEnd = [reservoir.end_lat, reservoir.end_lng];
 
-                    // Линии от маркеров к меткам с объемами
-                    L.polyline([coordStart, coordStartLabel], {
-                        color: 'black',
-                        weight: 2,
-                        opacity: 0.8,
-                        dashArray: '4,2'
-                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+        const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
+        const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
+        const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
 
-                    L.polyline([coordEnd, coordEndLabel], {
-                        color: 'black',
-                        weight: 2,
-                        opacity: 0.8,
-                        dashArray: '4,2'
-                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+        let maxCapacity = 10000;
+        if (reservoir.name.includes("Шманова")) maxCapacity = 5000;
+        else if (reservoir.name.includes("Кумоль")) maxCapacity = 15000;
 
-                    // Метки с объемами рядом с резервуарами
-                    L.marker(coordStartLabel, {
-                        icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
-                                ${volumeData.start_volume} м³
-                            </div>`,
-                            className: ''
-                        })
-                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+        const startFill = getFillPercentage(volumeData.start_volume, maxCapacity);
+        const endFill = getFillPercentage(volumeData.end_volume, maxCapacity);
 
-                    L.marker(coordEndLabel, {
-                        icon: L.divIcon({
-                            html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
-                                ${volumeData.end_volume} м³
-                            </div>`,
-                            className: ''
-                        })
-                    }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
-                });
+        const layer = reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer;
 
-                updateLayerVisibility();
+        L.marker(coordStart, {
+            icon: createReservoirIcon(startFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+          .addTo(layer);
+
+        L.marker(coordEnd, {
+            icon: createReservoirIcon(endFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
+          .addTo(layer);
+
+        L.polyline([coordStart, coordEnd], {
+            color: '#722600', weight: 4, opacity: 0.7
+        }).addTo(layer);
+
+        L.polyline([coordStart, coordStartLabel], {
+            color: 'black', weight: 2, opacity: 0.8, dashArray: '4,2'
+        }).addTo(layer);
+
+        L.polyline([coordEnd, coordEndLabel], {
+            color: 'black', weight: 2, opacity: 0.8, dashArray: '4,2'
+        }).addTo(layer);
+
+        L.marker(coordStartLabel, {
+            icon: L.divIcon({
+                html: `<div style="white-space: nowrap; font-weight: bold;">${volumeData.start_volume} м³</div>`,
+                className: ''
             })
-            .catch(error => console.error('Ошибка загрузки данных объемов нефти:', error));
-    })
-    .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
+        }).addTo(layer);
+
+        L.marker(coordEndLabel, {
+            icon: L.divIcon({
+                html: `<div style="white-space: nowrap; font-weight: bold;">${volumeData.end_volume} м³</div>`,
+                className: ''
+            })
+        }).addTo(layer);
+    });
+
+    const checkbox = document.getElementById('checkboxTwo');
+    if (checkbox && checkbox.checked) {
+        map.addLayer(pointTanksLayer);
+        map.addLayer(technicalTanksLayer);
+    }
+}
+
+
+function fetchAndRenderReservoirs() {
+    fetch('get_reservoirs.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Загружено резервуаров:", data.length);
+            cachedReservoirs = data;
+            addReservoirs(data);
+        });
+}
+
+fetchAndRenderReservoirs(); 
+
+map.on('zoomend', () => {
+    addReservoirs(cachedReservoirs); 
+});
+
+
+
+function createReservoirIcon(fillPercent, type, zoom) {
+    const size = getReservoirSizeByZoom(zoom);
+
+    return L.divIcon({
+        html: `
+            <div class="reservoir-container ${type === 1 ? 'technical' : ''}" 
+                 style="width: ${size.width}px; height: ${size.height}px;">
+                <div class="reservoir-fill" style="height: ${fillPercent}%;"></div>
+            </div>
+        `,
+        className: '',
+        iconSize: null
+    });
+}
+
+function getReservoirSizeByZoom(zoom) {
+    if (zoom >= 10) return { width: 30, height: 50 };
+    if (zoom >= 8) return { width: 22, height: 40 };
+    if (zoom >= 6) return { width: 16, height: 30 };
+    return { width: 10, height: 20 };
+}
+
+
+
+document.getElementById('checkboxTwo').addEventListener('change', async function () {
+    if (this.checked) {
+        const [year, month] = document.getElementById('month-input').value.split('-');
+        const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+        cachedReservoirs = reservoirs;
+        addReservoirs(reservoirs);
+    } else {
+        map.removeLayer(pointTanksLayer);
+        map.removeLayer(technicalTanksLayer);
+    }
+});
+
+
+
+
+
+
+// // Получаем данные резервуаров и их объемов из базы
+// fetch('database/getData.php?table=Reservoirs')
+//     .then(response => response.json())
+//     .then(reservoirs => {
+//         fetch('database/getData.php?table=reservoirvolumes')
+//             .then(response => response.json())
+//             .then(volumes => {
+//                 const latestVolumes = {};
+//                 volumes.forEach(volume => {
+//                     latestVolumes[volume.reservoir_id] = {
+//                         start_volume: volume.start_volume,
+//                         end_volume: volume.end_volume
+//                     };
+//                 });
+
+//                 reservoirs.forEach(reservoir => {
+//                     const volumeData = latestVolumes[reservoir.id] || { start_volume: 0, end_volume: 0 };
+//                     const coordStart = [reservoir.coords_start_latitude, reservoir.coords_start_longitude];
+//                     const coordEnd = [reservoir.coords_end_latitude, reservoir.coords_end_longitude];
+
+//                     const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
+//                     const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
+//                     const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
+
+
+//                     //--------------------------------------------------------Тут проработать колчиество по резервуарам!!!!
+//                     let maxCapacity = 10000; // По умолчанию 10 тыс. тонн
+//                     if (reservoir.name.includes("Кенкияк-Шманова")) {
+//                         maxCapacity = 5000;
+//                     } else if (reservoir.name.includes("Кенкияк-Кумоль")) {
+//                         maxCapacity = 15000;
+//                     }
+
+//                     const startFillPercentage = getFillPercentage(volumeData.start_volume, maxCapacity);
+//                     const endFillPercentage = getFillPercentage(volumeData.end_volume, maxCapacity);
+
+//                     if (reservoir.type === 0) {
+//                         // Точечные резервуары (красная рамка)
+//                         L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 25, 40, reservoir.type) })
+//                             .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+//                             .addTo(pointTanksLayer);
+                    
+//                         L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 25, 40, reservoir.type) })
+//                             .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
+//                             .addTo(pointTanksLayer);
+//                     } else if (reservoir.type === 1) {
+//                         // Технические резервуары (коричневая рамка)
+//                         L.marker(coordStart, { icon: createReservoirIcon(startFillPercentage, 35, 25, reservoir.type) })
+//                             .bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+//                             .addTo(technicalTanksLayer);
+                    
+//                         L.marker(coordEnd, { icon: createReservoirIcon(endFillPercentage, 35, 25, reservoir.type) })
+//                             .bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
+//                             .addTo(technicalTanksLayer);
+//                     }
+                    
+
+//                     // Линии между точками (для всех типов)
+//                     L.polyline([coordStart, coordEnd], {
+//                         color: '#722600',
+//                         weight: 4,
+//                         opacity: 0.7
+//                     }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+//                     // Линии от маркеров к меткам с объемами
+//                     L.polyline([coordStart, coordStartLabel], {
+//                         color: 'black',
+//                         weight: 2,
+//                         opacity: 0.8,
+//                         dashArray: '4,2'
+//                     }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+//                     L.polyline([coordEnd, coordEndLabel], {
+//                         color: 'black',
+//                         weight: 2,
+//                         opacity: 0.8,
+//                         dashArray: '4,2'
+//                     }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+//                     // Метки с объемами рядом с резервуарами
+//                     L.marker(coordStartLabel, {
+//                         icon: L.divIcon({
+//                             html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+//                                 ${volumeData.start_volume} м³
+//                             </div>`,
+//                             className: ''
+//                         })
+//                     }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+
+//                     L.marker(coordEndLabel, {
+//                         icon: L.divIcon({
+//                             html: `<div style="white-space: nowrap; padding: 6x 10x; font-weight: bold; transform: translateY(-10px);">
+//                                 ${volumeData.end_volume} м³
+//                             </div>`,
+//                             className: ''
+//                         })
+//                     }).addTo(reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer);
+//                 });
+
+//                 updateLayerVisibility();
+//             })
+//             .catch(error => console.error('Ошибка загрузки данных объемов нефти:', error));
+//     })
+//     .catch(error => console.error('Ошибка загрузки данных резервуаров:', error));
 
 // // Управление видимостью слоев
 // const minZoom = 7.5;
@@ -686,33 +846,6 @@ async function main() {
 main();
 
 
-function addReservoirs(reservoirData) {
-    console.log("🛢 Добавляем резервуары на карту:", reservoirData);
-
-    if (!reservoirData || reservoirData.length === 0) {
-        console.warn("⚠ Нет данных для резервуаров.");
-        return;
-    }
-
-    // Очищаем слой резервуаров перед добавлением новых
-    reservoirLayerGroup.clearLayers();
-
-    reservoirData.forEach(reservoir => {
-        if (reservoir.lat && reservoir.lng) {
-            const marker = L.circleMarker([reservoir.lat, reservoir.lng], {
-                radius: 8,
-                color: "brown",
-                weight: 2,
-                fillColor: "yellow",
-                fillOpacity: 0.8
-            }).addTo(reservoirLayerGroup);
-
-            marker.bindPopup(`<b>Резервуар:</b> ${reservoir.name}<br>Начальный объем: ${reservoir.start_volume} тн<br>Конечный объем: ${reservoir.end_volume} тн`);
-        }
-    });
-
-    console.log("✅ Резервуары добавлены на карту.");
-}
 
 
 
@@ -746,7 +879,6 @@ const directionOffsets = {
     24: { lat: -0.3, lng: 0.6 },  // 1235
 };
 
-// Обновленная функция поиска свободного места
 function findFreePosition(coords, layerGroup, pointId) {
     if (pointId === 5) return null; // Исключаем Кенкияк
 
@@ -755,22 +887,33 @@ function findFreePosition(coords, layerGroup, pointId) {
         [baseOffset, baseOffset],   
         [baseOffset, -baseOffset],  
         [-baseOffset, baseOffset],  
-        [-baseOffset, -baseOffset]  
+        [-baseOffset, -baseOffset],
+        [0, baseOffset],
+        [baseOffset, 0],
+        [0, -baseOffset],
+        [-baseOffset, 0]
     ];
 
     const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
+
+    // Генерируем последовательность направлений начиная с кастомного, затем добавляем стандартные
     const directions = [
-        [customOffset.lat, customOffset.lng], 
-        ...defaultDirections                 
+        [customOffset.lat, customOffset.lng],
+        ...defaultDirections
     ];
 
     for (let i = 0; i < directions.length; i++) {
+        const offsetLat = directions[i][0];
+        const offsetLng = directions[i][1];
+
+        // Чем дальше направление в списке, тем сильнее смещаем (умножаем)
+        const scale = 1 + i * 0.2; 
+
         const candidateCoords = [
-            coords[0] + directions[i][0],
-            coords[1] + directions[i][1]
+            coords[0] + offsetLat * scale,
+            coords[1] + offsetLng * scale
         ];
 
-        // Проверяем, пересекается ли с существующими элементами
         const isOverlapping = Array.from(layerGroup.getLayers()).some(layer => {
             if (layer.getLatLng) {
                 const layerCoords = layer.getLatLng();
@@ -790,54 +933,93 @@ function findFreePosition(coords, layerGroup, pointId) {
         });
 
         if (!isOverlapping) {
-            return candidateCoords; 
+            return candidateCoords;
         }
     }
 
-    return [coords[0] + baseOffset, coords[1] + baseOffset];
+    // В крайнем случае — ставим далеко
+    return [coords[0] + baseOffset * 2, coords[1] + baseOffset * 2];
 }
 
-// Обновляем вызов addMinimalistFlow
+
+function findFreePositionWithIndex(coords, layerGroup, pointId, usageIndex) {
+    if (pointId === 5) return null;
+
+    const baseOffset = 0.5;
+
+    const baseDirections = [
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+        [0, 1],
+        [1, 0],
+        [0, -1],
+        [-1, 0]
+    ];
+
+    const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
+    const hasCustom = customOffset.lat !== 0 || customOffset.lng !== 0;
+
+    // Генерируем направленное смещение
+    const directions = hasCustom
+        ? [[customOffset.lat, customOffset.lng], ...baseDirections]
+        : [...baseDirections];
+
+    const dir = directions[usageIndex % directions.length];
+    const scale = 1 + Math.floor(usageIndex / directions.length) * 0.4; // увеличиваем по мере роста
+
+    const candidateCoords = [
+        coords[0] + dir[0] * baseOffset * scale,
+        coords[1] + dir[1] * baseOffset * scale
+    ];
+
+    return candidateCoords;
+}
+
+
+
 function addMinimalistFlow(points, oilTransferData) {
     minimalistFlowLayerGroup.clearLayers();
 
     if (!flowLayerVisible) return;
 
-    const uniqueEntries = new Set(); 
+    const uniqueEntries = new Set();  
+    const pointUsageCounter = {}; // Счётчик использования точек
 
     oilTransferData.forEach(record => {
-        let isSpecialSource = (record.from_point === 12 || record.from_point === 11);
+        const isSpecialSource = (record.from_point === 12 || record.from_point === 11);
 
-        // ⚠️ Исключаем Кенкияк (5), но сохраняем отправку из ПСП 45 и Жана Жол
+        // Исключаем Кенкияк как получателя, но не как отправителя
         if (record.to_point === 5) {
             console.log(`⛔ Кенкияк (id 5) исключен, но отправка из ${record.from_point} сохраняется.`);
         }
 
-        // Используем `from_point`, если точка отправитель
-        const point = points.find(p => 
-            isSpecialSource ? p.id === record.from_point : p.id === record.to_point
-        );
+        const pointId = isSpecialSource ? record.from_point : record.to_point;
+        const point = points.find(p => p.id === pointId);
 
         if (!point || !point.coords) {
-            console.warn(`⚠️ Координаты не найдены: ${isSpecialSource ? record.from_point : record.to_point}`);
-            return; 
+            console.warn(`⚠️ Координаты не найдены: ${pointId}`);
+            return;
         }
 
-        console.log(`✅ Обрабатываем точку ${point.id}: ${isSpecialSource ? 'Отправка' : 'Прием'} - ${record.from_amount} тн`);
+        console.log(`✅ Обрабатываем точку ${pointId}: ${isSpecialSource ? 'Отправка' : 'Прием'} - ${record.from_amount} тн`);
 
-        const recordKey = `${point.id}-${record.from_amount}`;
-
-        if (uniqueEntries.has(recordKey)) return; 
-
+        const recordKey = `${pointId}-${record.from_amount}`;
+        if (uniqueEntries.has(recordKey)) return;
         uniqueEntries.add(recordKey);
 
-        // Обновленный поиск свободного места
-        const labelPosition = findFreePosition(point.coords, minimalistFlowLayerGroup, point.id);
+        // Счётчик использований конкретной точки
+        if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
+        const usageIndex = pointUsageCounter[pointId]++;
+        
+        // Поиск свободного места с учётом индекса
+        const labelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
         if (!labelPosition) return;
 
         const markerHtml = `<div>${record.from_amount} тн</div>`;
 
-        // ЧЕРНАЯ линия для отправки из ПСП 45 и Жана Жол
+        // Черная пунктирная линия
         L.polyline([point.coords, labelPosition], {
             color: 'black',
             weight: 2,
@@ -845,7 +1027,7 @@ function addMinimalistFlow(points, oilTransferData) {
             opacity: 0.8,
         }).addTo(minimalistFlowLayerGroup);
 
-        // Метка с объемом нефти
+        // Метка объема
         L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label',
@@ -856,8 +1038,9 @@ function addMinimalistFlow(points, oilTransferData) {
         }).addTo(minimalistFlowLayerGroup);
     });
 
-    map.addLayer(minimalistFlowLayerGroup); 
+    map.addLayer(minimalistFlowLayerGroup);
 }
+
 
 
 
@@ -1020,28 +1203,32 @@ async function displayKenkiyakOilTotal(year, month, points) {
 
 
 async function initializeFlowMap() {
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB();
-
-    console.log('📌 Загружены точки:', points);
-    console.log('📊 Загружены данные о нефти:', oilTransferData);
-
-    if (points.length === 0 || oilTransferData.length === 0) {
-        console.error('❌ Недостаточно данных для отрисовки карты.');
+    const monthInput = document.getElementById('month-input');
+    if (!monthInput || !monthInput.value) {
+        console.warn("⚠ Невозможно определить текущий месяц для фильтрации.");
         return;
     }
 
-    // Добавляем стрелки и линии потока нефти
+    const [year, month] = monthInput.value.split('-');
+
+    const points = await fetchPointsFromDB();
+    const oilTransferData = await fetchOilTransferFromDB(year, month);
+
+    console.log(`📌 Загружены точки:`, points);
+    console.log(`📊 Загружены данные за ${year}-${month}:`, oilTransferData);
+
+    clearAllDataLayers(); // очищаем все слои на всякий случай
+
+    if (points.length === 0 || oilTransferData.length === 0) {
+        console.warn('❌ Недостаточно данных для отрисовки карты.');
+        dataLoaded = false;
+        return;
+    }
+
     addMinimalistFlow(points, oilTransferData);
+    await displayKenkiyakOilTotal(year, month, points);
 
-    // Получаем текущую дату
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    console.log(`✅ Отображаем данные по Кенкияку за ${currentMonth}/${currentYear}`);
-    
-    // Добавляем суммарную нефть в Кенкияке
-    await displayKenkiyakOilTotal(currentYear, currentMonth, points);
+    dataLoaded = true;
 }
 
 
@@ -1512,3 +1699,4 @@ filterButton.addEventListener('change', () => {
 document.addEventListener("DOMContentLoaded", () => {
     initializeOilFlowMap();
 });
+

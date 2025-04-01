@@ -113,15 +113,16 @@ label[for="date-input"] {
     <div class="btnList">
         <ul class="ks-cboxtags">
             <li><input type="checkbox" id="checkboxOne" value="Oil" checked><label for="checkboxOne">Нефть</label></li>
-            <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy"><label for="checkboxTwo">Reserv</label></li>
+            <li><input type="checkbox" id="checkboxTwo" value="Cotton Candy"><label for="checkboxTwo">Резервуары</label></li>
             <!-- <li><input type="checkbox" id="checkboxThree" value="Rarity"><label for="checkboxThree">Rarity</label></li>
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li> -->
             
-     <div id="filter-container">
-     <label  for="date-input">Дата:</label>
-     <input type="date" id="date-input" class="form-control mb-3">
-     </div>
+<div id="filter-container">
+    <label for="month-input">Месяц:</label>
+    <input type="month" id="month-input" class="form-control mb-3">
+</div>
+
 
         </ul>     
     </div>
