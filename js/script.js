@@ -466,34 +466,15 @@ function createReservoirIcon(fillPercent, type, zoom) {
 }
 
 
-
-// Функция создания иконки с черным/белым заполнением для двух типов резервуаров
-function createReservoirIcon(fillPercentage, width, height, type) {
-    // Цвет рамки зависит от типа резервуара
-    const borderColor = type === 0 ? "rgba(192, 38, 38, 0.99)" : "brown";
-
-    return L.divIcon({
-        html: `<div style="position: relative; width: ${width}px; height: ${height}px; border: 2px solid ${borderColor}; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
-                    <div style="position: absolute; width: 100%; height: 100%; background: white;"></div>
-                    <div style="position: absolute; width: 100%; height: ${fillPercentage}%; background: black; bottom: 0;"></div>
-               </div>`,
-        iconSize: [width, height],
-        className: '',
-    });
-}
-
-
 // Создаём слои для резервуаров
 const pointTanksLayer = L.layerGroup(); // Точечные резервуары
 const technicalTanksLayer = L.layerGroup(); // Технические резервуары
 let cachedReservoirs = [];
-
-
 function addReservoirs(reservoirs) {
     pointTanksLayer.clearLayers();
     technicalTanksLayer.clearLayers();
 
-    const zoom = map.getZoom();
+    const zoom = map.getZoom(); // получаем текущий зум
 
     reservoirs.forEach(reservoir => {
         const volumeData = {
@@ -517,6 +498,7 @@ function addReservoirs(reservoirs) {
 
         const layer = reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer;
 
+        // Маркеры с учётом зума
         L.marker(coordStart, {
             icon: createReservoirIcon(startFill, reservoir.type, zoom)
         }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
@@ -527,6 +509,7 @@ function addReservoirs(reservoirs) {
         }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
           .addTo(layer);
 
+        // Линии
         L.polyline([coordStart, coordEnd], {
             color: '#722600', weight: 4, opacity: 0.7
         }).addTo(layer);
@@ -539,6 +522,7 @@ function addReservoirs(reservoirs) {
             color: 'black', weight: 2, opacity: 0.8, dashArray: '4,2'
         }).addTo(layer);
 
+        // Подписи
         L.marker(coordStartLabel, {
             icon: L.divIcon({
                 html: `<div style="white-space: nowrap; font-weight: bold;">${volumeData.start_volume} м³</div>`,
@@ -558,36 +542,35 @@ function addReservoirs(reservoirs) {
     if (checkbox && checkbox.checked) {
         map.addLayer(pointTanksLayer);
         map.addLayer(technicalTanksLayer);
-    }
+    }    
 }
-
-
-function fetchAndRenderReservoirs() {
-    fetch('get_reservoirs.php')
-        .then(response => response.json())
-        .then(data => {
-            console.log("Загружено резервуаров:", data.length);
-            cachedReservoirs = data;
-            addReservoirs(data);
-        });
-}
-
-fetchAndRenderReservoirs(); 
-
-map.on('zoomend', () => {
-    addReservoirs(cachedReservoirs); 
-});
-
-
 
 function createReservoirIcon(fillPercent, type, zoom) {
-    const size = getReservoirSizeByZoom(zoom);
+    const size = getReservoirSizeByZoom(zoom, type); 
+    const borderColor = type === 1 ? "brown" : "rgba(192, 38, 38, 0.99)";
+    const borderRadius = type === 1 ? "2px" : "0px";
 
     return L.divIcon({
         html: `
-            <div class="reservoir-container ${type === 1 ? 'technical' : ''}" 
-                 style="width: ${size.width}px; height: ${size.height}px;">
-                <div class="reservoir-fill" style="height: ${fillPercent}%;"></div>
+            <div style="
+                position: relative;
+                width: ${size.width}px;
+                height: ${size.height}px;
+                border: 2px solid ${borderColor};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                background: white;
+                transition: width 0.2s ease, height 0.2s ease;
+                border-radius: ${borderRadius};
+                overflow: hidden;
+            ">
+                <div style="
+                    position: absolute;
+                    width: 100%;
+                    bottom: 0;
+                    height: ${fillPercent}%;
+                    background: black;
+                    transition: height 0.3s ease;
+                "></div>
             </div>
         `,
         className: '',
@@ -595,27 +578,92 @@ function createReservoirIcon(fillPercent, type, zoom) {
     });
 }
 
-function getReservoirSizeByZoom(zoom) {
-    if (zoom >= 10) return { width: 30, height: 50 };
-    if (zoom >= 8) return { width: 22, height: 40 };
-    if (zoom >= 6) return { width: 16, height: 30 };
-    return { width: 10, height: 20 };
+
+function getReservoirSizeByZoom(zoom, type) {
+    const base = zoom >= 10 ? 1 : zoom >= 8 ? 0.8 : zoom >= 6 ? 0.6 : 0.4;
+
+    if (type === 1) {
+        return { width: 45 * base, height: 30 * base }; // технические — почти квадрат
+    } else {
+        return { width: 25 * base, height: 40 * base }; // точечные — вытянутые
+    }
 }
 
 
 
-document.getElementById('checkboxTwo').addEventListener('change', async function () {
-    if (this.checked) {
-        const [year, month] = document.getElementById('month-input').value.split('-');
-        const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+    // document.getElementById('checkboxTwo').addEventListener('change', async function () {
+    //     if (this.checked) {
+    //         const [year, month] = document.getElementById('month-input').value.split('-');
+    //         const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+
+    //         cachedReservoirs = reservoirs;
+
+    //         addReservoirs(reservoirs);
+    //     } else {
+    //         map.removeLayer(pointTanksLayer);
+    //         map.removeLayer(technicalTanksLayer);
+    //     }
+    // });
+
+    // document.getElementById('month-input').addEventListener('change', () => {
+    //     const [year, month] = document.getElementById('month-input').value.split('-');
+    //     fetchAndRenderReservoirs(year, month);
+    // });
+
+
+
+    async function fetchAndRenderReservoirs(year, month) {
+        currentYear = year;
+        currentMonth = month;
+    
+        const reservoirs = await fetchReservoirVolumesFromDB(year, month); 
         cachedReservoirs = reservoirs;
         addReservoirs(reservoirs);
-    } else {
-        map.removeLayer(pointTanksLayer);
-        map.removeLayer(technicalTanksLayer);
     }
+    
+
+
+
+window.addEventListener('DOMContentLoaded', () => {
+    const monthInput = document.getElementById('month-input');
+    const checkbox = document.getElementById('checkboxTwo');
+
+    // ✅ Устанавливаем текущую дату, если ничего не выбрано
+    if (monthInput && !monthInput.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        monthInput.value = `${year}-${month}`;
+    }
+
+    // ✅ Загружаем данные по выбранной дате
+    const [year, month] = monthInput.value.split('-');
+    fetchAndRenderReservoirs(year, month);
+
+    // ✅ Обработчик смены даты
+    monthInput.addEventListener('change', () => {
+        const [year, month] = monthInput.value.split('-');
+        fetchAndRenderReservoirs(year, month);
+    });
+
+    // ✅ Обработчик чекбокса
+    checkbox.addEventListener('change', async function () {
+        if (this.checked) {
+            const [year, month] = monthInput.value.split('-');
+            const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+            cachedReservoirs = reservoirs;
+            addReservoirs(reservoirs);
+        } else {
+            map.removeLayer(pointTanksLayer);
+            map.removeLayer(technicalTanksLayer);
+        }
+    });
 });
 
+
+map.on('zoomend', () => {
+    addReservoirs(cachedReservoirs);
+});
 
 
 
