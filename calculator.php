@@ -219,16 +219,29 @@ async function loadData() {
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
 
+    <table class="table table-bordered" data-type="pipelines">
+        <thead>
+            <tr class="table-primary">
+                <th>Сдача нефти</th>
+                <th>нехватка нефти</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><input type="number" id="oil" class="form-control"></td>
+            <td><input type="number" id="oil-loss" class="form-control"></td>
+        </tr>
+        </tbody>
 
     <h3 class="mb-4">Остатки</h3>
     <table class="table table-bordered" data-type="reservoirs">
         <thead>
             <tr class="table-primary">
                 <th>Резеруары</th>
-                <th>Начало месяца</th>
-                <th>Конец месяца</th>
-                <th>Взято</th>
-                <th>Отдано</th>
+                <th>Остатки на начало месяца</th>
+                <th>Остатки на конец месяца</th>
+                <th>Взято с резервуара </th>
+                <th>Отдано в резервуар</th>
             </tr>
         </thead>
         <tbody>
@@ -236,22 +249,22 @@ async function loadData() {
             <td>ПСП 45 км</td>
             <td><input type="number" id="start-volumePsp" class="form-control"></td>
             <td><input type="number" id="end-volumePsp" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volumePsp" class="form-control"></td>
+            <td><input type="number" id="plus-volumePsp" class="form-control"></td>
         </tr>
         <tr reservoir_id="2">
             <td>НПС им. Шманова</td>
             <td><input type="number" id="start-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="end-volumeShmanova" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
+            <td><input type="number" id="plus-volumeShmanova" class="form-control"></td>
         </tr>
         <tr reservoir_id="3">
             <td>ГНПС Кумколь</td>
             <td><input type="number" id="start-volumeKumkol" class="form-control"></td>
             <td><input type="number" id="end-volumeKumkol" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volumeKumkol" class="form-control"></td>
+            <td><input type="number" id="plus-volumeKumkol" class="form-control"></td>
         </tr>
         <!-- <tr reservoir_id="4">
             <td>ПСП Самара</td>
@@ -264,15 +277,15 @@ async function loadData() {
             <td>Технический резервуар 1</td>
             <td><input type="number" id="start-volume1" class="form-control"></td>
             <td><input type="number" id="end-volume1" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume1" class="form-control"></td>
+            <td><input type="number" id="plus-volume1" class="form-control"></td>
         </tr>
         <tr reservoir_id="6">
             <td>Технический резервуар 2</td>
             <td><input type="number" id="start-volume2" class="form-control"></td>
             <td><input type="number" id="end-volume2" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume2" class="form-control"></td>
+            <td><input type="number" id="plus-volume2" class="form-control"></td>
         </tr>
         </tbody>
     </table>
