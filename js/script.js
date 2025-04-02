@@ -610,7 +610,7 @@ function getReservoirSizeByZoom(zoom, type) {
     //     fetchAndRenderReservoirs(year, month);
     // });
 
-
+//---
 
     async function fetchAndRenderReservoirs(year, month) {
         currentYear = year;
