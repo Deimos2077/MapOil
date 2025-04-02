@@ -244,8 +244,20 @@ function handleInput(inputId) {
 }
 
 function calculateFrom(startId = null) {
+    // ========== минус остатки ==========
+    let minus_volumePsp = parseFloat(document.getElementById("minus-volumePsp").value) || 0;
+    let minus_volumeShmanova = parseFloat(document.getElementById("minus-volumeShmanova").value) || 0;
+    let minus_volumeKumkol = parseFloat(document.getElementById("minus-volumeKumkol").value) || 0;
+    let minus_volume1 = parseFloat(document.getElementById("minus-volume1").value) || 0;
+    let minus_volume2 = parseFloat(document.getElementById("minus-volume2").value) || 0;
+    // ========== плюс остатки ==========
+    let plus_volumePsp = parseFloat(document.getElementById("plus-volumePsp").value) || 0;
+    let plus_volumeShmanova = parseFloat(document.getElementById("plus-volumeShmanova").value) || 0;
+    let plus_volumeKumkol = parseFloat(document.getElementById("plus-volumeKumkol").value) || 0;
+    let plus_volume1 = parseFloat(document.getElementById("plus-volume1").value) || 0;
+    let plus_volume2 = parseFloat(document.getElementById("plus-volume2").value) || 0;
+
     // ========== ПКОП ==========
-    // Get initial values
     let pkop = parseFloat(document.getElementById("volume2-pkop").value) || 0;
     let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value) || 0;
 
@@ -261,13 +273,14 @@ function calculateFrom(startId = null) {
     let kumkol = pkop + pkopP;
     let kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || calculateLoss(kenkiyakPP, kumkol);
     let kenkiyak = kumkol + kenkiyakP;
+    let kenkiyakminus = kenkiyak - minus_volume1+plus_volume1;
     let kenkiyakTransferP = parseFloat(document.getElementById("loss-kenkiyakTransferP").value) || calculateLoss(kenkiyakTransferPP, kenkiyak);
-    let kenkiyakTransfer = kenkiyak + kenkiyakTransferP;
+    let kenkiyakTransfer = kenkiyakminus + kenkiyakTransferP;
     let zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || calculateLoss(zhanazholPP, zhanazholedit);
     let zhanazhol = zhanazholedit + zhanazholP;
     let psp45first = kenkiyakTransfer - zhanazhol;
     let pspP = parseFloat(document.getElementById("loss-pspP").value) || calculateLoss(psp45PP, psp45first);
-    let psp45end = psp45first + pspP;
+    let psp45end = psp45first + pspP-minus_volumePsp;
 
     // ========== КНР ==========
     let atasu = parseFloat(document.getElementById("volume-atasu").value) || 0;
@@ -300,7 +313,6 @@ function calculateFrom(startId = null) {
     let psp45end2 = psp45first2 + psp2P;
 
     // ========== УСТ-ЛУГА ==========
-    // Constants and initial values
     let km1235 = parseFloat(document.getElementById("volume2-km1235").value) || 0;
     let zhanazholedit3 = parseFloat(document.getElementById("volume2-zhanazholedit3").value) || 0;
     
@@ -424,13 +436,21 @@ function calculateFrom(startId = null) {
     
 
     // ========== Остатки ==========
-    let start_volumePsp=parseFloat(document.getElementById("loss-start_volumePsp").value) || 0;
-    let start_volumeShmanova = parseFloat(document.getElementById("start_volumeShmanova").value) || 0;
-    let start_volumeKumkol = parseFloat(document.getElementById("start_volumeKumkol").value) || 0;
-    let start_volume1 = parseFloat(document.getElementById("start_volume1").value) || 0;
-    let start_volume2 = parseFloat(document.getElementById("start_volume2").value) || 0;
+    let start_volumePsp=parseFloat(document.getElementById("start-volumePsp").value) || 0;
+    let start_volumeShmanova = parseFloat(document.getElementById("start-volumeShmanova").value) || 0;
+    let start_volumeKumkol = parseFloat(document.getElementById("start-volumeKumkol").value) || 0;
+    let start_volume1 = parseFloat(document.getElementById("start-volume1").value) || 0;
+    let start_volume2 = parseFloat(document.getElementById("start-volume2").value) || 0;
+    let end_volumePsp = start_volumePsp+psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-pspP-psp2P-psp3P-psp4P-psp5P-psp6P-psp45first-psp45first2-psp45first3-psp45first4-psp45first5-psp45first6;
+    let end_volume1 = start_volume1+kenkiyakminus+kenkiyak2+kenkiyak3+kenkiyak4+kenkiyak5-kenkiyakP-kenkiyak2P-kenkiyak3P-kenkiyak4P-kenkiyak5P-kumkol-kumkol2-kumkol4-kumkol5;
 
-    let end_volumePsp = psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-;
+    document.getElementById("end-volume1").value = end_volume1;
+    document.getElementById("end-volumePsp").value = end_volumePsp;
+
+
+    let oil = parseFloat(document.getElementById("oil").value) || 0;
+    let oil_loss = psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-oil;
+    document.getElementById("oil-loss").value = oil_loss;
     // let kenkiyak4P = parseFloat(document.getElementById("loss-kenkiyak4P").value) || calculateLoss(kenkiyakPP, kumkol4);
     // let kenkiyak4 = kumkol4 + kenkiyak4P;
     // let kenkiyakTransfer4P = parseFloat(document.getElementById("loss-kenkiyakTransfer4P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak4);
@@ -528,7 +548,7 @@ function calculateFrom(startId = null) {
     document.getElementById("volume-kenkiyakTransfer").value = kenkiyakTransfer;
     document.getElementById("loss-kenkiyakTransferP").value = kenkiyakTransferP;
     document.getElementById("volume-kenkiyak").value = kenkiyak;
-    document.getElementById("volume2-kenkiyak").value = kenkiyak;
+    document.getElementById("volume2-kenkiyak").value = kenkiyakminus;
     document.getElementById("volume-kumkol").value = kumkol;
     document.getElementById("volume2-kumkol").value = kumkol;
     document.getElementById("loss-kenkiyakP").value = kenkiyakP;
@@ -595,7 +615,6 @@ function calculateFrom(startId = null) {
     document.getElementById("volume-psp45end3").value = psp45end3;
 
     // Ответ хранение вывод
-    document.getElementById("volume2-kumkol4").value = kumkol4;
     document.getElementById("loss-kenkiyak4P").value = kenkiyak4P;
     document.getElementById("volume-kenkiyak4").value = kenkiyak4;
     document.getElementById("volume2-kenkiyak4").value = kenkiyak4;
