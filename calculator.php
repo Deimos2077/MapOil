@@ -200,11 +200,14 @@ async function loadData() {
             </div>
 <nav id="slide-menu">
     <ul>
-        <li class="timeline"><a class="menu-href" href="http://localhost/oilgraf/" data-i18n="menu_graphs">Графики</a></li>
-        <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
-        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Реализация нефти</a></li>
-        <li class="svg-editor"><a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a></li>
+    <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>        
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Отчетность</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
+        <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
+
+        <!-- <li class="svg-editor">
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
+        </li> -->
         <li class="settings"><a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a></li>
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
     </ul>

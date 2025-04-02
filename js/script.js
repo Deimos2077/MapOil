@@ -443,6 +443,19 @@ function getFillPercentage(volume, maxCapacity) {
     return Math.min(100, (volume / maxCapacity) * 100); // Не больше 100%
 }
 
+function getLineOffsetByZoom(zoom) {
+    // Чем больше zoom — тем меньше визуальный сдвиг (в градусах)
+    const baseLatOffset = 0.08;
+    const baseLngOffset = 0.03;
+
+    const factor = zoom >= 10 ? 0.4 : zoom >= 8 ? 0.6 : zoom >= 6 ? 0.8 : 1;
+
+    return {
+        lat: baseLatOffset * factor,
+        lng: baseLngOffset * factor
+    };
+}
+
 function getReservoirSizeByZoom(zoom) {
     if (zoom >= 10) return { width: 30, height: 50 };
     if (zoom >= 8) return { width: 22, height: 40 };
@@ -485,9 +498,11 @@ function addReservoirs(reservoirs) {
         const coordStart = [reservoir.lat, reservoir.lng];
         const coordEnd = [reservoir.end_lat, reservoir.end_lng];
 
+        const labelOffsetLng = map.getZoom() >= 8 ? 0.04 : 0.07;
+
         const offset = reservoirOffsets[reservoir.id] || { start: { lat: 0.05, lng: 0 }, end: { lat: 0.05, lng: 0 } };
         const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
-        const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng];
+        const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng + 0.07];
 
         let maxCapacity = 10000;
         if (reservoir.name.includes("Шманова")) maxCapacity = 5000;
@@ -510,29 +525,44 @@ function addReservoirs(reservoirs) {
           .addTo(layer);
 
         // Линии
-        L.polyline([coordStart, coordEnd], {
-            color: '#722600', weight: 4, opacity: 0.7
+        const centerOffsetLat = 0.035;  // вверх (регулируется по высоте резервуара)
+        const centerOffsetLng = 0.025; // вправо (регулируется по вкусу)
+        
+        const adjustedStart = [coordStart[0] - centerOffsetLat, coordStart[1] + centerOffsetLng];
+        const adjustedEnd = [coordEnd[0] - centerOffsetLat, coordEnd[1] + centerOffsetLng];
+        
+        L.polyline([adjustedStart, adjustedEnd], {
+            color: '#722600',
+            weight: 4,
+            opacity: 0.7
         }).addTo(layer);
+        
+        
 
         L.polyline([coordStart, coordStartLabel], {
             color: 'black', weight: 2, opacity: 0.8, dashArray: '4,2'
         }).addTo(layer);
 
-        L.polyline([coordEnd, coordEndLabel], {
-            color: 'black', weight: 2, opacity: 0.8, dashArray: '4,2'
+        const shiftedCoordEnd = [coordEnd[0], coordEnd[1] + 0.07]; 
+
+        L.polyline([shiftedCoordEnd, coordEndLabel], {
+            color: 'black',
+            weight: 2,
+            opacity: 0.8,
+            dashArray: '4,2'
         }).addTo(layer);
 
         // Подписи
         L.marker(coordStartLabel, {
             icon: L.divIcon({
-                html: `<div style="white-space: nowrap; font-weight: bold;">${volumeData.start_volume} м³</div>`,
+                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.start_volume} м³</div>`,
                 className: ''
             })
-        }).addTo(layer);
+        }).addTo(layer);   
 
         L.marker(coordEndLabel, {
             icon: L.divIcon({
-                html: `<div style="white-space: nowrap; font-weight: bold;">${volumeData.end_volume} м³</div>`,
+                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.end_volume} м³</div>`,
                 className: ''
             })
         }).addTo(layer);
@@ -662,8 +692,39 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 map.on('zoomend', () => {
-    addReservoirs(cachedReservoirs);
+    const zoomThreshold = 6;
+    const currentZoom = map.getZoom();
+
+    const checkboxOne = document.getElementById('checkboxOne');  // нефть
+    const checkboxTwo = document.getElementById('checkboxTwo');  // резервуары
+
+    // 🔻 Управление нефтью (стрелки и метки)
+    if (checkboxOne && checkboxOne.checked) {
+        if (currentZoom < zoomThreshold) {
+            map.removeLayer(minimalistFlowLayerGroup);
+            console.log("🔍 Масштаб < порога — нефть скрыта");
+        } else {
+            if (!map.hasLayer(minimalistFlowLayerGroup) && dataLoaded) {
+                map.addLayer(minimalistFlowLayerGroup);
+                console.log("🔍 Масштаб >= порога — нефть отображена");
+            }
+        }
+    }
+
+    // 🔻 Управление резервуарами
+    if (checkboxTwo && cachedReservoirs.length) {
+        if (currentZoom < zoomThreshold) {
+            map.removeLayer(pointTanksLayer);
+            map.removeLayer(technicalTanksLayer);
+            console.log("🔍 Масштаб < порога — резервуары скрыты");
+        } else {
+            if (!map.hasLayer(pointTanksLayer)) map.addLayer(pointTanksLayer);
+            if (!map.hasLayer(technicalTanksLayer)) map.addLayer(technicalTanksLayer);
+            console.log("🔍 Масштаб >= порога — резервуары отображены");
+        }
+    }
 });
+
 
 
 
@@ -914,7 +975,7 @@ const directionOffsets = {
     1: { lat: 0.5, lng: 0.3 },   // Алашанькоу
     2: { lat: 0.2, lng: 0.5 },    // Атасу
     3: { lat: 0.5, lng: 0.3 },    // ПНХЗ
-    4: { lat: 0.5, lng: 0.3 },   // Кумколь
+    4: { lat: -0.5, lng: -0.3 },   // Кумколь
     5: { lat: 0.2, lng: 0.5 },   // Кенкияк
     6: { lat: 0.2, lng: 0.3 },   // ПКОП
     7: { lat: 0.4, lng: 0.2 },   // Шманова
@@ -1312,6 +1373,34 @@ if (!document.getElementById('flow-label-style')) {
 
 
 
+const filterButton = document.getElementById('checkboxOne');
+
+map.removeLayer(flowLayerGroup);
+map.removeLayer(minimalistFlowLayerGroup); 
+
+let layersVisible = false; 
+
+filterButton.addEventListener('change', () => { 
+    layersVisible = filterButton.checked; 
+
+    if (layersVisible) {
+        map.addLayer(flowLayerGroup); 
+        map.addLayer(minimalistFlowLayerGroup); 
+    } else {
+        map.removeLayer(flowLayerGroup); 
+        map.removeLayer(minimalistFlowLayerGroup);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    initializeOilFlowMap();
+});
+
+
+
+
+
+
 
 
 
@@ -1610,141 +1699,3 @@ document.getElementById('add-row-btn').addEventListener('click', () => {
         alert('Ошибка: не выбрана точка на карте');
     }
 });
-
-
-
-
-// //--------------------------------Потери------------------------
-
-// // Пример данных с потерями для каждого трубопровода
-// // Эти данные будут взяты из базы данных в будущем
-// const pipelineLosses = {
-//     "7-19": 100, // Потери между НПС им. Шманова и НПС им. Касымова
-//     "5-7": 50,  // Потери между ПСП Самара и Клин
-//     "5-4": 75, // Потери между Клин и Никольское
-//     "14-2": 60, // Потери между Никольское и Унеча
-//     // Добавьте данные для других трубопроводов
-// };
-
-// const minZoomToShowLossCircles = 7.5; // Минимальный зум для отображения потерь
-
-// // Создаем слой для потерь
-// const lossCirclesLayer = L.layerGroup();
-
-// pipelinesWithIds.forEach(({ from, to }, index) => {
-//     const point1 = points.find(p => p.id === from);
-//     const point2 = points.find(p => p.id === to);
-
-//     if (!point1 || !point2) {
-//         console.warn(`Не найдены точки для связи: ${from}-${to}`);
-//         return; // Пропускаем эту связь
-//     }
-
-//     const lineKey = `${from}-${to}`;
-//     const loss = pipelineLosses[lineKey];
-
-//     if (loss !== undefined) {
-//         // Позиция начала линии (середина трубопровода)
-//         const midLat = (point1.coords[0] + point2.coords[0]) / 2;
-//         const midLon = (point1.coords[1] + point2.coords[1]) / 2;
-
-//         // Вектор направления между точками
-//         const dx = point2.coords[0] - point1.coords[0];
-//         const dy = point2.coords[1] - point1.coords[1];
-//         const lengthOffset = 0.1; // Фиксированная длина линии
-
-//         // Нормализация вектора
-//         const magnitude = Math.sqrt(dx * dx + dy * dy);
-//         const normalizedDx = dx / magnitude;
-//         const normalizedDy = dy / magnitude;
-
-//         // Смещение линии на фиксированную длину
-//         const offsetLat = midLat + normalizedDy * lengthOffset;
-//         const offsetLon = midLon - normalizedDx * lengthOffset;
-
-//         // Линия от трубопровода
-//         const lossLine = L.polyline(
-//             [[midLat, midLon], [offsetLat, offsetLon]],
-//             { color: 'red', weight: 2, dashArray: '5' } // Стиль линии
-//         ).addTo(lossCirclesLayer);
-
-//         // Текстовая метка рядом с концом линии
-//         const lossLabel = L.divIcon({
-//             className: 'loss-label',
-//             html: ` 
-//                 <div style="
-//                     color: red;
-//                     font-size: 12px;
-//                     font-weight: bold;
-//                     white-space: nowrap;
-//                 ">
-//                     ${loss}тн потери
-//                 </div>
-//             `,
-//             iconSize: [50, 20], // Размеры метки
-//             iconAnchor: [-5, 5] // Центр метки относительно точки
-//         });
-
-//         // Добавляем текстовую метку
-//         L.marker([offsetLat, offsetLon], { icon: lossLabel }).addTo(lossCirclesLayer);
-//     } else {
-//         console.warn(`Нет данных о потерях для трубопровода ${lineKey}`);
-//     }
-// });
-
-
-
-
-
-
-// // Логика отображения/скрытия потерь при изменении зума
-// map.on('zoomend', () => {
-//     const currentZoom = map.getZoom();
-
-//     if (currentZoom >= minZoomToShowLossCircles) {
-//         if (!map.hasLayer(lossCirclesLayer)) {
-//             map.addLayer(lossCirclesLayer); // Показываем потери
-//         }
-//     } else {
-//         if (map.hasLayer(lossCirclesLayer)) {
-//             map.removeLayer(lossCirclesLayer); // Скрываем потери
-//         }
-//     }
-// });
-
-
-
-// //--------------------------------------------------------
-
-
-
-
-const filterButton = document.getElementById('checkboxOne');
-
-map.removeLayer(flowLayerGroup);
-map.removeLayer(minimalistFlowLayerGroup); 
-// map.removeLayer(pointTanksLayer);
-// map.removeLayer(technicalTanksLayer);
-
-let layersVisible = false; 
-
-filterButton.addEventListener('change', () => { 
-    layersVisible = filterButton.checked; 
-
-    if (layersVisible) {
-        map.addLayer(flowLayerGroup); 
-        map.addLayer(minimalistFlowLayerGroup); 
-        // map.addLayer(pointTanksLayer); 
-        // map.addLayer(technicalTanksLayer); 
-    } else {
-        map.removeLayer(flowLayerGroup); 
-        map.removeLayer(minimalistFlowLayerGroup);
-        // map.removeLayer(pointTanksLayer); 
-        // map.removeLayer(technicalTanksLayer); 
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    initializeOilFlowMap();
-});
-

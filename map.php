@@ -87,16 +87,18 @@ label[for="date-input"] {
             </div>
             
 <nav id="slide-menu">
-    <ul>
-        <li class="timeline"><a class="menu-href" href="/project/" data-i18n="menu_graphs">Графики</a></li>
-        <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li>
-        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Реализация нефти</a></li>
+    <ul>        
+        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта</a></li>        
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Отчетность</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
+        <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
+
+
 
         
-        <li class="svg-editor">
+        <!-- <li class="svg-editor">
             <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
-        </li>
+        </li> -->
 
         <!-- Настройки -->
         <li class="settings">
@@ -146,7 +148,7 @@ label[for="date-input"] {
         </div>
     </div>
 
-    <div id="info-table-container">
+    <!-- <div id="info-table-container">
     <h3 data-i18n="info_table_title">Движение нефти по трубопроводам</h3>
     <p data-i18n="info_table_description">В этой таблице представлена информация о перемещении нефти между точками системы.</p>
     
@@ -163,7 +165,7 @@ label[for="date-input"] {
     </table>
 
     <button id="add-row-btn" data-i18n="button_add_record">Добавить новую запись</button>
-</div>
+</div> -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetch("get_dates.php") // Загружаем даты с сервера
