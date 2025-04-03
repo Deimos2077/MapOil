@@ -74,11 +74,11 @@ async function updateMapData(year, month) {
 
 
 function clearAllDataLayers() {
-    flowLayerGroup.clearLayers();
-    minimalistFlowLayerGroup.clearLayers();
-    reservoirLayerGroup.clearLayers();
-    pointTanksLayer.clearLayers();
-    technicalTanksLayer.clearLayers();
+    if (window.flowLayerGroup) flowLayerGroup.clearLayers();
+    if (window.minimalistFlowLayerGroup) minimalistFlowLayerGroup.clearLayers();
+    if (window.reservoirLayerGroup) reservoirLayerGroup.clearLayers();
+    if (window.pointTanksLayer) pointTanksLayer.clearLayers();
+    if (window.technicalTanksLayer) technicalTanksLayer.clearLayers();
 }
 
 
