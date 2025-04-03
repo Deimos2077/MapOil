@@ -200,7 +200,7 @@ async function loadData() {
             </div>
 <nav id="slide-menu">
     <ul>
-    <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта транспортировки нефти</a></li>        
+    <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" >Карта транспортировки нефти</a></li>        
         <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Отчетность</a></li>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
         <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
@@ -223,7 +223,7 @@ async function loadData() {
         <thead>
             <tr class="table-primary">
                 <th>Сдача нефти</th>
-                <th>нехватка нефти</th>
+                <th>Нехватка нефти</th>
             </tr>
         </thead>
         <tbody>
@@ -232,7 +232,6 @@ async function loadData() {
             <td><input type="number" id="oil-loss" class="form-control"></td>
         </tr>
         </tbody>
-
     <h3 class="mb-4">Остатки</h3>
     <table class="table table-bordered" data-type="reservoirs">
         <thead>
@@ -240,8 +239,8 @@ async function loadData() {
                 <th>Резеруары</th>
                 <th>Остатки на начало месяца</th>
                 <th>Остатки на конец месяца</th>
-                <th>Взято с резервуара </th>
-                <th>Отдано в резервуар</th>
+                <th>Вытеснено </th>
+                <th>Пополнено</th>
             </tr>
         </thead>
         <tbody>
@@ -274,14 +273,14 @@ async function loadData() {
             <td><input type="number" id="plus-volume" class="form-control"></td>
         </tr> -->
         <tr reservoir_id="5">
-            <td>Технический резервуар 1</td>
+            <td>МН ТОО «Казахстанско-Китайский трубопровод»</td>
             <td><input type="number" id="start-volume1" class="form-control"></td>
             <td><input type="number" id="end-volume1" class="form-control"></td>
             <td><input type="number" id="minus-volume1" class="form-control"></td>
             <td><input type="number" id="plus-volume1" class="form-control"></td>
         </tr>
         <tr reservoir_id="6">
-            <td>Технический резервуар 2</td>
+            <td>МН АО "СЗТК "Мунайтас"</td>
             <td><input type="number" id="start-volume2" class="form-control"></td>
             <td><input type="number" id="end-volume2" class="form-control"></td>
             <td><input type="number" id="minus-volume2" class="form-control"></td>
@@ -295,10 +294,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -351,10 +350,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -392,7 +391,7 @@ async function loadData() {
             <tr data-pipeline-id="15" data-from-id="4" data-to-id="14">
                 <td>ГНПС Кумколь</td>
                 <td>ГНПС им. Б. Джумагалиева</td>
-                <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0794"></td>
+                <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0525"></td>
                 <td><input type="number" id="volume-kumkol2" class="form-control"></td>
                 <td><input type="number" id="loss-kumkol2P" class="form-control"></td>
                 <td><input type="number" id="volume2-dzhumagalieva" class="form-control"></td>
@@ -429,10 +428,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -538,10 +537,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -585,10 +584,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -626,7 +625,7 @@ async function loadData() {
             <tr data-pipeline-id="15" data-from-id="4" data-to-id="14">
                 <td>ГНПС Кумколь</td>
                 <td>ГНПС им. Б. Джумагалиева</td>
-                <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0794"></td>
+                <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0525"></td>
                 <td><input type="number" id="volume-kumkol5" class="form-control"></td>
                 <td><input type="number" id="loss-kumkol5P" class="form-control"></td>
                 <td><input type="number" id="volume2-dzhumagalieva5" class="form-control"></td>
@@ -663,10 +662,10 @@ async function loadData() {
             <tr class="table-primary">
                 <th>ОТ</th>
                 <th>ДО</th>
-                <th>процент потерь%</th>
+                <th>Процент потерь%</th>
                 <th>Передано</th>
                 <th>Потери (тонн)</th>
-                <th>принято</th>
+                <th>Принято</th>
             </tr>
         </thead>
         <tbody>
@@ -789,7 +788,6 @@ async function loadData() {
             </tr>
         </tbody>
     </table>
-
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
 <div>
 

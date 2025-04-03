@@ -258,8 +258,8 @@ function calculateFrom(startId = null) {
     let plus_volume2 = parseFloat(document.getElementById("plus-volume2").value) || 0;
 
     // ========== ПКОП ==========
-    let pkop = parseFloat(document.getElementById("volume2-pkop").value) || 0;
-    let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value) || 0;
+    let pkop = parseFloat(document.getElementById("volume2-pkop").value) ;
+    let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value)|| 0 ;
 
     // Get percentages
     let psp45PP = parseFloat(document.getElementById("percent-psp45PP").value) || 0;
@@ -297,7 +297,7 @@ function calculateFrom(startId = null) {
     let alashankouP = parseFloat(document.getElementById("loss-alashankouP").value) || calculateLoss(alashankouPP, atasu);
     let alashankou = atasu - alashankouP;
     let atasuTransferP = parseFloat(document.getElementById("loss-atasuTransferP").value) || calculateLoss(atasuTransferPP, alashankou);
-    let atasuTransfer = alashankou + atasuTransferP;
+    let atasuTransfer = atasu + atasuTransferP;
     let dzhumagalievaP = parseFloat(document.getElementById("loss-dzhumagalievaP").value) || calculateLoss(dzhumagalievaPP, atasuTransfer);
     let dzhumagalieva = atasuTransfer + dzhumagalievaP;
     let kumkol2P = parseFloat(document.getElementById("loss-kumkol2P").value) || calculateLoss(kumkolPP, dzhumagalieva);
@@ -376,9 +376,9 @@ function calculateFrom(startId = null) {
     let zhanazholedit5 = parseFloat(document.getElementById("volume2-zhanazholedit5").value) || 0;
 
     let pnhzP = parseFloat(document.getElementById("loss-pnhzP").value) || calculateLoss(pnhzPP, atasu5);
-    let pnhz = atasu5 + pnhzP;
+    let pnhz = atasu5 - pnhzP;
     let atasuTransfer5P = parseFloat(document.getElementById("loss-atasuTransfer5P").value) || calculateLoss(atasuTransferPP, pnhz);
-    let atasuTransfer5 = pnhz + atasuTransfer5P;
+    let atasuTransfer5 = atasu5 + atasuTransfer5P;
     let dzhumagalieva5P = parseFloat(document.getElementById("loss-dzhumagalieva5P").value) || calculateLoss(dzhumagalievaPP, atasuTransfer5);
     let dzhumagalieva5 = atasuTransfer5 + dzhumagalieva5P;
     let kumkol5P = parseFloat(document.getElementById("loss-kumkol5P").value) || calculateLoss(kumkolPP, dzhumagalieva5);
