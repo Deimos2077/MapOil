@@ -31,38 +31,46 @@ async function updateMapData(year, month) {
     const oilTransferData = await fetchOilTransferFromDB(year, month);
     const reservoirs = await fetchReservoirVolumesFromDB(year, month);
 
-    // Очищаем все слои (включая стрелки, резервуары и подписи)
     clearAllDataLayers();
 
-    // Проверка: если нет данных — не отображаем ничего
+    const zoomThreshold = 6;
+    const currentZoom = map.getZoom();
+
     if (oilTransferData.length === 0 && reservoirs.length === 0) {
         console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
         dataLoaded = false;
 
-        // Показываем уведомление (если есть элемент)
         const msg = document.getElementById('no-data-message');
         if (msg) msg.style.display = 'block';
 
         return;
     }
 
-    // Скрываем уведомление, если ранее было показано
     const msg = document.getElementById('no-data-message');
     if (msg) msg.style.display = 'none';
 
-    // Визуализация
-    if (oilTransferData.length > 0) {
+    // ✅ Сохраняем данные для последующей отрисовки при zoomend
+    window.cachedPoints = points;
+    window.cachedOilTransferData = oilTransferData;
+    window.cachedReservoirs = reservoirs;
+
+    const checkboxOne = document.getElementById('checkboxOne');
+    const checkboxTwo = document.getElementById('checkboxTwo');
+
+    // Отрисовываем только если зум позволяет
+    if (checkboxOne?.checked && oilTransferData.length > 0 && currentZoom >= zoomThreshold) {
         addMinimalistFlow(points, oilTransferData);
-        await displayKenkiyakOilTotal(year, month, points); // если нужно
+        await displayKenkiyakOilTotal(year, month, points);
     }
 
-    if (reservoirs.length > 0) {
+    if (checkboxTwo?.checked && reservoirs.length > 0 && currentZoom >= zoomThreshold) {
         addReservoirs(reservoirs);
     }
 
-    dataLoaded = true; // Только если данные реально отобразились
+    dataLoaded = true;
     console.log("✅ Карта обновлена");
 }
+
 
 
 function clearAllDataLayers() {

@@ -678,16 +678,29 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // ✅ Обработчик чекбокса
     checkbox.addEventListener('change', async function () {
+        const currentZoom = map.getZoom();
+        const zoomThreshold = 6;
+    
         if (this.checked) {
+            if (currentZoom < zoomThreshold) {
+                console.log("⛔ Масштаб слишком мал — резервуары не будут отображены");
+                return;
+            }
+    
             const [year, month] = monthInput.value.split('-');
             const reservoirs = await fetchReservoirVolumesFromDB(year, month);
             cachedReservoirs = reservoirs;
+    
             addReservoirs(reservoirs);
+            map.addLayer(pointTanksLayer);
+            map.addLayer(technicalTanksLayer);
+            console.log("✅ Резервуары отображены");
         } else {
             map.removeLayer(pointTanksLayer);
             map.removeLayer(technicalTanksLayer);
         }
     });
+    
 });
 
 
@@ -698,32 +711,46 @@ map.on('zoomend', () => {
     const checkboxOne = document.getElementById('checkboxOne');  // нефть
     const checkboxTwo = document.getElementById('checkboxTwo');  // резервуары
 
-    // 🔻 Управление нефтью (стрелки и метки)
-    if (checkboxOne && checkboxOne.checked) {
+    // === 🛢️ Управление нефтью ===
+    if (checkboxOne?.checked) {
+        const isOilLayerVisible = map.hasLayer(minimalistFlowLayerGroup);
+
         if (currentZoom < zoomThreshold) {
-            map.removeLayer(minimalistFlowLayerGroup);
-            console.log("🔍 Масштаб < порога — нефть скрыта");
+            if (isOilLayerVisible) {
+                map.removeLayer(minimalistFlowLayerGroup);
+                console.log("🛢️ Нефть скрыта — масштаб ниже порога");
+            }
         } else {
-            if (!map.hasLayer(minimalistFlowLayerGroup) && dataLoaded) {
-                map.addLayer(minimalistFlowLayerGroup);
-                console.log("🔍 Масштаб >= порога — нефть отображена");
+            if (!isOilLayerVisible && dataLoaded && window.cachedPoints && window.cachedOilTransferData) {
+                addMinimalistFlow(window.cachedPoints, window.cachedOilTransferData);
+                displayKenkiyakOilTotal(
+                    document.getElementById('month-input').value.split('-')[0],
+                    document.getElementById('month-input').value.split('-')[1],
+                    window.cachedPoints
+                );
+                console.log("🛢️ Нефть отображена — масштаб допустим");
             }
         }
     }
 
-    // 🔻 Управление резервуарами
-    if (checkboxTwo && cachedReservoirs.length) {
+    // === 🛢️ Управление резервуарами ===
+    if (checkboxTwo?.checked && window.cachedReservoirs?.length > 0) {
+        const pointLayerVisible = map.hasLayer(pointTanksLayer);
+        const techLayerVisible = map.hasLayer(technicalTanksLayer);
+
         if (currentZoom < zoomThreshold) {
-            map.removeLayer(pointTanksLayer);
-            map.removeLayer(technicalTanksLayer);
-            console.log("🔍 Масштаб < порога — резервуары скрыты");
+            if (pointLayerVisible) map.removeLayer(pointTanksLayer);
+            if (techLayerVisible) map.removeLayer(technicalTanksLayer);
+            console.log("🛑 Резервуары скрыты — масштаб ниже порога");
         } else {
-            if (!map.hasLayer(pointTanksLayer)) map.addLayer(pointTanksLayer);
-            if (!map.hasLayer(technicalTanksLayer)) map.addLayer(technicalTanksLayer);
-            console.log("🔍 Масштаб >= порога — резервуары отображены");
+            pointTanksLayer.clearLayers();
+            technicalTanksLayer.clearLayers();
+            addReservoirs(window.cachedReservoirs);
+            console.log("✅ Резервуары отображены — масштаб допустим");
         }
     }
 });
+
 
 
 
@@ -1228,17 +1255,27 @@ document.head.appendChild(style);
 // });
 document.getElementById('checkboxOne').addEventListener('change', async function () {
     flowLayerVisible = this.checked;
+    const currentZoom = map.getZoom();
+    const zoomThreshold = 6;
 
     if (flowLayerVisible) {
+        if (currentZoom < zoomThreshold) {
+            console.log("⛔ Масштаб слишком мал — нефть не будет отображена");
+            return;
+        }
+
         if (!dataLoaded) {
-            await initializeFlowMap(); // Теперь запускаем объединенную функцию
+            await initializeFlowMap(); // объединённая функция
             dataLoaded = true;
         }
+
         map.addLayer(minimalistFlowLayerGroup); 
+        console.log("✅ Нефть отображена");
     } else {
         map.removeLayer(minimalistFlowLayerGroup); 
     }
 });
+
 
 
 
