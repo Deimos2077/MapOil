@@ -148,6 +148,22 @@ label[for="date-input"] {
         </div>
     </div>
 
+
+    <div id="blur-background"></div>
+
+    <div id="pointModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="modalTitle">Заголовок</h2>
+        <div id="modalBody">Загрузка...</div>
+      </div>
+    </div>
+
+
+
+
+
+
     <!-- <div id="info-table-container">
     <h3 data-i18n="info_table_title">Движение нефти по трубопроводам</h3>
     <p data-i18n="info_table_description">В этой таблице представлена информация о перемещении нефти между точками системы.</p>
