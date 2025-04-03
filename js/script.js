@@ -640,35 +640,16 @@ function getReservoirSizeByZoom(zoom, type) {
 
 
 
-    // document.getElementById('checkboxTwo').addEventListener('change', async function () {
-    //     if (this.checked) {
-    //         const [year, month] = document.getElementById('month-input').value.split('-');
-    //         const reservoirs = await fetchReservoirVolumesFromDB(year, month);
-
-    //         cachedReservoirs = reservoirs;
-
-    //         addReservoirs(reservoirs);
-    //     } else {
-    //         map.removeLayer(pointTanksLayer);
-    //         map.removeLayer(technicalTanksLayer);
-    //     }
-    // });
-
-    // document.getElementById('month-input').addEventListener('change', () => {
-    //     const [year, month] = document.getElementById('month-input').value.split('-');
-    //     fetchAndRenderReservoirs(year, month);
-    // });
-
 //---
 
-    async function fetchAndRenderReservoirs(year, month) {
-        currentYear = year;
-        currentMonth = month;
+    // async function fetchAndRenderReservoirs(year, month) {
+    //     currentYear = year;
+    //     currentMonth = month;
     
-        const reservoirs = await fetchReservoirVolumesFromDB(year, month); 
-        cachedReservoirs = reservoirs;
-        addReservoirs(reservoirs);
-    }
+    //     const reservoirs = await fetchReservoirVolumesFromDB(year, month); 
+    //     cachedReservoirs = reservoirs;
+    //     addReservoirs(reservoirs);
+    // }
     
 
 
@@ -724,48 +705,40 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 map.on('zoomend', () => {
+    const zoom = map.getZoom();
     const zoomThreshold = 6;
-    const currentZoom = map.getZoom();
 
-    const checkboxOne = document.getElementById('checkboxOne');  // нефть
-    const checkboxTwo = document.getElementById('checkboxTwo');  // резервуары
+    const checkboxOne = document.getElementById('checkboxOne');
+    const checkboxTwo = document.getElementById('checkboxTwo');
 
-    // === 🛢️ Управление нефтью ===
-    if (checkboxOne?.checked) {
-        const isOilLayerVisible = map.hasLayer(minimalistFlowLayerGroup);
-
-        if (currentZoom < zoomThreshold) {
-            if (isOilLayerVisible) {
-                map.removeLayer(minimalistFlowLayerGroup);
-                console.log("🛢️ Нефть скрыта — масштаб ниже порога");
-            }
+    // === 🛢️ Нефть ===
+    if (checkboxOne?.checked && window.cachedPoints && window.cachedOilTransferData) {
+        map.removeLayer(minimalistFlowLayerGroup);
+        if (zoom >= zoomThreshold) {
+            addMinimalistFlow(window.cachedPoints, window.cachedOilTransferData);
+            displayKenkiyakOilTotal(
+                document.getElementById('month-input').value.split('-')[0],
+                document.getElementById('month-input').value.split('-')[1],
+                window.cachedPoints
+            );
+            console.log("🛢️ Нефть отображена");
         } else {
-            if (!isOilLayerVisible && dataLoaded && window.cachedPoints && window.cachedOilTransferData) {
-                addMinimalistFlow(window.cachedPoints, window.cachedOilTransferData);
-                displayKenkiyakOilTotal(
-                    document.getElementById('month-input').value.split('-')[0],
-                    document.getElementById('month-input').value.split('-')[1],
-                    window.cachedPoints
-                );
-                console.log("🛢️ Нефть отображена — масштаб допустим");
-            }
+            console.log("🛢️ Нефть скрыта — зум ниже порога");
         }
     }
 
-    // === 🛢️ Управление резервуарами ===
-    if (checkboxTwo?.checked && window.cachedReservoirs?.length > 0) {
-        const pointLayerVisible = map.hasLayer(pointTanksLayer);
-        const techLayerVisible = map.hasLayer(technicalTanksLayer);
+    // === 🛢️ Резервуары ===
+    if (checkboxTwo?.checked && window.cachedReservoirs) {
+        map.removeLayer(pointTanksLayer);
+        map.removeLayer(technicalTanksLayer);
 
-        if (currentZoom < zoomThreshold) {
-            if (pointLayerVisible) map.removeLayer(pointTanksLayer);
-            if (techLayerVisible) map.removeLayer(technicalTanksLayer);
-            console.log("🛑 Резервуары скрыты — масштаб ниже порога");
-        } else {
+        if (zoom >= zoomThreshold) {
             pointTanksLayer.clearLayers();
             technicalTanksLayer.clearLayers();
             addReservoirs(window.cachedReservoirs);
-            console.log("✅ Резервуары отображены — масштаб допустим");
+            console.log("✅ Резервуары отображены");
+        } else {
+            console.log("⛔ Резервуары скрыты — зум ниже порога");
         }
     }
 });

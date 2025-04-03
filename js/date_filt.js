@@ -36,6 +36,9 @@ async function updateMapData(year, month) {
     const zoomThreshold = 6;
     const currentZoom = map.getZoom();
 
+    const checkboxOne = document.getElementById('checkboxOne');
+    const checkboxTwo = document.getElementById('checkboxTwo');
+
     if (oilTransferData.length === 0 && reservoirs.length === 0) {
         console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
         dataLoaded = false;
@@ -49,27 +52,33 @@ async function updateMapData(year, month) {
     const msg = document.getElementById('no-data-message');
     if (msg) msg.style.display = 'none';
 
-    // ✅ Сохраняем данные для последующей отрисовки при zoomend
     window.cachedPoints = points;
     window.cachedOilTransferData = oilTransferData;
     window.cachedReservoirs = reservoirs;
 
-    const checkboxOne = document.getElementById('checkboxOne');
-    const checkboxTwo = document.getElementById('checkboxTwo');
-
-    // Отрисовываем только если зум позволяет
-    if (checkboxOne?.checked && oilTransferData.length > 0 && currentZoom >= zoomThreshold) {
-        addMinimalistFlow(points, oilTransferData);
-        await displayKenkiyakOilTotal(year, month, points);
+    // ✅ Нефть — отрисовываем только при нужном зуме и включённом чекбоксе
+    if (checkboxOne?.checked && oilTransferData.length > 0) {
+        if (currentZoom >= zoomThreshold) {
+            addMinimalistFlow(points, oilTransferData);
+            await displayKenkiyakOilTotal(year, month, points);
+        } else {
+            console.log("🛢️ Нефть не отрисована — зум ниже порога");
+        }
     }
 
-    if (checkboxTwo?.checked && reservoirs.length > 0 && currentZoom >= zoomThreshold) {
-        addReservoirs(reservoirs);
+    // ✅ Резервуары — отрисовываем только при нужном зуме и включённом чекбоксе
+    if (checkboxTwo?.checked && reservoirs.length > 0) {
+        if (currentZoom >= zoomThreshold) {
+            addReservoirs(reservoirs);
+        } else {
+            console.log("🛢️ Резервуары не отрисованы — зум ниже порога");
+        }
     }
 
     dataLoaded = true;
     console.log("✅ Карта обновлена");
 }
+
 
 
 
