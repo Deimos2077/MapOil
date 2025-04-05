@@ -650,59 +650,116 @@ function getReservoirSizeByZoom(zoom, type) {
     //     cachedReservoirs = reservoirs;
     //     addReservoirs(reservoirs);
     // }
+    window.pointTanksLayer = L.layerGroup();
+    window.technicalTanksLayer = L.layerGroup();
+    window.reservoirLayerGroup = L.layerGroup();
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const monthInput = document.getElementById('month-input');
+        const checkbox = document.getElementById('checkboxTwo');
     
-
-
-
-window.addEventListener('DOMContentLoaded', () => {
-    const monthInput = document.getElementById('month-input');
-    const checkbox = document.getElementById('checkboxTwo');
-
-    // ✅ Устанавливаем текущую дату, если ничего не выбрано
-    if (monthInput && !monthInput.value) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        monthInput.value = `${year}-${month}`;
-    }
-
-    // ✅ Загружаем данные по выбранной дате
-    const [year, month] = monthInput.value.split('-');
-    fetchAndRenderReservoirs(year, month);
-
-    // ✅ Обработчик смены даты
-    monthInput.addEventListener('change', () => {
+        // ✅ Инициализация слоёв, если ещё не созданы
+        if (!window.pointTanksLayer) window.pointTanksLayer = L.layerGroup();
+        if (!window.technicalTanksLayer) window.technicalTanksLayer = L.layerGroup();
+    
+        // ✅ Устанавливаем текущую дату, если ничего не выбрано
+        if (monthInput && !monthInput.value) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            monthInput.value = `${year}-${month}`;
+        }
+    
+        // ✅ Загружаем данные по выбранной дате
         const [year, month] = monthInput.value.split('-');
         fetchAndRenderReservoirs(year, month);
-    });
-
-    // ✅ Обработчик чекбокса
-    checkbox.addEventListener('change', async function () {
-        const currentZoom = map.getZoom();
-        const zoomThreshold = 6;
     
-        if (this.checked) {
-            if (currentZoom < zoomThreshold) {
-                console.log("⛔ Масштаб слишком мал — резервуары не будут отображены");
-                return;
-            }
-    
+        // ✅ Обработчик смены даты
+        monthInput.addEventListener('change', () => {
             const [year, month] = monthInput.value.split('-');
-            const reservoirs = await fetchReservoirVolumesFromDB(year, month);
-            cachedReservoirs = reservoirs;
+            fetchAndRenderReservoirs(year, month);
+        });
     
-            addReservoirs(reservoirs);
-            map.addLayer(pointTanksLayer);
-            map.addLayer(technicalTanksLayer);
-            console.log("✅ Резервуары отображены");
-        } else {
+        // ✅ Обработчик чекбокса
+        checkbox.addEventListener('change', async function () {
+            const currentZoom = map.getZoom();
+            const zoomThreshold = 6;
+        
+            if (this.checked) {
+                if (currentZoom < zoomThreshold) {
+                    console.log("⛔ Масштаб слишком мал — резервуары не будут отображены");
+                    return;
+                }
+        
+                const [year, month] = monthInput.value.split('-');
+                const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+                cachedReservoirs = reservoirs;
+        
+                addReservoirs(reservoirs); // внутри добавляются к новым слоям
+                map.addLayer(pointTanksLayer);
+                map.addLayer(technicalTanksLayer);
+        
+                console.log("✅ Резервуары отображены");
+            } else {
+                clearReservoirLayers(); // 💥 вот теперь сработает всегда!
+            }
+        });
+            
+    });
+    
+    // 👇 Функция очистки всех резервуаров
+    function clearReservoirLayers() {
+        try {
             map.removeLayer(pointTanksLayer);
             map.removeLayer(technicalTanksLayer);
+    
+            pointTanksLayer = L.layerGroup();
+            technicalTanksLayer = L.layerGroup();
+    
+            console.log("🧼 Резервуарные слои сброшены и пересозданы");
+        } catch (error) {
+            console.error("❌ Ошибка при очистке резервуаров:", error);
         }
+    }
+    
+
+    
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        const checkbox = document.getElementById('checkboxTwo');
+        const monthInput = document.getElementById('month-input');
+    
+        if (!checkbox || !monthInput) {
+            console.warn("❌ checkboxTwo или monthInput не найден");
+            return;
+        }
+    
+        checkbox.addEventListener('change', async function () {
+            const currentZoom = map.getZoom();
+            const zoomThreshold = 6;
+    
+            if (this.checked) {
+                if (currentZoom < zoomThreshold) {
+                    console.log("⛔ Масштаб слишком мал — резервуары не будут отображены");
+                    return;
+                }
+    
+                const [year, month] = monthInput.value.split('-');
+                const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+                cachedReservoirs = reservoirs;
+    
+                addReservoirs(reservoirs);
+                map.addLayer(pointTanksLayer);
+                map.addLayer(technicalTanksLayer);
+    
+                console.log("✅ Резервуары отображены");
+            } else {
+                clearReservoirLayers(); // 💥 Должен сработать при отжатии!
+            }
+        });
     });
     
-});
-
 
 map.on('zoomend', () => {
     const zoom = map.getZoom();
@@ -1352,11 +1409,12 @@ async function initializeFlowMap() {
 
     const points = await fetchPointsFromDB();
     const oilTransferData = await fetchOilTransferFromDB(year, month);
+    const pipelines = await fetchPipelinesFromDB();
 
-    console.log(`📌 Загружены точки:`, points);
-    console.log(`📊 Загружены данные за ${year}-${month}:`, oilTransferData);
+    console.log("🛠 Пример oilTransferData[0]:", oilTransferData[0]);
+    console.log("🛠 Пример pipelines[0]:", pipelines[0]);
 
-    clearAllDataLayers(); // очищаем все слои на всякий случай
+    clearAllDataLayers();
 
     if (points.length === 0 || oilTransferData.length === 0) {
         console.warn('❌ Недостаточно данных для отрисовки карты.');
@@ -1364,11 +1422,42 @@ async function initializeFlowMap() {
         return;
     }
 
+    // Основной поток (как раньше)
     addMinimalistFlow(points, oilTransferData);
+
+    // Метка по Кенкияку
     await displayKenkiyakOilTotal(year, month, points);
+
+    // Промежуточные точки
+    const intermediateVolumes = calculateIntermediateOilVolumes(oilTransferData, pipelines);
+    console.log("🧭 Промежуточные объемы:", intermediateVolumes);
+
+    Object.entries(intermediateVolumes).forEach(([pointId, volume]) => {
+        const point = points.find(p => p.id == pointId);
+        if (!point || !point.coords) return;
+
+        const labelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, point.id, 99);
+
+        L.polyline([point.coords, labelPosition], {
+            color: 'orange',
+            weight: 2,
+            dashArray: '5, 5',
+            opacity: 0.9,
+        }).addTo(minimalistFlowLayerGroup);
+
+        L.marker(labelPosition, {
+            icon: L.divIcon({
+                className: 'flow-label',
+                html: `<div>${volume} тн</div>`,
+                iconSize: null,
+                iconAnchor: [4, 18],
+            }),
+        }).addTo(minimalistFlowLayerGroup);
+    });
 
     dataLoaded = true;
 }
+
 
 
 
@@ -1425,6 +1514,62 @@ filterButton.addEventListener('change', () => {
 document.addEventListener("DOMContentLoaded", () => {
     initializeOilFlowMap();
 });
+
+
+//----------------------------------------
+function buildGraph(pipelines) {
+    const graph = {};
+    pipelines.forEach(p => {
+        if (!graph[p.from_point_id]) graph[p.from_point_id] = [];
+        graph[p.from_point_id].push(p.to_point_id);
+    });
+    return graph;
+}
+
+
+function findPath(graph, start, end, visited = new Set()) {
+    if (start === end) return [start];
+    visited.add(start);
+
+    const neighbors = graph[start] || [];
+    for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+            const path = findPath(graph, neighbor, end, visited);
+            if (path) return [start, ...path];
+        }
+    }
+    return null;
+}
+
+
+function calculateIntermediateOilVolumes(oilTransferData, pipelines) {
+    const graph = buildGraph(pipelines);
+    const flowByPoint = {};
+
+    oilTransferData.forEach(record => {
+        const from = record.from_point_id;
+        const to = record.to_point_id;
+        const amount = record.from_amount;
+
+        const path = findPath(graph, from, to);
+        console.log(`🔍 Путь от ${from} к ${to}:`, path);
+
+        if (!path || path.length < 3) return;
+
+        for (let i = 1; i < path.length - 1; i++) {
+            const point = path[i];
+            if (!flowByPoint[point]) flowByPoint[point] = 0;
+            flowByPoint[point] += amount;
+        }
+    });
+
+    console.log("📦 Суммы промежуточных точек:", flowByPoint);
+    return flowByPoint;
+}
+
+
+
+
 
 
 

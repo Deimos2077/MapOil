@@ -7,8 +7,36 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Функция для получения графиков за указанный месяц
+function getChartsForMonth($month) {
+    $start_date = date("Y-m-01", strtotime($month));
+    $end_date = date("Y-m-t", strtotime($month));
+
+    $pythonBin = "C:\\Users\\alfar\\AppData\\Local\\Programs\\Python\\Python313\\python.exe";
+    $pythonScript = __DIR__ . DIRECTORY_SEPARATOR . "generate_charts.py";
+    $command = "\"$pythonBin\" \"$pythonScript\" $start_date $end_date 2>error.log";
+
+    $output = shell_exec($command);
+    file_put_contents("debug.log", "CMD: $command\nOUTPUT:\n$output");
+
+    $charts = json_decode($output, true);
+    return $charts;
+}
+
+// Обработка AJAX-запроса для выбранного месяца
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['month'])) {
+    $month = $_POST['month'];
+    $charts = getChartsForMonth($month);
+    echo json_encode($charts);
+    exit;
+}
+
+// Загрузка данных за текущий месяц при открытии страницы
+$current_month = date("Y-m"); // Например, "2025-04" (сегодня апрель 2025 по условиям системы)
+$charts = getChartsForMonth($current_month);
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,14 +49,16 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="css/leaflet.legend.css">
     <link rel="stylesheet" href="css/modal_set.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
 
-        .highlight-date {
-            background: #ffcc00 !important; /* Цвет фона */
-            color: black !important;
-            border-radius: 50%;
-        }
-        #date-input {
+.highlight-date {
+    background: #ffcc00 !important; /* Цвет фона */
+    color: black !important;
+    border-radius: 50%;
+}
+#date-input {
     width: 100%;
     max-width: 300px;
     padding: 8px;
@@ -148,6 +178,39 @@ label[for="date-input"] {
         </div>
     </div>
 
+    <div id="charts">
+    <h2><i class="fas fa-chart-line"></i> Графики</h2>
+    <div id="preloader">Загрузка...</div>
+    <div id="chart-container">
+        <?php
+        if ($charts && !isset($charts['error']) &&
+            isset($charts['final_price']) && $charts['final_price'] !== "Нет данных" &&
+            isset($charts['total_amount']) && $charts['total_amount'] !== "Нет данных" &&
+            isset($charts['net_tons']) && $charts['net_tons'] !== "Нет данных") {           
+             echo "<div class=\"chart\">
+                    <h3><i class=\"fas fa-weight-hanging\"></i> Нетто (тонны)</h3>
+                    <iframe src='" . htmlspecialchars($charts['net_tons']) . "' style='width:100%; max-width:580px; height:400px;'></iframe>
+                    <p class=\"caption\">Масса нефти нетто в тоннах</p>
+                  </div>";
+            echo "<div class=\"chart\">
+                    <h3><i class=\"fas fa-dollar-sign\"></i> Итоговая цена</h3>
+                    <iframe src='" . htmlspecialchars($charts['final_price']) . "' style='width:100%; max-width:580px; height:400px;'></iframe>
+                    <p class=\"caption\">Итоговая стоимость нефти за период</p>
+                  </div>";
+            echo "<div class=\"chart\">
+                    <h3><i class=\"fas fa-oil-can\"></i> Общий объём</h3>
+                    <iframe src='" . htmlspecialchars($charts['total_amount']) . "' style='width:100%; max-width:580px; height:400px;'></iframe>
+                    <p class=\"caption\">Общий объём нефти за период</p>
+                  </div>";
+
+        } else {
+            echo "<p>Нет данных за этот месяц.</p>";
+        }
+        ?>
+    </div>
+</div>
+
+
 
     <div id="blur-background"></div>
 
@@ -182,7 +245,7 @@ label[for="date-input"] {
 
     <button id="add-row-btn" data-i18n="button_add_record">Добавить новую запись</button>
 </div> -->
-<script>
+<!-- <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetch("get_dates.php") // Загружаем даты с сервера
             .then(response => response.json())
@@ -200,8 +263,48 @@ label[for="date-input"] {
             })
             .catch(error => console.error("Ошибка загрузки дат:", error));
     });
+    </script> -->
+
+    <script>
+        document.getElementById('month-input').addEventListener('change', function() {
+            var month = this.value;
+            if (month) {
+                document.getElementById('preloader').style.display = 'block';
+                document.getElementById('chart-container').innerHTML = '';
+                fetch('map.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'month=' + month
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('preloader').style.display = 'none';
+                    var container = document.getElementById('chart-container');
+                    if (data && !data.error &&
+                        data.donut_direction !== "Нет данных" &&
+                        data.final_price !== "Нет данных" &&
+                        data.total_amount !== "Нет данных" &&
+                        data.net_tons !== "Нет данных") {
+                        container.innerHTML = `
+                            <div class="chart"><p><iframe src="${data.net_tons}" width="580" height="400"></iframe></p></div>
+                            <div class="chart"><p><iframe src="${data.final_price}" width="580" height="400"></iframe></p></div>
+                            <div class="chart"><p><iframe src="${data.total_amount}" width="580" height="400"></iframe></p></div>
+                        `;
+                    } else {
+                        container.innerHTML = '<p>Нет данных за этот месяц.</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('preloader').style.display = 'none';
+                    console.error('Ошибка:', error);
+                });
+            }
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="js/legend.js"></script>
 <script src="js/language.js"></script>
 <script src="js/Settings.js"></script>
