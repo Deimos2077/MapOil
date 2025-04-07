@@ -1064,43 +1064,53 @@ main();
 
 //----------------------------------Информация хода нефти с отображением стрелок-------------------------------
 
-// Создаем слой для отображения линий и меток
+// 🔁 Слой для визуализации направлений и меток объёмов
 window.flowLayerGroup = L.layerGroup(); 
 window.minimalistFlowLayerGroup = L.layerGroup();
 
+// 📦 Переменные контроля отображения
 let flowLayerVisible = false; 
 let dataLoaded = false; 
 
-// Убираем слой при загрузке
+// ❌ Убираем слой при старте
 map.removeLayer(minimalistFlowLayerGroup);
 document.getElementById('checkboxOne').checked = false; 
 
-// Настройки направлений для точек (смещения по широте и долготе)
+// 🧭 Направления (смещения) для начальной расстановки меток по точкам
 const directionOffsets = {
     1: { lat: 0.5, lng: 0.3 },   // Алашанькоу
-    2: { lat: 0.2, lng: 0.5 },    // Атасу
-    3: { lat: 0.5, lng: 0.3 },    // ПНХЗ
-    4: { lat: -0.5, lng: -0.3 },   // Кумколь
+    2: { lat: -0.6, lng: -0.6 },   // Атасу
+    3: { lat: 0.5, lng: 0.3 },   // ПНХЗ
+    4: { lat: -0.5, lng: -0.3 }, // Кумколь
     5: { lat: 0.2, lng: 0.5 },   // Кенкияк
     6: { lat: 0.2, lng: 0.3 },   // ПКОП
     7: { lat: 0.4, lng: 0.2 },   // Шманова
     8: { lat: 0.2, lng: 0.2 },   // Самара
-    9: { lat: -0.5, lng: -0.5 },   // Новороссийск
+    9: { lat: -0.5, lng: -0.5 }, // Новороссийск
     10: { lat: 0.2, lng: 0.3 },  // Усть-Луга
-    11: { lat: 0, lng: 0 }, // Жана Жол
-    12: { lat: 0, lng: 0 }, // ПСП 45 
-    19: { lat: -0.3, lng: -0.2 },  // Касымова
-    24: { lat: -0.3, lng: 0.6 },  // 1235
+    11: { lat: 0, lng: 0 },      // Жана Жол
+    12: { lat: 0, lng: 0 },      // ПСП 45 
+    13: { lat: -0.2, lng: -0.4 },// Грушевая
+    18: { lat: 0.1, lng: -0.2 }, // Джумангалиева
+    19: { lat: -0.3, lng: -0.2 },// Касымова
+    20: { lat: -0.2, lng: 0.4 }, // Клин
+    21: { lat: -0.2, lng: 0.3 }, // Родионовская
+    22: { lat: -0.3, lng: 0.3 }, // Тихорецк
+    23: { lat: -0.3, lng: 0.4 }, // Грушевая
+    24: { lat: -0.3, lng: 0.6 }, // 1235
+    25: { lat: 0.3, lng: 0.3 },  // Никольское
+    26: { lat: 0.3, lng: 0.4 },  // Унеча
 };
 
+// 📌 Находим свободное место для метки, избегая наложений
 function findFreePosition(coords, layerGroup, pointId) {
-    if (pointId === 5) return null; // Исключаем Кенкияк
+    if (pointId === 5) return null; // Исключение для Кенкияка, он обрабатывается отдельно
 
-    const baseOffset = 0.6; // Базовое смещение
+    const baseOffset = 0.6;
     const defaultDirections = [
-        [baseOffset, baseOffset],   
-        [baseOffset, -baseOffset],  
-        [-baseOffset, baseOffset],  
+        [baseOffset, baseOffset],
+        [baseOffset, -baseOffset],
+        [-baseOffset, baseOffset],
         [-baseOffset, -baseOffset],
         [0, baseOffset],
         [baseOffset, 0],
@@ -1110,7 +1120,6 @@ function findFreePosition(coords, layerGroup, pointId) {
 
     const customOffset = directionOffsets[pointId] || { lat: 0, lng: 0 };
 
-    // Генерируем последовательность направлений начиная с кастомного, затем добавляем стандартные
     const directions = [
         [customOffset.lat, customOffset.lng],
         ...defaultDirections
@@ -1119,9 +1128,7 @@ function findFreePosition(coords, layerGroup, pointId) {
     for (let i = 0; i < directions.length; i++) {
         const offsetLat = directions[i][0];
         const offsetLng = directions[i][1];
-
-        // Чем дальше направление в списке, тем сильнее смещаем (умножаем)
-        const scale = 1 + i * 0.2; 
+        const scale = 1 + i * 0.2;
 
         const candidateCoords = [
             coords[0] + offsetLat * scale,
@@ -1146,16 +1153,14 @@ function findFreePosition(coords, layerGroup, pointId) {
             return false;
         });
 
-        if (!isOverlapping) {
-            return candidateCoords;
-        }
+        if (!isOverlapping) return candidateCoords;
     }
 
-    // В крайнем случае — ставим далеко
+    // Крайний случай: размещаем дальше
     return [coords[0] + baseOffset * 2, coords[1] + baseOffset * 2];
 }
 
-
+// 📌 Позиция с учётом количества уже размещённых меток в этой точке
 function findFreePositionWithIndex(coords, layerGroup, pointId, usageIndex) {
     const baseOffset = 0.6;
     const baseDirections = [
@@ -1179,13 +1184,71 @@ function findFreePositionWithIndex(coords, layerGroup, pointId, usageIndex) {
     const dir = directions[usageIndex % directions.length];
     const scale = 1 + Math.floor(usageIndex / directions.length) * 0.4;
 
-    const candidateCoords = [
+    return [
         coords[0] + dir[0] * baseOffset * scale,
         coords[1] + dir[1] * baseOffset * scale
     ];
-
-    return candidateCoords;
 }
+
+
+//------------------------Сумма для всех точек-----------------------------
+async function displayIntermediateOilTotals(oilTransferData, points) {
+    const routes = {
+        // Новороссийск
+        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13],
+        // Усть-Луга
+        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],
+        // ПКОП
+        6: [5, 4, 18, 6],
+        // Алашанькоу
+        1: [5, 4, 18, 2, 1],
+        // ПНХЗ
+        3: [5, 4, 18, 2, 3]
+    };
+
+    const volumesByPoint = {};
+
+    oilTransferData.forEach(record => {
+        const route = routes[record.to_point];
+        if (!route || route[0] !== 5) return; // Только маршруты от Кенкияка
+
+        route.forEach((pointId, index) => {
+            if (index === 0 || index === route.length - 1) return; // Пропускаем Кенкияк и конечную точку
+
+            if (!volumesByPoint[pointId]) volumesByPoint[pointId] = 0;
+            volumesByPoint[pointId] += record.from_amount;
+        });
+    });
+
+    Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
+        pointId = parseInt(pointId);
+        const point = points.find(p => p.id === pointId);
+        if (!point || !point.coords) return;
+
+        const labelPosition = findFreePosition(point.coords, minimalistFlowLayerGroup, pointId);
+        if (!labelPosition) return;
+
+        L.polyline([point.coords, labelPosition], {
+            color: 'orange',
+            weight: 2,
+            dashArray: '5, 5',
+            opacity: 0.8,
+        }).addTo(minimalistFlowLayerGroup);
+
+        L.marker(labelPosition, {
+            icon: L.divIcon({
+                className: 'flow-label sent',
+                html: `<div>${volume.toLocaleString()} тн</div>`,
+                iconSize: null,
+                iconAnchor: [4, 18],
+            }),
+        }).addTo(minimalistFlowLayerGroup);
+    });
+
+    console.log("📦 Объемы на промежуточных точках добавлены:", volumesByPoint);
+}
+
+
 
 
 
@@ -1201,12 +1264,10 @@ function addMinimalistFlow(points, oilTransferData) {
     kenkiyakLabelLayer.clearLayers();
     if (!flowLayerVisible) return;
 
-    // ⛑ Сохраняем существующую метку Кенкияка
     const kenkiyakMarkers = minimalistFlowLayerGroup.getLayers().filter(layer =>
         layer.options && layer.options._isKenkiyak
     );
 
-    // 💥 Очищаем слой перед отрисовкой новых данных
     minimalistFlowLayerGroup.clearLayers();
 
     const uniqueEntries = new Set();
@@ -1217,61 +1278,48 @@ function addMinimalistFlow(points, oilTransferData) {
         const pointId = isSpecialSource ? record.from_point : record.to_point;
 
         const point = points.find(p => p.id === pointId);
-        if (!point || !point.coords) {
-            console.warn(`⚠️ Координаты не найдены: ${pointId}`);
-            return;
-        }
+        if (!point || !point.coords) return;
 
-        // Генерация уникального ключа
         const recordKey = `${record.from_point}_${record.to_point}_${record.from_amount}`;
         if (uniqueEntries.has(recordKey)) return;
         uniqueEntries.add(recordKey);
 
-        // Индексация использования точки
         if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
         const usageIndex = pointUsageCounter[pointId]++;
 
-// Получаем "направление", как раньше
-const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
-if (!rawLabelPosition) return;
+        const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
+        if (!rawLabelPosition) return;
 
-// Вектор от точки к предполагаемой позиции
-let dx = rawLabelPosition[0] - point.coords[0];
-let dy = rawLabelPosition[1] - point.coords[1];
+        let dx = rawLabelPosition[0] - point.coords[0];
+        let dy = rawLabelPosition[1] - point.coords[1];
+        const length = Math.sqrt(dx * dx + dy * dy);
+        if (length === 0) return;
+        dx /= length;
+        dy /= length;
 
-// Нормализуем вектор (длина = 1)
-const length = Math.sqrt(dx * dx + dy * dy);
-if (length === 0) return;
-dx /= length;
-dy /= length;
+        const baseOffset = 1.5;
+        const labelPosition = [
+            point.coords[0] + dx * baseOffset,
+            point.coords[1] + dy * baseOffset
+        ];
 
-// Базовое начальное расстояние метки от точки
-const baseOffset = 1.5; // Можешь увеличить до 0.07 или 0.1, если всё ещё слипается
+// ✅ Отображаем только для нужных конечных точек
+const allowedPointIds = [1, 3, 6, 9, 10, 11, 12];
+if (!allowedPointIds.includes(pointId)) return;
 
-// Вычисляем начальное положение метки
-const labelPosition = [
-    point.coords[0] + dx * baseOffset,
-    point.coords[1] + dy * baseOffset
-];
-
-const markerHtml = `<div>${record.from_amount} тн</div>`;
-
-// Создаём маркер
 const marker = L.marker(labelPosition, {
     icon: L.divIcon({
         className: 'flow-label',
-        html: markerHtml,
+        html: `<div>${record.from_amount} тн</div>`,
         iconSize: null,
         iconAnchor: [10, 10],
     })
 });
 
-// Сохраняем все нужные параметры для масштабирования
 marker.options._originalPoint = point.coords;
 marker.options._direction = [dx, dy];
 marker.options._baseOffset = baseOffset;
 
-// Создаём линию от точки к метке
 const polyline = L.polyline([point.coords, labelPosition], {
     color: 'black',
     weight: 2,
@@ -1281,11 +1329,84 @@ const polyline = L.polyline([point.coords, labelPosition], {
 
 marker.options._polyline = polyline;
 
-// Добавляем и маркер, и линию
 polyline.addTo(minimalistFlowLayerGroup);
 marker.addTo(minimalistFlowLayerGroup);
 
 
+    });
+
+    // ===== ✅ ДОБАВЛЯЕМ СУММЫ НА ПРОМЕЖУТОЧНЫХ ТОЧКАХ =====
+
+    const routes = {
+        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13],  // Новороссийск
+        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],     // Усть-Луга
+        6: [5, 4, 18, 6],                         // ПКОП
+        1: [5, 4, 18, 2, 1],                      // Алашанькоу
+        3: [5, 4, 18, 2, 3]                       // ПНХЗ
+    };
+
+    const volumesByPoint = {};
+
+    oilTransferData.forEach(record => {
+        const route = routes[record.to_point];
+        if (!route || route[0] !== 5) return;
+
+        for (let i = 1; i < route.length - 1; i++) {
+            const pointId = route[i];
+            if (!volumesByPoint[pointId]) volumesByPoint[pointId] = 0;
+            volumesByPoint[pointId] += record.from_amount;
+        }
+    });
+
+    Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
+        pointId = parseInt(pointId);
+        const point = points.find(p => p.id === pointId);
+        if (!point || !point.coords) return;
+
+        const usageIndex = pointUsageCounter[pointId] || 0;
+        pointUsageCounter[pointId] = usageIndex + 1;
+
+        const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
+        if (!rawLabelPosition) return;
+
+        let dx = rawLabelPosition[0] - point.coords[0];
+        let dy = rawLabelPosition[1] - point.coords[1];
+        const length = Math.sqrt(dx * dx + dy * dy);
+        if (length === 0) return;
+        dx /= length;
+        dy /= length;
+
+        const baseOffset = 1.2;
+        const labelPosition = [
+            point.coords[0] + dx * baseOffset,
+            point.coords[1] + dy * baseOffset
+        ];
+
+        const polyline = L.polyline([point.coords, labelPosition], {
+            color: 'black',
+            weight: 2,
+            dashArray: '5, 5',
+            opacity: 0.8,
+        });
+
+        const marker = L.marker(labelPosition, {
+            icon: L.divIcon({
+                className: 'flow-label sent',
+                html: `<div>${volume.toLocaleString()} тн</div>`,
+                iconSize: null,
+                iconAnchor: [10, 10],
+            })
+        });
+        
+        // 🛠️ Обязательно добавляем параметры для зума
+        marker.options._originalPoint = point.coords;
+        marker.options._direction = [dx, dy];
+        marker.options._baseOffset = baseOffset;
+        marker.options._polyline = polyline;
+        
+
+        polyline.addTo(minimalistFlowLayerGroup);
+        marker.addTo(minimalistFlowLayerGroup);
     });
 
     // ✅ Возвращаем обратно метку Кенкияка
@@ -1297,7 +1418,7 @@ marker.addTo(minimalistFlowLayerGroup);
 
 
 
-// Стили для меток
+// Стили для меток — единый чёрный стиль
 const style = document.createElement('style');
 style.innerHTML = `
 .flow-label div {
@@ -1320,7 +1441,7 @@ style.innerHTML = `
 }
 
 .flow-label.sent div {
-    color: red !important;
+    color: white !important;
     text-shadow: 
         -2px -2px 0 black,  
          2px -2px 0 black,
@@ -1329,6 +1450,7 @@ style.innerHTML = `
 }
 `;
 document.head.appendChild(style);
+
 
 
 
@@ -1484,65 +1606,6 @@ async function displayKenkiyakOilTotal(year, month, points) {
     }).addTo(minimalistFlowLayerGroup);
 }
 
-// async function displayKenkiyakOilTotal(year, month, points) {
-//     const totalOil = await fetchKenkiyakOilTotal(year, month);
-    
-//     if (totalOil === 0) {
-//         console.warn("⚠️ Нет данных о нефти для Кенкияка.");
-//         return;
-//     }
-
-//     // Ищем координаты Кенкияка (id = 5)
-//     const kenkiyakPoint = points.find(p => p.id === 5);
-//     if (!kenkiyakPoint || !kenkiyakPoint.coords) {
-//         console.error("❌ Координаты Кенкияка не найдены!");
-//         return;
-//     }
-
-//     console.log("📌 Проверка координат Кенкияка:", kenkiyakPoint);
-
-//     // Поиск свободного места для метки
-//     let labelPosition = findFreePosition(kenkiyakPoint.coords, minimalistFlowLayerGroup, 5);
-    
-//     if (!labelPosition) {
-//         console.warn("⚠️ Используем резервное место для метки Кенкияка.");
-//         labelPosition = [kenkiyakPoint.coords[0] + 0.5, kenkiyakPoint.coords[1] + 0.5]; 
-//     }
-
-//     console.log(`✅ Метка добавляется в Кенкияк: ${totalOil} тн, позиция:`, labelPosition);
-
-//     // Обычная черная линия от Кенкияка к метке
-//     L.polyline([kenkiyakPoint.coords, labelPosition], {
-//         color: 'black',
-//         weight: 2,
-//         dashArray: '5, 5',
-//         opacity: 0.8,
-//     }).addTo(minimalistFlowLayerGroup);
-
-//     // Метка с объемом нефти
-//     const kenkiyakMarker = L.marker(labelPosition, {
-//         icon: L.divIcon({
-//             className: 'flow-label',
-//             html: `<div>${totalOil} тн</div>`,
-//             iconSize: null,
-//             iconAnchor: [4, 18],
-//         }),
-//     });
-    
-//     kenkiyakMarker.options._originalPoint = kenkiyakPoint.coords;
-//     kenkiyakMarker.options._direction = [
-//         labelPosition[0] - kenkiyakPoint.coords[0],
-//         labelPosition[1] - kenkiyakPoint.coords[1]
-//     ];
-//     kenkiyakMarker.options._isKenkiyak = true;
-    
-//     kenkiyakMarker.addTo(minimalistFlowLayerGroup);
-// }
-
-
-
-
-
 async function initializeFlowMap() {
     const monthInput = document.getElementById('month-input');
     if (!monthInput || !monthInput.value) {
@@ -1674,6 +1737,7 @@ map.on('zoomend', () => {
     const zoom = map.getZoom();
     const zoomThreshold = 6;
 
+    // 🔄 Обновляем позиции всех меток и их линий
     minimalistFlowLayerGroup.eachLayer(layer => {
         if (!layer.options || !layer.options._originalPoint || !layer.options._direction) return;
         if (!layer.options._polyline) return;
@@ -1690,6 +1754,9 @@ map.on('zoomend', () => {
         layer.setLatLng(newLatLng);
         _polyline.setLatLngs([_originalPoint, newLatLng]);
     });
+
+    // 🔁 Обновляем отображение слоя в зависимости от зума и чекбокса
+    updateFlowVisibilityByZoom();
 });
 
 
@@ -1735,6 +1802,7 @@ document.getElementById('checkboxOne').addEventListener('change', async function
 map.on('zoomend', () => {
     updateFlowVisibilityByZoom();
 });
+
 
 
 //----------------------------------------
