@@ -1,6 +1,7 @@
 <?php
 // db.php
 $host = 'localhost'; 
+// $host = '192.168.1.23';
 $dbname = 'mapoil';
 // $user = 'user'; 
 // $password = 'oil4815162342'; 

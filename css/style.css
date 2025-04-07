@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 #map {
     height: 85vh; /* Использовать всю высоту окна */
     width: 100%; /* Полная ширина */
@@ -281,17 +285,15 @@
     background: #aaa;
 }
 
-
-
 #blur-background {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
   opacity: 0;
   visibility: hidden;
-  transition: 0.3s;
+  transition: opacity 0.4s ease;
   z-index: 999;
 }
 
@@ -303,17 +305,20 @@
 .modal {
   display: none;
   position: fixed;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
-  width: 500px;
-  max-width: 90%;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 620px;
+  max-width: 94%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
   z-index: 1000;
   opacity: 0;
-  transition: 0.3s ease;
-  padding: 20px;
+  transition: all 0.4s ease;
+  padding: 32px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 .modal.show {
@@ -324,19 +329,198 @@
 
 .modal-content {
   position: relative;
+  color: #444;
+}
+
+.modal-content h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.modal-content p {
+  font-size: 15px;
+  margin: 8px 0;
+  color: #444;
+}
+
+.modal-content p strong {
+  color: #111;
 }
 
 .close-btn {
   position: absolute;
-  top: 10px; right: 15px;
+  top: 16px;
+  right: 20px;
+  font-size: 20px;
+  color: #999;
   cursor: pointer;
-  font-size: 24px;
+  transition: color 0.2s ease;
+}
+.close-btn:hover {
+  color: #000;
 }
 
 .modal-wrapper {
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* 🔷 Универсальные блоки данных */
+.modal-content .data-block {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s ease;
+}
+
+.modal-content .data-block .label {
+  font-size: 14px;
+  color: #666;
+}
+
+.modal-content .data-block .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+}
+
+.modal-content .data-block .unit {
+  font-size: 14px;
+  color: #888;
+  margin-left: 4px;
+}
+
+.modal-content .section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #555;
+  margin: 24px 0 10px;
+  border-bottom: 1px dashed #ddd;
+  padding-bottom: 4px;
+}
+
+.modal-content .destination-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0 0 16px 0;
+}
+.modal-content .destination-list li {
+  font-size: 15px;
+  color: #333;
+  margin: 6px 0;
+}
+
+.modal-content .no-data {
+  font-size: 14px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+  margin-top: 10px;
+}
+
+#charts {
+  background: linear-gradient(to bottom, #f0f4f8, #ffffff);
+  padding: 40px 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 40px 0;
+}
+
+#charts h2 {
+  text-align: center;
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+/* Используем grid вместо flex */
+#chart-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 графика в ряд */
+  gap: 24px;
+  padding: 10px;
+  justify-items: center;
+}
+
+/* Карточка графика */
+.chart {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.5s ease-in-out;
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+  max-width: 580px;
+}
+
+/* Размеры под каждый iframe */
+.chart iframe {
+  width: 100%;
+  height: 400px;
+  border: none;
+  border-radius: 8px;
+  display: block;
+}
+
+/* Адаптация — 2 в ряд на планшетах, 1 на телефонах */
+@media (max-width: 1200px) {
+  #chart-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  #chart-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart:hover {
+  transform: translateY(-5px);
+}
+
+.chart h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #34495e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caption {
+  font-size: 14px;
+  color: #777;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Анимация появления */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.flow-label {
+  transition: transform 0.3s ease, top 0.3s ease, left 0.3s ease;
 }

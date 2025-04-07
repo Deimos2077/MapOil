@@ -38,7 +38,7 @@ async function updateMapData(year, month) {
 
     const checkboxOne = document.getElementById('checkboxOne');
     const checkboxTwo = document.getElementById('checkboxTwo');
-
+ 
     if (oilTransferData.length === 0 && reservoirs.length === 0) {
         console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
         dataLoaded = false;
@@ -77,6 +77,18 @@ async function updateMapData(year, month) {
 
     dataLoaded = true;
     console.log("✅ Карта обновлена");
+
+    // ✅ Резервуары — отрисовываем только при нужном зуме и включённом чекбоксе
+    if (checkboxTwo?.checked && reservoirs.length > 0) {
+        if (currentZoom >= zoomThreshold) {
+            addReservoirs(reservoirs);
+        } else {
+            console.log("🛢️ Резервуары не отрисованы — зум ниже порога");
+            clearReservoirLayers(); // ⬅ очищаем, если зум ниже
+        }
+    } else {
+        clearReservoirLayers(); // ⬅ очищаем, если чекбокс выключен или нет данных
+    }
 }
 
 
@@ -88,6 +100,13 @@ function clearAllDataLayers() {
     if (window.reservoirLayerGroup) reservoirLayerGroup.clearLayers();
     if (window.pointTanksLayer) pointTanksLayer.clearLayers();
     if (window.technicalTanksLayer) technicalTanksLayer.clearLayers();
+}
+
+function clearReservoirLayers() {
+    if (window.reservoirLayerGroup) reservoirLayerGroup.clearLayers();
+    if (window.pointTanksLayer) pointTanksLayer.clearLayers();
+    if (window.technicalTanksLayer) technicalTanksLayer.clearLayers();
+    console.log("🧹 Резервуары очищены");
 }
 
 
