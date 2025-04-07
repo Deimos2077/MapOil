@@ -51,6 +51,7 @@ $charts = getChartsForMonth($current_month);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+
     <style>
 
 .highlight-date {
@@ -118,8 +119,8 @@ label[for="date-input"] {
             
 <nav id="slide-menu">
     <ul>        
-        <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" data-i18n="menu_map">Карта транспортировки нефти</a></li>        
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Отчетность</a></li>
+        <li class="map"><a class="menu-href" href="/project/MapOil/map.php" ><i class="fa fa-map" ></i>Карта транспортировки нефти</a></li>        
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
         <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
 

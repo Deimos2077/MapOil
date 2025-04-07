@@ -82,6 +82,12 @@ nav#slide-menu > ul li:before {
     text-transform: none;
     line-height: 1em;
 }
+.menu-href i {
+  color: #59e9df;
+  margin-right: 10px;
+  width: 16px;
+  text-align: center;
+}
 
 nav#slide-menu > ul li.sep {
     margin-top: 7px;

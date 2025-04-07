@@ -35,7 +35,7 @@
         }
     </style>
 <script>
-async function loadData() {
+async function loadDataEx() {
     const dateInput = document.getElementById("date-input");
     const date = dateInput.value;
 
@@ -55,16 +55,26 @@ async function loadData() {
 
         console.log("Загруженные данные:", result);
 
-        // Обработка трубопроводов
+        const table = document.getElementById("myTable");
+        if (!table) {
+            alert("Таблица с id='myTable' не найдена.");
+            return;
+        }
+
+        // Обрабатываем трубопроводы только в таблице myTable
         result.oiltransfers.forEach(row => {
-            // Проходим по всем tr с data-pipeline-id
-            document.querySelectorAll("tr[data-pipeline-id]").forEach(tr => {
-                const idList = tr.getAttribute("data-pipeline-id").split(",").map(id => id.trim());
-                const index = idList.indexOf(String(row.pipeline_id));
+            table.querySelectorAll("tr[data-pipeline-id]").forEach(tr => {
+                const pipelineIds = tr.getAttribute("data-pipeline-id")
+                    .split(",")
+                    .map(id => id.trim());
+
+                const index = pipelineIds.indexOf(String(row.pipeline_id));
                 if (index !== -1) {
-                    const fromSpan = tr.querySelector(`#from_amount${index + 1}`);
-                    const lossSpan = tr.querySelector(`#losses${index + 1}`);
-                    const toSpan = tr.querySelector(`#to_amount${index + 1}`);
+                    const idx = index + 1; // для from_amount1, losses1, to_amount1 и т.д.
+
+                    const fromSpan = tr.querySelector(`#from_amount${idx}`);
+                    const lossSpan = tr.querySelector(`#losses${idx}`);
+                    const toSpan = tr.querySelector(`#to_amount${idx}`);
 
                     if (fromSpan) fromSpan.textContent = row.from_amount ?? "";
                     if (lossSpan) lossSpan.textContent = row.losses ?? "";
@@ -73,12 +83,13 @@ async function loadData() {
             });
         });
 
-        // Обработка резервуаров
+        // Обрабатываем резервуары только в таблице myTable
         result.reservoirs.forEach(row => {
-            let rows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
-            rows.forEach(tr => {
-                tr.querySelector("[id^='start-']").value = row.start_volume ?? "";
-                tr.querySelector("[id^='end-']").value = row.end_volume ?? "";
+            table.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+                const startInput = tr.querySelector("[id^='start-']");
+                const endInput = tr.querySelector("[id^='end-']");
+                if (startInput) startInput.textContent = row.start_volume ?? "";
+                if (endInput) endInput.textContent = row.end_volume ?? "";
             });
         });
 
@@ -92,7 +103,7 @@ async function loadData() {
 <body>
 <button id ="exportToExcel"onclick="exportToExcel()">Экспорт в Excel</button>
 <label style="display:block" for="date-input">Дата:</label>
-<input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
+<input type="date" id="date-input" class="form-control mb-3" onchange="loadDataEx()">
 
     <table id="myTable" >
     <tr>
@@ -137,12 +148,12 @@ async function loadData() {
             <th>Потеря</th>
             <th>до</th>
         </tr>
-        <tr>
+        <tr reservoir_id="1">
             <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал)</td>
             <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
-            <td>0</td>
-            <td>3</td>
             <td></td>
             <td></td>
             <td></td>
@@ -162,9 +173,9 @@ async function loadData() {
             <td></td>
         </tr>
         <tr data-pipeline-id="24,29,37,49,53,61"> 
-            <td>ГНПС ПСП45</td>
+            <td>ПСП 45 км</td>
             <td >ГНПС Кинкияк</td>
-            <td><span  id="loss_coefficient"></span></td>
+            <td><span  id="loss_coefficient">0,0332%</span></td>
             <td></td>
             <td></td>
             <td><span  id="from_amount1"></span></td>
@@ -186,61 +197,60 @@ async function loadData() {
             <td><span  id="losses6"></span></td>
             <td><span  id="to_amount6"></span></td> 
         </tr>
-        <tr data-pipeline-id="17">
+        <tr data-pipeline-id="25,30,38,50,54,62">
             <td >КПОУ Жанажол</td>
             <td >ГНПС Кинкияк</td>
-            <td><span id="percent-zhanazholPP"></span></td>
+            <td><span id="percent-zhanazholPP">0,0377%</span></td>
             <td></td>
             <td></td>
-            <td data-pipelines-system-id="1"><span id="volume-zhanazhol"></span></td>
-            <td data-pipelines-system-id="1"><span id="loss-zhanazholP"></span></td>
-            <td data-pipelines-system-id="1"><span id="volume2-zhanazholedit"></span></td>
-            <td data-pipelines-system-id="2"><span id="volume-zhanazhol2"></span></td>
-            <td data-pipelines-system-id="2"><span id="loss-zhanazhol2P"></span></td>
-            <td data-pipelines-system-id="2"><span id="volume2-zhanazholedit2"></span></td>
-            <td data-pipelines-system-id="3"><span id="volume-zhanazhol3"></span></td>
-            <td data-pipelines-system-id="3"><span id="loss-zhanazhol3P"></span></td>
-            <td data-pipelines-system-id="3"><span id="volume2-zhanazholedit3"></span></td>
-            <td data-pipelines-system-id="4"><span id="volume-zhanazhol4"></span></td>
-            <td data-pipelines-system-id="4"><span id="loss-zhanazhol4P"></span></td>
-            <td data-pipelines-system-id="4"><span id="volume2-zhanazholedit4"></span></td>
-            <td data-pipelines-system-id="5"><span id="volume-zhanazhol5"></span></td>
-            <td data-pipelines-system-id="5"><span id="loss-zhanazhol5P"></span></td>
-            <td data-pipelines-system-id="5"><span id="volume2-zhanazholedit5"></span></td>
-            <td data-pipelines-system-id="6"><span id="volume-zhanazhol6"></span></td>
-            <td data-pipelines-system-id="6"><span id="loss-zhanazhol6P"></span></td>
-            <td data-pipelines-system-id="6"><span id="volume2-zhanazholedit6"></span></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
         </tr>
-        <tr>
- 
-            <td colspan="2">ГНПС Кинкияк</td>
-            <td><span id="percent-kenkiyakTransferPP"></span></td>
+        <tr data-pipeline-id="26,31,39,51,55,63">
+            <td colspan="2">ГНПС Кенкияк (перевалка)</td>
+            <td><span id="percent-kenkiyakTransferPP">0,0077%</span></td>
             <td></td>
             <td></td>
-            <td data-pipelines-system-id="1"><span id="volume-kenkiyakTransfer"></span></td>
-            <td data-pipelines-system-id="1"><span id="loss-kenkiyakTransferP"></span></td>
-            <td data-pipelines-system-id="1"><span id="volume2-kenkiyak"></span></td>
-            <td data-pipelines-system-id="2"><span id="volume-kenkiyakTransfer2"></span></td>
-            <td data-pipelines-system-id="2"><span id="loss-kenkiyakTransfer2P"></span></td>
-            <td data-pipelines-system-id="2"><span id="volume2-kenkiyak2"></span></td>
-            <td data-pipelines-system-id="3"><span id="volume-kenkiyakTransfer3"></span></td>
-            <td data-pipelines-system-id="3"><span id="loss-kenkiyakTransfer3P"></span></td>
-            <td data-pipelines-system-id="3"><span id="volume2-kenkiyak3"></span></td>
-            <td data-pipelines-system-id="4"><span id="volume-kenkiyakTransfer4"></span></td>
-            <td data-pipelines-system-id="4"><span id="loss-zhanazhol4P"></span></td>
-            <td data-pipelines-system-id="4"><span id="volume2-zhanazholedit4"></span></td>
-            <td data-pipelines-system-id="5"><span id="volume-zhanazhol5"></span></td>
-            <td data-pipelines-system-id="5"><span id="loss-zhanazhol5P"></span></td>
-            <td data-pipelines-system-id="5"><span id="volume2-zhanazholedit5"></span></td>
-            <td data-pipelines-system-id="6"><span id="volume-zhanazhol6"></span></td>
-            <td data-pipelines-system-id="6"><span id="loss-zhanazhol6P"></span></td>
-            <td data-pipelines-system-id="6"><span id="volume2-zhanazholedit6"></span></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
         </tr>
-        <tr>
+        <tr reservoir_id="5">
             <td class="left-align" colspan="2">По системе МН ТОО «Казахстанско-Китайский трубопровод»</td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -260,36 +270,37 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="27,32,52,56,64">
+            <td class="left-align">ГНПС Кенкияк</td>
             <td class="left-align">ГНПС Кумколь</td>
-            <td class="left-align">ГНПС Кинкияк</td>
             <td>0,0794%</td>
             <td></td>
             <td></td>
-            <td>18576</td>
-            <td>15</td>
-            <td>18561</td>
-            <td>5011</td>
-            <td>4</td>
-            <td>5007</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
             <td></td>
             <td></td>
+            <td></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td>
             <td></td>
-            <td>5007</td>
             <td></td>
-            <td>5000</td>
-            <td>5011</td>
-            <td>4</td>
-            <td>5007</td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td></td> 
+
         </tr>
-        <tr>
+        <tr reservoir_id="3">
             <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Восточный Филиал)</td>
             <td></td>
-            <td>9000</td>
-            <td>18523</td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -309,18 +320,15 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="28">
             <td class="left-align">ГНПС Кумколь</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">ПСП ПКОП (прием по УУН)</td>
             <td>0,1818%</td>
             <td></td>
             <td></td>
-            <td>2477</td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -328,28 +336,6 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="left-align">ГНПС Кумколь</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>21038</td>
-            <td>38</td>
-            <td class="red-bg">21000</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td class="red-bg">5000</td>
             <td></td>
             <td></td>
             <td></td>
@@ -359,84 +345,83 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="33,57">
             <td class="left-align">ГНПС Кумколь</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">ГНПС им. Б. Джумагалиева</td>
             <td>0,0525%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>5007</td>
-            <td>3</td>
-            <td>5004</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td>5007</td>
-            <td>3</td>
-            <td>5004</td>
             <td></td>
             <td></td>
             <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
             <td></td>
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="34,58">
             <td class="left-align">ГНПС им. Б. Джумагалиева</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">ГНПС Атасу</td>
             <td>0,0754%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>5004</td>
-            <td>4</td>
-            <td>5000</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td>5004</td>
-            <td>4</td>
-            <td>5000</td>
             <td></td>
             <td></td>
             <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
             <td></td>
             <td></td>
             <td></td>
         </tr>
-        <tr>
-            <td class="left-align">ГНПС Атасу (перекачка в н/п Атасу-Алашанькоу)</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+        <tr data-pipeline-id="35,59">
+            <td colspan="2" class="left-align">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
             <td>0,0051%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>5000</td>
-            <td>0</td>
-            <td>5000</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
             <td></td>
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="60">
             <td class="left-align">ГНПС Атасу</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">ПНХЗ</td>
             <td>0,0843%</td>
             <td></td>
             <td></td>
@@ -448,22 +433,22 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>5000</td>
-            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr >
             <td class="left-align" colspan="2">По системе МН ТОО «Казахстанско-Китайский трубопровод»</td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -483,18 +468,18 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="36">
             <td class="left-align">ГНПС Атасу</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">Алашанькоу</td>
             <td>0,0965%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td class="red-bg">5000</td>
-            <td>5</td>
-            <td>4995</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -508,11 +493,11 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr reservoir_id="6">
             <td class="left-align" colspan="2">По системе МН АО "СЗТК "Мунайтас"</td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -532,110 +517,110 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
-            <td class="left-align">ГНПС Каламкас</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+        <tr data-pipeline-id="40,64">
+            <td class="left-align">ГНПС Кенкияк</td>
+            <td class="left-align">НПС им. Шманова</td>
             <td>0,0429%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>4008</td>
-            <td>2</td>
-            <td>4006</td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr reservoir_id="2">
+            <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
             <td></td>
         </tr>
-        <tr>
-            <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал)</td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
+        <tr data-pipeline-id="41,65">
             <td class="left-align">НПС им. Шманова</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">НПС им. Касымова</td>
             <td>0,0455%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>4006</td>
-            <td>2</td>
-            <td>4004</td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="42,66">
             <td class="left-align">НПС им. Касымова</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,1126%</td>
-            <td></td>
-            <td></td>
-            <td>4004</td>
-            <td>2</td>
-            <td class="red-bg">4002</td>
+            <td class="left-align">1235,3 км (граница (РК/РФ))</td>
+            <td>0,1122%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
         </tr>
-        <tr>
+        <tr reservoir_id="4">
             <td class="left-align" colspan="2">По системе ПАО "Транснефть"</td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -655,70 +640,70 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="43,67">
             <td class="left-align">Граница РК/РФ (Б.Чернигов)</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">Самара</td>
             <td>0,0192%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>4000</td>
-            <td>1</td>
-            <td>3999</td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
         </tr>
-        <tr>
-            <td class="left-align" colspan="2">Самара ВСН (на Хорхӧ) (перекачка)</td>
+        <tr data-pipeline-id="44,68">
+            <td class="left-align" colspan="2">Самара БСН (на Дружбу) (перевалка)</td>
             <td>0,0137%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>3999</td>
-            <td>1</td>
-            <td>3998</td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="45">
             <td class="left-align">Самара</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0000%</td>
+            <td class="left-align">Клин</td>
+            <td>0%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>3998</td>
-            <td>0</td>
-            <td>3998</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -729,21 +714,21 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="46">
             <td class="left-align">Клин</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">Никольское</td>
             <td>0,0065%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>3998</td>
-            <td>0</td>
-            <td>3998</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -754,46 +739,21 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="47">
             <td class="left-align">Никольское</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">Унеча (на Андреаполь)</td>
             <td>0,0458%</td>
             <td></td>
             <td></td>
-            <td>27608</td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td>3998</td>
-            <td>2</td>
-            <td>3996</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="left-align">Узвар (на Адриаполь)</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0588%</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>3996</td>
-            <td>1</td>
-            <td>3995</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -804,20 +764,20 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
-            <td class="left-align" colspan="2">НБ Усть-Луга (перевалка)</td>
+        <tr data-pipeline-id="48">
+            <td colspan="2" class="left-align">НБ Усть-Луга (перевалка)</td>
+            <td>0,0258%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -830,18 +790,18 @@ async function loadData() {
         </tr>
         <tr>
             <td class="left-align" colspan="2">Погрузка нефти в танкер в порту Усть-Луга (перевалка)</td>
+            <td>-</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -852,14 +812,15 @@ async function loadData() {
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="69">
             <td class="left-align">Самара</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+            <td class="left-align">Красноармейск</td>
             <td>0,0098%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -872,19 +833,19 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align">Краснодарнефть</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+        <tr data-pipeline-id="70">
+            <td class="left-align">Красноармейск</td>
+            <td class="left-align">915 км н/пр.КЛ </td>
             <td>0,0132%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -897,15 +858,19 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align">915 км н/пр КТЛ</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0000%</td>
+        <tr data-pipeline-id="71">
+            <td class="left-align">915 км н/пр. КЛ</td>
+            <td class="left-align">Родионовская</td>
+            <td>0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -918,23 +883,19 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align">Ромашковская</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+        <tr data-pipeline-id="72">
+            <td class="left-align">Родионовская</td>
+            <td class="left-align">Тихорецк</td>
             <td>0,0108%</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -947,14 +908,18 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align">ПНБ Тихорецк (перекачка)</td>
-            <td class="left-align">ГНПС Кинкияк</td>
+        <tr data-pipeline-id="73">
+            <td colspan="2" class="left-align">ПНБ Тихорецкая (перевалка) </td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -967,20 +932,19 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="74">
             <td class="left-align">Тихорецк</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0181%</td>
+            <td class="left-align">Грушовая</td>
+            <td>0,0151%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -993,18 +957,18 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Грушовая (перекачка)</td>
-            <td>0,0293%</td>
+        <tr data-pipeline-id="75">
+            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Грушовая (перевалка)</td>
+            <td>0,0295%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -1017,17 +981,18 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
-            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Шесхарис (перекачка для налива в)</td>
+        <tr data-pipeline-id="76">
+            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Шесхарис (перевалка для налива в танкеры)</td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -1040,18 +1005,18 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="77">
             <td class="left-align" colspan="2">Порт Новороссийск (перевалка)</td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
             <td></td>
             <td></td>
             <td></td>
@@ -1064,15 +1029,9 @@ async function loadData() {
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
         </tr>
     </table>
     <script>

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/modal_set.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         .main-input {
             background-color: #ffcccc !important;
@@ -138,22 +139,36 @@ async function loadData() {
 
         console.log("Загруженные данные:", result);
 
-        // Заполняем данные для трубопроводов
+        // Заполняем данные для трубопроводов, исключая строки внутри #myTable
         result.oiltransfers.forEach(row => {
-            let rows = document.querySelectorAll(`tr[data-pipeline-id="${row.pipeline_id}"]`);
-            rows.forEach(tr => {
-                tr.querySelector("[id^='volume-']").value = row.from_amount ?? "";
-                tr.querySelector("[id^='loss-']").value = row.losses ?? "";
-                tr.querySelector("[id^='volume2-']").value = row.to_amount ?? "";
+            let allRows = document.querySelectorAll(`tr[data-pipeline-id="${row.pipeline_id}"]`);
+
+            allRows.forEach(tr => {
+                // Проверяем, не находится ли tr внутри таблицы с id="myTable"
+                if (!tr.closest("#myTable")) {
+                    const volume = tr.querySelector("[id^='volume-']");
+                    const loss = tr.querySelector("[id^='loss-']");
+                    const volume2 = tr.querySelector("[id^='volume2-']");
+
+                    if (volume) volume.value = row.from_amount ?? "";
+                    if (loss) loss.value = row.losses ?? "";
+                    if (volume2) volume2.value = row.to_amount ?? "";
+                }
             });
         });
 
-        // Заполняем данные для резервуаров
+        // Заполняем данные для резервуаров, исключая строки внутри #myTable
         result.reservoirs.forEach(row => {
-            let rows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
-            rows.forEach(tr => {
-                tr.querySelector("[id^='start-']").value = row.start_volume ?? "";
-                tr.querySelector("[id^='end-']").value = row.end_volume ?? "";
+            let allRows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
+
+            allRows.forEach(tr => {
+                if (!tr.closest("#myTable")) {
+                    const start = tr.querySelector("[id^='start-']");
+                    const end = tr.querySelector("[id^='end-']");
+
+                    if (start) start.value = row.start_volume ?? "";
+                    if (end) end.value = row.end_volume ?? "";
+                }
             });
         });
 
@@ -162,6 +177,69 @@ async function loadData() {
     }
 }
 
+// загрузка данных Excel
+async function loadDataEx() {
+    const dateInput = document.getElementById("date-input");
+    const date = dateInput.value;
+
+    if (!date) {
+        alert("Пожалуйста, выберите дату.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`load_data.php?date=${date}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            alert("Ошибка: " + result.message);
+            return;
+        }
+
+        console.log("Загруженные данные:", result);
+
+        const table = document.getElementById("myTable");
+        if (!table) {
+            alert("Таблица с id='myTable' не найдена.");
+            return;
+        }
+
+        // Обрабатываем трубопроводы только в таблице myTable
+        result.oiltransfers.forEach(row => {
+            table.querySelectorAll("tr[data-pipeline-id]").forEach(tr => {
+                const pipelineIds = tr.getAttribute("data-pipeline-id")
+                    .split(",")
+                    .map(id => id.trim());
+
+                const index = pipelineIds.indexOf(String(row.pipeline_id));
+                if (index !== -1) {
+                    const idx = index + 1; // для from_amount1, losses1, to_amount1 и т.д.
+
+                    const fromSpan = tr.querySelector(`#from_amount${idx}`);
+                    const lossSpan = tr.querySelector(`#losses${idx}`);
+                    const toSpan = tr.querySelector(`#to_amount${idx}`);
+
+                    if (fromSpan) fromSpan.textContent = row.from_amount ?? "";
+                    if (lossSpan) lossSpan.textContent = row.losses ?? "";
+                    if (toSpan) toSpan.textContent = row.to_amount ?? "";
+                }
+            });
+        });
+
+        // Обрабатываем резервуары только в таблице myTable
+        result.reservoirs.forEach(row => {
+            table.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+                const startInput = tr.querySelector("[id^='start-']");
+                const endInput = tr.querySelector("[id^='end-']");
+                if (startInput) startInput.textContent = row.start_volume ?? "";
+                if (endInput) endInput.textContent = row.end_volume ?? "";
+            });
+        });
+
+    } catch (error) {
+        alert("Ошибка при загрузке данных: " + error);
+    }
+}
 
 </script>
 </head>
@@ -199,8 +277,8 @@ async function loadData() {
             </div>
 <nav id="slide-menu">
     <ul>
-    <li class="timeline"><a class="menu-href" href="/project/MapOil/map.php" >Карта транспортировки нефти</a></li>        
-        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator">Отчетность</a></li>
+        <li class="map"><a class="menu-href" href="/project/MapOil/map.php" ><i class="fa fa-map" ></i>Карта транспортировки нефти</a></li>        
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
         <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
 
@@ -216,8 +294,8 @@ async function loadData() {
 
     <h2 class="mb-4">Форма расчета потерь нефти</h2>
     <label style="display:block" for="date-input">Дата:</label>
-    <input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
-    <button class="btn btn-primary mb-4" onclick="openAndExport()" >Экспортировать excel</button>
+    <input type="date" id="date-input" class="form-control mb-3" onchange="loadData();loadDataEx();">
+    <button class="btn btn-primary mb-4" onclick="exportToExcel()" >Экспортировать excel</button>
     <table class="table table-bordered">
         <thead>
             <tr class="table-primary">
@@ -788,6 +866,935 @@ async function loadData() {
         </tbody>
     </table>
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
+    <table id="myTable" style="display:none" >
+    <tr>
+        <td colspan="23" style="font-weight: bold; text-align: center;">Расчет потерь при транспортировке нефти</td>
+    </tr>
+    <tr>
+        <td colspan="23"></td> <!-- Пустая строка -->
+    </tr>
+        <tr class="header-row">
+            <th colspan="2">Нефтепровод</th>
+            <th colspan="1">Нормативные технич. потерь</th>
+            <th colspan="2">Остаток</th>
+            <th colspan="3">Внутренний рынок (ПКОП)</th>
+            <th colspan="3">КНР</th>
+            <th colspan="3">Европа (Усть-Луга)</th>
+            <th colspan="3">Отгст.хранение</th>
+            <th colspan="3">Внутренний рынок (ПНХ3)</th>
+            <th colspan="3">Европа (Новороссийск)</th>
+        </tr>
+        <tr class="header-row">
+            <th>ОТ</th>
+            <th>ДО</th>
+            <th></th>
+            <th>на начало месяца</th>
+            <th>на конец месяца</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+            <th>от</th>
+            <th>Потеря</th>
+            <th>до</th>
+        </tr>
+        <tr reservoir_id="1">
+            <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал)</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="24,29,37,49,53,61"> 
+            <td>ПСП 45 км</td>
+            <td >ГНПС Кинкияк</td>
+            <td><span  id="loss_coefficient">0,0332%</span></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
+        </tr>
+        <tr data-pipeline-id="25,30,38,50,54,62">
+            <td >КПОУ Жанажол</td>
+            <td >ГНПС Кинкияк</td>
+            <td><span id="percent-zhanazholPP">0,0377%</span></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
+        </tr>
+        <tr data-pipeline-id="26,31,39,51,55,63">
+            <td colspan="2">ГНПС Кенкияк (перевалка)</td>
+            <td><span id="percent-kenkiyakTransferPP">0,0077%</span></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
+        </tr>
+        <tr reservoir_id="5">
+            <td class="left-align" colspan="2">По системе МН ТОО «Казахстанско-Китайский трубопровод»</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="27,32,52,56,64">
+            <td class="left-align">ГНПС Кенкияк</td>
+            <td class="left-align">ГНПС Кумколь</td>
+            <td>0,0794%</td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+
+        </tr>
+        <tr reservoir_id="3">
+            <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Восточный Филиал)</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="28">
+            <td class="left-align">ГНПС Кумколь</td>
+            <td class="left-align">ПСП ПКОП (прием по УУН)</td>
+            <td>0,1818%</td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="33,57">
+            <td class="left-align">ГНПС Кумколь</td>
+            <td class="left-align">ГНПС им. Б. Джумагалиева</td>
+            <td>0,0525%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="34,58">
+            <td class="left-align">ГНПС им. Б. Джумагалиева</td>
+            <td class="left-align">ГНПС Атасу</td>
+            <td>0,0754%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="35,59">
+            <td colspan="2" class="left-align">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
+            <td>0,0051%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="60">
+            <td class="left-align">ГНПС Атасу</td>
+            <td class="left-align">ПНХЗ</td>
+            <td>0,0843%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr >
+            <td class="left-align" colspan="2">По системе МН ТОО «Казахстанско-Китайский трубопровод»</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="36">
+            <td class="left-align">ГНПС Атасу</td>
+            <td class="left-align">Алашанькоу</td>
+            <td>0,0965%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr reservoir_id="6">
+            <td class="left-align" colspan="2">По системе МН АО "СЗТК "Мунайтас"</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="40,64">
+            <td class="left-align">ГНПС Кенкияк</td>
+            <td class="left-align">НПС им. Шманова</td>
+            <td>0,0429%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr reservoir_id="2">
+            <td class="left-align" colspan="2">По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="41,65">
+            <td class="left-align">НПС им. Шманова</td>
+            <td class="left-align">НПС им. Касымова</td>
+            <td>0,0455%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr data-pipeline-id="42,66">
+            <td class="left-align">НПС им. Касымова</td>
+            <td class="left-align">1235,3 км (граница (РК/РФ))</td>
+            <td>0,1122%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr reservoir_id="4">
+            <td class="left-align" colspan="2">По системе ПАО "Транснефть"</td>
+            <td></td>
+            <td><span id="start-volume"></span></td>
+            <td><span id="end-volume"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="43,67">
+            <td class="left-align">Граница РК/РФ (Б.Чернигов)</td>
+            <td class="left-align">Самара</td>
+            <td>0,0192%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr data-pipeline-id="44,68">
+            <td class="left-align" colspan="2">Самара БСН (на Дружбу) (перевалка)</td>
+            <td>0,0137%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td>
+        </tr>
+        <tr data-pipeline-id="45">
+            <td class="left-align">Самара</td>
+            <td class="left-align">Клин</td>
+            <td>0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="46">
+            <td class="left-align">Клин</td>
+            <td class="left-align">Никольское</td>
+            <td>0,0065%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="47">
+            <td class="left-align">Никольское</td>
+            <td class="left-align">Унеча (на Андреаполь)</td>
+            <td>0,0458%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="48">
+            <td colspan="2" class="left-align">НБ Усть-Луга (перевалка)</td>
+            <td>0,0258%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="left-align" colspan="2">Погрузка нефти в танкер в порту Усть-Луга (перевалка)</td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr data-pipeline-id="69">
+            <td class="left-align">Самара</td>
+            <td class="left-align">Красноармейск</td>
+            <td>0,0098%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="70">
+            <td class="left-align">Красноармейск</td>
+            <td class="left-align">915 км н/пр.КЛ </td>
+            <td>0,0132%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="71">
+            <td class="left-align">915 км н/пр. КЛ</td>
+            <td class="left-align">Родионовская</td>
+            <td>0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="72">
+            <td class="left-align">Родионовская</td>
+            <td class="left-align">Тихорецк</td>
+            <td>0,0108%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="73">
+            <td colspan="2" class="left-align">ПНБ Тихорецкая (перевалка) </td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="74">
+            <td class="left-align">Тихорецк</td>
+            <td class="left-align">Грушовая</td>
+            <td>0,0151%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="75">
+            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Грушовая (перевалка)</td>
+            <td>0,0295%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="76">
+            <td class="left-align" colspan="2">ПК Шесхарис промплощадка Шесхарис (перевалка для налива в танкеры)</td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+        <tr data-pipeline-id="77">
+            <td class="left-align" colspan="2">Порт Новороссийск (перевалка)</td>
+            <td>-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td> 
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td>
+        </tr>
+    </table>
 <div>
 
 
@@ -829,13 +1836,117 @@ async function loadData() {
             .catch(error => console.error("Ошибка загрузки дат:", error));
         });
     </script>
+    <script>
+function exportToExcel() {
+    let table = document.getElementById("myTable");
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.aoa_to_sheet([]);
+
+    // Устанавливаем ширину колонок
+    ws['!cols'] = [
+        { wpx: 181 }, { wpx: 212 }, { wpx: 86 }, { wpx: 86 }, { wpx: 81 }
+    ];
+
+    let rows = table.rows;
+    let data = [];
+    let merges = [];
+    let borderStyle = { // Чёрные границы (толщина 1px)
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+    };
+
+    // Функция для добавления стиля к ячейке
+    function setCellStyle(ws, r, c, color, borderStyle) {
+        let cellRef = XLSX.utils.encode_cell({ r, c });
+        if (!ws[cellRef]) ws[cellRef] = { v: "" };
+
+        // Применяем как цвет фона, так и границы
+        ws[cellRef].s = {
+            fill: { fgColor: { rgb: color } },
+            border: borderStyle
+        };
+    }
+
+    for (let r = 0; r < rows.length; r++) {
+        let row = rows[r];
+        let rowData = [];
+        let colOffset = 0;
+
+        for (let c = 0; c < row.cells.length; c++) {
+            let cell = row.cells[c];
+            let text = cell.innerText || cell.textContent;
+            let cellStyle = { v: text, s: {} };
+
+            // Добавляем обводку только с 3-й строки до 42-й и до колонки W (22-я колонка)
+            if (r >= 2 && r <= 41 && c <= 22) {
+                cellStyle.s.border = borderStyle;
+            }
+
+            // Обработка объединённых ячеек
+            let colspan = cell.colSpan || 1;
+            let rowspan = cell.rowSpan || 1;
+
+            if (colspan > 1 || rowspan > 1) {
+                merges.push({
+                    s: { r, c: c + colOffset },
+                    e: { r: r + rowspan - 1, c: c + colOffset + colspan - 1 }
+                });
+            }
+
+            // В 4-й строке C (индекс 2) пустая
+            if (r === 3 && c === 2) {
+                rowData.push({ v: "" });
+            }
+
+            rowData[c + colOffset] = cellStyle;
+            colOffset += colspan - 1;
+        }
+
+        data.push(rowData);
+    }
+
+    // Записываем данные в лист
+    XLSX.utils.sheet_add_aoa(ws, data);
+
+    // Применяем объединение ячеек
+    ws["!merges"] = merges;
+
+    // Голубой фон для строк 3-7, 11, 13, 19, 21, 23, 26 (до W)
+    let blueRows = [2, 3, 4, 10, 12, 18, 20, 22, 25];
+    for (let r of blueRows) {
+        for (let c = 0; c <= 22; c++) {
+            setCellStyle(ws, r, c, "DDEBF7", borderStyle); // Голубой фон и чёрные границы
+        }
+    }
+
+    // Голубой фон для колонок D,E (индексы 3,4) от 8 до 42 строки
+    for (let r = 5; r <= 41; r++) {
+        for (let c of [3, 4]) {
+            setCellStyle(ws, r, c, "DDEBF7", borderStyle); // Голубой фон и чёрные границы
+        }
+    }
+
+    // Коричневый фон для колонок F,G,H (индексы 5,6,7) от 8-10, 12, 14 строки
+    let brownRows = [7, 8, 9, 11, 13];
+    for (let r of brownRows) {
+        for (let c of [5, 6, 7]) {
+            setCellStyle(ws, r, c, "FCE4D6", borderStyle); // Коричневый фон и чёрные границы
+        }
+    }
+
+    // Добавляем лист в книгу и сохраняем
+    XLSX.utils.book_append_sheet(wb, ws, "Таблица");
+    XLSX.writeFile(wb, "table.xlsx");
+}
+</script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/language.js"></script>
     <script src="js/Settings.js"></script>
     <script src="js/menu.js"></script>
-    <script src="js/calculate.js">
-        
-    </script>
+    <script src="js/calculate.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
 </body>
 </html>
