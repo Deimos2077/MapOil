@@ -270,7 +270,7 @@ function calculateFrom(startId = null) {
 
     // расчет значений
     let pkopP = parseFloat(document.getElementById("loss-pkopP").value) || calculateLoss(pkopPP, pkop);
-    let kumkol = pkop + pkopP;
+    let kumkol = pkop + pkopP-minus_volumeKumkol+plus_volumeKumkol;
     let kenkiyakP = parseFloat(document.getElementById("loss-kenkiyakP").value) || calculateLoss(kenkiyakPP, kumkol);
     let kenkiyak = kumkol + kenkiyakP;
     let kenkiyakminus = kenkiyak - minus_volume1+plus_volume1;
@@ -278,9 +278,9 @@ function calculateFrom(startId = null) {
     let kenkiyakTransfer = kenkiyakminus + kenkiyakTransferP;
     let zhanazholP = parseFloat(document.getElementById("loss-zhanazholP").value) || calculateLoss(zhanazholPP, zhanazholedit);
     let zhanazhol = zhanazholedit + zhanazholP;
-    let psp45first = kenkiyakTransfer - zhanazhol;
+    let psp45first = kenkiyakTransfer - zhanazholedit;
     let pspP = parseFloat(document.getElementById("loss-pspP").value) || calculateLoss(psp45PP, psp45first);
-    let psp45end = psp45first + pspP-minus_volumePsp;
+    let psp45end = psp45first + pspP-minus_volumePsp+plus_volumePsp;
 
     // ========== КНР ==========
     let atasu = parseFloat(document.getElementById("volume-atasu").value) || 0;
@@ -308,7 +308,7 @@ function calculateFrom(startId = null) {
     let kenkiyakTransfer2 = kenkiyak2 + kenkiyakTransfer2P;
     let zhanazhol2P = parseFloat(document.getElementById("loss-zhanazhol2P").value) || calculateLoss(zhanazholPP, zhanazholedit2);
     let zhanazhol2 = zhanazholedit2 + zhanazhol2P;
-    let psp45first2 = kenkiyakTransfer2 - zhanazhol2;
+    let psp45first2 = kenkiyakTransfer2 - zhanazholedit2;
     let psp2P = parseFloat(document.getElementById("loss-psp2P").value) || calculateLoss(psp45PP, psp45first2);
     let psp45end2 = psp45first2 + psp2P;
 
@@ -344,14 +344,14 @@ function calculateFrom(startId = null) {
     let kasimovaP = parseFloat(document.getElementById("loss-kasimovaP").value) || calculateLoss(km1235PP, km1235);
     let kasimova = km1235 + kasimovaP;
     let shmanovaP = parseFloat(document.getElementById("loss-shmanovaP").value) || calculateLoss(kasimovaPP, kasimova);
-    let shmanova = kasimova + shmanovaP;
+    let shmanova = kasimova + shmanovaP-minus_volumeShmanova+plus_volumeShmanova;
     let kenkiyak3P = parseFloat(document.getElementById("loss-kenkiyak3P").value) || calculateLoss(shmanovaPP, shmanova);
-    let kenkiyak3 = shmanova + kenkiyak3P;
+    let kenkiyak3 = shmanova + kenkiyak3P-minus_volume2+plus_volume2;
     let kenkiyakTransfer3P = parseFloat(document.getElementById("loss-kenkiyakTransfer3P").value) || calculateLoss(kenkiyakTransferPP, kenkiyak3);
     let kenkiyakTransfer3 = kenkiyak3 + kenkiyakTransfer3P;
     let zhanazhol3P = parseFloat(document.getElementById("loss-zhanazhol3P").value) || calculateLoss(zhanazholPP, zhanazholedit3);
     let zhanazhol3 = zhanazholedit3 + zhanazhol3P;
-    let psp45first3 = kenkiyakTransfer3 - zhanazhol3;
+    let psp45first3 = kenkiyakTransfer3 - zhanazholedit3;
     let psp3P = parseFloat(document.getElementById("loss-psp3P").value) || calculateLoss(psp45PP, psp45first3);
     let psp45end3 = psp45first3 + psp3P;
 
@@ -365,7 +365,7 @@ function calculateFrom(startId = null) {
     let kenkiyakTransfer4 = kenkiyak4 + kenkiyakTransfer4P;
     let zhanazhol4P = parseFloat(document.getElementById("loss-zhanazhol4P").value) || calculateLoss(zhanazholPP, zhanazholedit4);
     let zhanazhol4 = zhanazholedit4 + zhanazhol4P;
-    let psp45first4 = kenkiyakTransfer4 - zhanazhol4;
+    let psp45first4 = kenkiyakTransfer4 - zhanazholedit4;
     let psp4P = parseFloat(document.getElementById("loss-psp4P").value) || calculateLoss(psp45PP, psp45first4);
     let psp45end4 = psp45first4 + psp4P;
 
@@ -389,7 +389,7 @@ function calculateFrom(startId = null) {
     let kenkiyakTransfer5 = kenkiyak5 + kenkiyakTransfer5P;
     let zhanazhol5P = parseFloat(document.getElementById("loss-zhanazhol5P").value) || calculateLoss(zhanazholPP, zhanazholedit5);
     let zhanazhol5 = zhanazholedit5 + zhanazhol5P;
-    let psp45first5 = kenkiyakTransfer5 - zhanazhol5;
+    let psp45first5 = kenkiyakTransfer5 - zhanazholedit5;
     let psp5P = parseFloat(document.getElementById("loss-psp5P").value) || calculateLoss(psp45PP, psp45first5);
     let psp45end5 = psp45first5 + psp5P;
 
@@ -430,7 +430,7 @@ function calculateFrom(startId = null) {
     let kenkiyakTransfer6 = kenkiyak6 + kenkiyakTransfer6P;
     let zhanazhol6P = parseFloat(document.getElementById("loss-zhanazhol6P").value) || calculateLoss(zhanazholPP, zhanazholedit6);
     let zhanazhol6 = zhanazholedit6 + zhanazhol6P;
-    let psp45first6 = kenkiyakTransfer6 - zhanazhol6;
+    let psp45first6 = kenkiyakTransfer6 - zhanazholedit6;
     let psp6P = parseFloat(document.getElementById("loss-psp6P").value) || calculateLoss(psp45PP, psp45first6);
     let psp45end6 = psp45first6 + psp6P;
     
@@ -442,10 +442,15 @@ function calculateFrom(startId = null) {
     let start_volume1 = parseFloat(document.getElementById("start-volume1").value) || 0;
     let start_volume2 = parseFloat(document.getElementById("start-volume2").value) || 0;
     let end_volumePsp = start_volumePsp+psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-pspP-psp2P-psp3P-psp4P-psp5P-psp6P-psp45first-psp45first2-psp45first3-psp45first4-psp45first5-psp45first6;
-    let end_volume1 = start_volume1+kenkiyakminus+kenkiyak2+kenkiyak3+kenkiyak4+kenkiyak5-kenkiyakP-kenkiyak2P-kenkiyak3P-kenkiyak4P-kenkiyak5P-kumkol-kumkol2-kumkol4-kumkol5;
-
+    let end_volume1 = start_volume1+kenkiyakminus+kenkiyak2+kenkiyak4+kenkiyak5-kenkiyakP-kenkiyak2P-kenkiyak4P-kenkiyak5P-kumkol-kumkol2-kumkol4-kumkol5;
+    let end_volumeKumkol=start_volumeKumkol+kumkol+kumkol2+kumkol4+kumkol5-pkopP-kumkol2P-dzhumagalievaP-atasuTransferP-kumkol5P-dzhumagalieva5P-pkop-atasu-atasu5;
+    let end_volume2=start_volume2+kenkiyak3+kenkiyak6-kenkiyak3P-kenkiyak6P-shmanova-shmanova6;
+    let end_volumeShmanova=start_volumeShmanova+shmanova+shmanova6-shmanovaP-shmanova6P-kasimovaP-kasimova6P-km1235-km12356;
     document.getElementById("end-volume1").value = end_volume1;
     document.getElementById("end-volumePsp").value = end_volumePsp;
+    document.getElementById("end-volumeKumkol").value = end_volumeKumkol;
+    document.getElementById("end-volume2").value = end_volume2;
+    document.getElementById("end-volumeShmanova").value = end_volumeShmanova;
 
 
     let oil = parseFloat(document.getElementById("oil").value) || 0;
@@ -547,7 +552,7 @@ function calculateFrom(startId = null) {
     document.getElementById("loss-zhanazholP").value = zhanazholP;
     document.getElementById("volume-kenkiyakTransfer").value = kenkiyakTransfer;
     document.getElementById("loss-kenkiyakTransferP").value = kenkiyakTransferP;
-    document.getElementById("volume-kenkiyak").value = kenkiyak;
+    document.getElementById("volume-kenkiyak").value = kenkiyakminus;
     document.getElementById("volume2-kenkiyak").value = kenkiyakminus;
     document.getElementById("volume-kumkol").value = kumkol;
     document.getElementById("volume2-kumkol").value = kumkol;
