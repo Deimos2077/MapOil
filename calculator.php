@@ -142,7 +142,6 @@ async function loadData() {
         result.oiltransfers.forEach(row => {
             let rows = document.querySelectorAll(`tr[data-pipeline-id="${row.pipeline_id}"]`);
             rows.forEach(tr => {
-                tr.querySelector("[id^='percent-']").value = row.loss_coefficient ?? "";
                 tr.querySelector("[id^='volume-']").value = row.from_amount ?? "";
                 tr.querySelector("[id^='loss-']").value = row.losses ?? "";
                 tr.querySelector("[id^='volume2-']").value = row.to_amount ?? "";
@@ -218,8 +217,8 @@ async function loadData() {
     <h2 class="mb-4">Форма расчета потерь нефти</h2>
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
-
-    <table class="table table-bordered" data-type="pipelines">
+    <button class="btn btn-primary mb-4" onclick="openAndExport()" >Экспортировать excel</button>
+    <table class="table table-bordered">
         <thead>
             <tr class="table-primary">
                 <th>Сдача нефти</th>
@@ -232,7 +231,7 @@ async function loadData() {
             <td><input type="number" id="oil-loss" class="form-control"></td>
         </tr>
         </tbody>
-    <h3 class="mb-4">Остатки</h3>
+    <h3 class="mb-4" style="display:block">Остатки</h3>
     <table class="table table-bordered" data-type="reservoirs">
         <thead>
             <tr class="table-primary">
@@ -301,7 +300,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="24" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
@@ -309,7 +308,7 @@ async function loadData() {
             <td><input type="number" id="loss-pspP" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="25" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -317,14 +316,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazholP" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="26" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="4">
+            <tr data-pipeline-id="27" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
                 <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
@@ -332,7 +331,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kenkiyakP" class="form-control"></td>
                 <td><input type="number" id="volume2-kumkol" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="14" data-from-id="4" data-to-id="6">
+            <tr data-pipeline-id="28" data-from-id="4" data-to-id="6">
                 <td>ГНПС Кумколь</td>
                 <td>ПСП ПКОП</td>
                 <td><input type="number" id="percent-pkopPP" class="form-control" step="0.0001" value="0.1818"></td>
@@ -357,7 +356,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="29" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
@@ -365,7 +364,7 @@ async function loadData() {
             <td><input type="number" id="loss-psp2P" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first2" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="30" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -373,14 +372,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazhol2P" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit2" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="31" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer2" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransfer2P" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak2" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="4">
+            <tr data-pipeline-id="32" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
                 <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
@@ -388,7 +387,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kenkiyak2P" class="form-control"></td>
                 <td><input type="number" id="volume2-kumkol2" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="15" data-from-id="4" data-to-id="14">
+            <tr data-pipeline-id="33" data-from-id="4" data-to-id="14">
                 <td>ГНПС Кумколь</td>
                 <td>ГНПС им. Б. Джумагалиева</td>
                 <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0525"></td>
@@ -396,7 +395,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kumkol2P" class="form-control"></td>
                 <td><input type="number" id="volume2-dzhumagalieva" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="13" data-from-id="14" data-to-id="2">
+            <tr data-pipeline-id="34" data-from-id="14" data-to-id="2">
                 <td>ГНПС им. Б. Джумагалиева</td>
                 <td>ГНПС Атасу</td>
                 <td><input type="number" id="percent-dzhumagalievaPP" class="form-control" step="0.0001" value="0.0754"></td>
@@ -404,14 +403,14 @@ async function loadData() {
                 <td><input type="number" id="loss-dzhumagalievaP" class="form-control"></td>
                 <td><input type="number" id="volume2-atasuTransfer" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="26" data-to-id="26">
+            <tr data-pipeline-id="35" data-from-id="26" data-to-id="26">
                 <td colspan="2">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
                 <td><input type="number" id="percent-atasuTransferPP" class="form-control" step="0.0001" value="0.0051"></td>
                 <td><input type="number" id="volume-atasuTransfer" class="form-control"></td>
                 <td><input type="number" id="loss-atasuTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-atasu" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="11" data-from-id="2" data-to-id="1">
+            <tr data-pipeline-id="36" data-from-id="2" data-to-id="1">
                 <td>ГНПС Атасу</td>
                 <td>Алашанькоу</td>
                 <td><input type="number" id="percent-alashankouPP" class="form-control" step="0.0001" value="0.0965"></td>
@@ -435,7 +434,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="37" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
@@ -443,7 +442,7 @@ async function loadData() {
             <td><input type="number" id="loss-psp3P" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first3" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="38" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -451,14 +450,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazhol3P" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit3" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="39" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer3" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransfer3P" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak3" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="7">
+            <tr data-pipeline-id="40" data-from-id="5" data-to-id="7">
                 <td>ГНПС Кенкияк</td>
                 <td>НПС им. Шманова</td>
                 <td><input type="number" id="percent-shmanovaPP" class="form-control" step="0.0001" value="0.0429"></td>
@@ -466,7 +465,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kenkiyak3P" class="form-control"></td>
                 <td><input type="number" id="volume2-shmanova" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="7" data-to-id="19">
+            <tr data-pipeline-id="41" data-from-id="7" data-to-id="19">
                 <td>НПС им. Шманова</td>
                 <td>НПС им. Касымова</td>
                 <td><input type="number" id="percent-kasimovaPP" class="form-control" step="0.0001" value="0.0455"></td>
@@ -474,7 +473,7 @@ async function loadData() {
                 <td><input type="number" id="loss-shmanovaP" class="form-control"></td>
                 <td><input type="number" id="volume2-kasimova" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="20" data-from-id="19" data-to-id="24">
+            <tr data-pipeline-id="42" data-from-id="19" data-to-id="24">
                 <td>НПС им. Касымова</td>
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td><input type="number" id="percent-km1235PP" class="form-control" step="0.0001" value="0.1122"></td>
@@ -482,7 +481,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kasimovaP" class="form-control"></td>
                 <td><input type="number" id="volume2-km1235" class="form-control main-input"></td>
             </tr>
-            <tr data-pipeline-id="23" data-from-id="24" data-to-id="8">
+            <tr data-pipeline-id="43" data-from-id="24" data-to-id="8">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Самара</td>
                 <td><input type="number" id="percent-samaraPP" class="form-control" step="0.0001" value="0.0192"></td>
@@ -490,14 +489,14 @@ async function loadData() {
                 <td><input type="number" id="loss-samaraP" class="form-control"></td>
                 <td><input type="number" id="volume2-samara" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
+            <tr data-pipeline-id="44" data-from-id="27" data-to-id="27">
                 <td colspan="2">СамараСамара БСН (на Дружбу) (перевалка)</td>
                 <td><input type="number" id="percent-samaraTransferPP" class="form-control" step="0.0001" value="0.0137"></td>
                 <td><input type="number" id="volume-samara" class="form-control"></td>
                 <td><input type="number" id="loss-samaraTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-samaraTransfer" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="2" data-from-id="8" data-to-id="16">
+            <tr data-pipeline-id="45" data-from-id="8" data-to-id="16">
                 <td>Самара</td>
                 <td>Клин</td>
                 <td><input type="number" id="percent-klinPP" class="form-control" step="0.0001" value="0.0000"></td>
@@ -505,7 +504,7 @@ async function loadData() {
                 <td><input type="number" id="loss-klinP" class="form-control"></td>
                 <td><input type="number" id="volume2-klin" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="3" data-from-id="16" data-to-id="20">
+            <tr data-pipeline-id="46" data-from-id="16" data-to-id="20">
                 <td>Клин</td>
                 <td>Никольское</td>
                 <td><input type="number" id="percent-nikolskiPP" class="form-control" step="0.0001" value="0.0065"></td>
@@ -513,7 +512,7 @@ async function loadData() {
                 <td><input type="number" id="loss-nikolskiP" class="form-control"></td>
                 <td><input type="number" id="volume2-nikolski" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="4" data-from-id="20" data-to-id="23">
+            <tr data-pipeline-id="47" data-from-id="20" data-to-id="23">
                 <td>Никольское</td>
                 <td>Унеча (на Андреаполь)</td>
                 <td><input type="number" id="percent-unechaPP" class="form-control" step="0.0001" value="0.0458"></td>
@@ -521,7 +520,7 @@ async function loadData() {
                 <td><input type="number" id="loss-unechaP" class="form-control"></td>
                 <td><input type="number" id="volume2-unecha" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="22" data-from-id="23" data-to-id="10">
+            <tr data-pipeline-id="48" data-from-id="23" data-to-id="10">
                 <td colspan="2">НБ Усть-Луга (перевалка)</td>
                 <td><input type="number" id="percent-ustlugaTransferPP" class="form-control" step="0.0001" value="0.0258"></td>
                 <td><input type="number" id="volume-unecha" class="form-control"></td>
@@ -544,7 +543,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="49" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.332"></td>
@@ -552,7 +551,7 @@ async function loadData() {
             <td><input type="number" id="loss-psp4P" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first4" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="50" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -560,14 +559,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazhol4P" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit4" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="51" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer4" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransfer4P" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak4" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="4">
+            <tr data-pipeline-id="52" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
                 <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
@@ -591,7 +590,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="53" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
@@ -599,7 +598,7 @@ async function loadData() {
             <td><input type="number" id="loss-psp5P" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first5" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="54" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -607,14 +606,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazhol5P" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit5" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="55" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer5" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransfer5P" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="4">
+            <tr data-pipeline-id="56" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
                 <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
@@ -622,7 +621,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kenkiyak5P" class="form-control"></td>
                 <td><input type="number" id="volume2-kumkol5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="15" data-from-id="4" data-to-id="14">
+            <tr data-pipeline-id="57" data-from-id="4" data-to-id="14">
                 <td>ГНПС Кумколь</td>
                 <td>ГНПС им. Б. Джумагалиева</td>
                 <td><input type="number" id="percent-kumkolPP" class="form-control" step="0.0001" value="0.0525"></td>
@@ -630,7 +629,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kumkol5P" class="form-control"></td>
                 <td><input type="number" id="volume2-dzhumagalieva5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="13" data-from-id="14" data-to-id="2">
+            <tr data-pipeline-id="58" data-from-id="14" data-to-id="2">
                 <td>ГНПС им. Б. Джумагалиева</td>
                 <td>ГНПС Атасу</td>
                 <td><input type="number" id="percent-dzhumagalievaPP" class="form-control" step="0.0001" value="0.0754"></td>
@@ -638,14 +637,14 @@ async function loadData() {
                 <td><input type="number" id="loss-dzhumagalieva5P" class="form-control"></td>
                 <td><input type="number" id="volume2-atasuTransfer5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="26" data-to-id="26">
+            <tr data-pipeline-id="59" data-from-id="26" data-to-id="26">
                 <td colspan="2">ГНПС Атасу (перевалка в н/п Атасу -Алашанькоу)</td>
                 <td><input type="number" id="percent-atasuTransferPP" class="form-control" step="0.0001" value="0.0051"></td>
                 <td><input type="number" id="volume-atasuTransfer5" class="form-control"></td>
                 <td><input type="number" id="loss-atasuTransfer5P" class="form-control"></td>
                 <td><input type="number" id="volume2-atasu5" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="12" data-from-id="2" data-to-id="3">
+            <tr data-pipeline-id="60" data-from-id="2" data-to-id="3">
                 <td>ГНПС Атасу</td>
                 <td>ПНХЗ</td>
                 <td><input type="number" id="percent-pnhzPP" class="form-control" step="0.0001" value="0.0965"></td>
@@ -669,7 +668,7 @@ async function loadData() {
             </tr>
         </thead>
         <tbody>
-        <tr data-pipeline-id="18" data-from-id="12" data-to-id="5">
+        <tr data-pipeline-id="61" data-from-id="12" data-to-id="5">
             <td>ПСП 45 км</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-psp45PP" class="form-control" step="0.0001" value="0.0332"></td>
@@ -677,7 +676,7 @@ async function loadData() {
             <td><input type="number" id="loss-psp6P" class="form-control"></td>
             <td><input type="number" id="volume2-psp45first6" class="form-control"></td>
         </tr>
-        <tr data-pipeline-id="17" data-from-id="11" data-to-id="5">
+        <tr data-pipeline-id="62" data-from-id="11" data-to-id="5">
             <td>КПОУ Жанажол</td>
             <td>ГНПС Кенкияк</td>
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
@@ -685,14 +684,14 @@ async function loadData() {
             <td><input type="number" id="loss-zhanazhol6P" class="form-control"></td>
             <td><input type="number" id="volume2-zhanazholedit6" class="form-control"></td>
         </tr>
-            <tr data-pipeline-id="1" data-from-id="25" data-to-id="25">
+            <tr data-pipeline-id="63" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
                 <td><input type="number" id="percent-kenkiyakTransferPP" class="form-control" step="0.0001" value="0.0077"></td>
                 <td><input type="number" id="volume-kenkiyakTransfer6" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyakTransfer6P" class="form-control"></td>
                 <td><input type="number" id="volume2-kenkiyak6" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="19" data-from-id="5" data-to-id="7">
+            <tr data-pipeline-id="64" data-from-id="5" data-to-id="7">
                 <td>ГНПС Кенкияк</td>
                 <td>НПС им. Шманова</td>
                 <td><input type="number" id="percent-shmanovaPP" class="form-control" step="0.0001" value="0.0429"></td>
@@ -700,7 +699,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kenkiyak6P" class="form-control"></td>
                 <td><input type="number" id="volume2-shmanova6" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="7" data-to-id="19">
+            <tr data-pipeline-id="65" data-from-id="7" data-to-id="19">
                 <td>НПС им. Шманова</td>
                 <td>НПС им. Касымова</td>
                 <td><input type="number" id="percent-kasimovaPP" class="form-control" step="0.0001" value="0.0455"></td>
@@ -708,7 +707,7 @@ async function loadData() {
                 <td><input type="number" id="loss-shmanova6P" class="form-control"></td>
                 <td><input type="number" id="volume2-kasimova6" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="20" data-from-id="19" data-to-id="24">
+            <tr data-pipeline-id="66" data-from-id="19" data-to-id="24">
                 <td>НПС им. Касымова</td>
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td><input type="number" id="percent-km1235PP" class="form-control" step="0.0001" value="0.1122"></td>
@@ -716,7 +715,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kasimova6P" class="form-control"></td>
                 <td><input type="number" id="volume2-km12356" class="form-control main-input"></td>
             </tr>
-            <tr data-pipeline-id="23" data-from-id="24" data-to-id="8">
+            <tr data-pipeline-id="67" data-from-id="24" data-to-id="8">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Самара</td>
                 <td><input type="number" id="percent-samaraPP" class="form-control" step="0.0001" value="0.0192"></td>
@@ -724,14 +723,14 @@ async function loadData() {
                 <td><input type="number" id="loss-samara6P" class="form-control"></td>
                 <td><input type="number" id="volume2-samara6" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
+            <tr data-pipeline-id="68" data-from-id="27" data-to-id="27">
                 <td colspan="2">СамараСамара БСН (на Дружбу) (перевалка)</td>
                 <td><input type="number" id="percent-samaraTransferPP" class="form-control" step="0.0001" value="0.0137"></td>
                 <td><input type="number" id="volume-samara6" class="form-control"></td>
                 <td><input type="number" id="loss-samaraTransfer6P" class="form-control"></td>
                 <td><input type="number" id="volume2-samaraTransfer6" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="5" data-from-id="8" data-to-id="18">
+            <tr data-pipeline-id="69" data-from-id="8" data-to-id="18">
                 <td>Самара</td>
                 <td>Красноармейск</td>
                 <td><input type="number" id="percent-krasnoarmPP" class="form-control" step="0.0001" value="0.0098"></td>
@@ -739,7 +738,7 @@ async function loadData() {
                 <td><input type="number" id="loss-krasnoarmP" class="form-control"></td>
                 <td><input type="number" id="volume2-krasnoarm" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="6" data-from-id="18" data-to-id="17">
+            <tr data-pipeline-id="70" data-from-id="18" data-to-id="17">
                 <td>Красноармейск</td>
                 <td>915 км н/пр.КЛ </td>
                 <td><input type="number" id="percent-km915PP" class="form-control" step="0.0001" value="0.0132"></td>
@@ -747,7 +746,7 @@ async function loadData() {
                 <td><input type="number" id="loss-km915P" class="form-control"></td>
                 <td><input type="number" id="volume2-km915" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="7" data-from-id="17" data-to-id="21">
+            <tr data-pipeline-id="71" data-from-id="17" data-to-id="21">
                 <td>915 км н/пр.КЛ</td>
                 <td>Родионовская</td>
                 <td><input type="number" id="percent-radionovskiPP" class="form-control" step="0.0001" value="0.0000"></td>
@@ -755,7 +754,7 @@ async function loadData() {
                 <td><input type="number" id="loss-radionovskiP" class="form-control"></td>
                 <td><input type="number" id="volume2-radionovski" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="8" data-from-id="21" data-to-id="22">
+            <tr data-pipeline-id="72" data-from-id="21" data-to-id="22">
                 <td>Родионовская</td>
                 <td>Тихорецк</td>
                 <td><input type="number" id="percent-texareckPP" class="form-control" step="0.0001" value="0.0108"></td>
@@ -763,7 +762,7 @@ async function loadData() {
                 <td><input type="number" id="loss-texareckP" class="form-control"></td>
                 <td><input type="number" id="volume2-texareck" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="9" data-from-id="22" data-to-id="15">
+            <tr data-pipeline-id="73" data-from-id="22" data-to-id="15">
                 <td>Тихорецк</td>
                 <td>Грушовая</td>
                 <td><input type="number" id="percent-grushavaiPP" class="form-control" step="0.0001" value="0.0151"></td>
@@ -771,14 +770,14 @@ async function loadData() {
                 <td><input type="number" id="loss-grushavaiP" class="form-control"></td>
                 <td><input type="number" id="volume2-grushavai" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="1" data-from-id="27" data-to-id="27">
+            <tr data-pipeline-id="74" data-from-id="27" data-to-id="27">
                 <td colspan="2">ПК Шесхарис промплощадка Грушовая (перевалка)</td>
                 <td><input type="number" id="percent-grushavaiTransferPP" class="form-control" step="0.0001" value="0.0295"></td>
                 <td><input type="number" id="volume-grushavai" class="form-control"></td>
                 <td><input type="number" id="loss-grushavaiTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-grushavaiTransfer" class="form-control"></td>
             </tr>
-            <tr data-pipeline-id="10" data-from-id="15" data-to-id="9">
+            <tr data-pipeline-id="75" data-from-id="15" data-to-id="9">
                 <td>ПК Шесхарис промплощадка Грушовая (перевалка)</td>
                 <td>Новороссийск</td>
                 <td><input type="number" id="percent-grushavai999" class="form-control" step="0.0001" value="0.0151"></td>
@@ -794,7 +793,23 @@ async function loadData() {
 
 
 
+<script>
+    function openAndExport() {
+        // Открытие новой страницы
+        const newWindow = window.open("/project/MapOil/exportExcel.php");
 
+        // Проверка завершения загрузки страницы
+        newWindow.onload = () => {
+            // Нажатие на кнопку экспорта в новой странице
+            newWindow.document.querySelector("#exportToExcel").click();
+            newWindow.close();
+            // Закрытие новой страницы после экспорта
+            // setTimeout(() => {
+            //     newWindow.close();
+            // }, 100); // Таймер на закрытие (зависит от быстроты загрузки)
+        };
+    }
+</script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
         fetch("get_dates.php") // Загружаем даты с сервера

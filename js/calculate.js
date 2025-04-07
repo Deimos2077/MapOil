@@ -258,7 +258,7 @@ function calculateFrom(startId = null) {
     let plus_volume2 = parseFloat(document.getElementById("plus-volume2").value) || 0;
 
     // ========== ПКОП ==========
-    let pkop = parseFloat(document.getElementById("volume2-pkop").value) ;
+    let pkop = parseFloat(document.getElementById("volume2-pkop").value)|| 0; ;
     let zhanazholedit = parseFloat(document.getElementById("volume2-zhanazholedit").value)|| 0 ;
 
     // Get percentages

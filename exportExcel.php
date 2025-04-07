@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,9 +34,66 @@
             background-color: #f2f2f2;
         }
     </style>
+<script>
+async function loadData() {
+    const dateInput = document.getElementById("date-input");
+    const date = dateInput.value;
+
+    if (!date) {
+        alert("Пожалуйста, выберите дату.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`load_data.php?date=${date}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            alert("Ошибка: " + result.message);
+            return;
+        }
+
+        console.log("Загруженные данные:", result);
+
+        // Обработка трубопроводов
+        result.oiltransfers.forEach(row => {
+            // Проходим по всем tr с data-pipeline-id
+            document.querySelectorAll("tr[data-pipeline-id]").forEach(tr => {
+                const idList = tr.getAttribute("data-pipeline-id").split(",").map(id => id.trim());
+                const index = idList.indexOf(String(row.pipeline_id));
+                if (index !== -1) {
+                    const fromSpan = tr.querySelector(`#from_amount${index + 1}`);
+                    const lossSpan = tr.querySelector(`#losses${index + 1}`);
+                    const toSpan = tr.querySelector(`#to_amount${index + 1}`);
+
+                    if (fromSpan) fromSpan.textContent = row.from_amount ?? "";
+                    if (lossSpan) lossSpan.textContent = row.losses ?? "";
+                    if (toSpan) toSpan.textContent = row.to_amount ?? "";
+                }
+            });
+        });
+
+        // Обработка резервуаров
+        result.reservoirs.forEach(row => {
+            let rows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
+            rows.forEach(tr => {
+                tr.querySelector("[id^='start-']").value = row.start_volume ?? "";
+                tr.querySelector("[id^='end-']").value = row.end_volume ?? "";
+            });
+        });
+
+    } catch (error) {
+        alert("Ошибка при загрузке данных: " + error);
+    }
+}
+
+</script>
 </head>
 <body>
-<button onclick="exportToExcel()">Экспорт в Excel</button>
+<button id ="exportToExcel"onclick="exportToExcel()">Экспорт в Excel</button>
+<label style="display:block" for="date-input">Дата:</label>
+<input type="date" id="date-input" class="form-control mb-3" onchange="loadData()">
+
     <table id="myTable" >
     <tr>
         <td colspan="23" style="font-weight: bold; text-align: center;">Расчет потерь при транспортировке нефти</td>
@@ -102,80 +161,80 @@
             <td></td>
             <td></td>
         </tr>
-        <tr>
+        <tr data-pipeline-id="24,29,37,49,53,61"> 
             <td>ГНПС ПСП45</td>
             <td >ГНПС Кинкияк</td>
-            <td>0,0332%</td>
+            <td><span  id="loss_coefficient"></span></td>
             <td></td>
             <td></td>
-            <td>16984</td>
-            <td>6</td>
-            <td>16978</td>
-            <td>5013</td>
-            <td>2</td>
-            <td>5011</td>
-            <td>4009</td>
-            <td>1</td>
-            <td>4008</td>
-            <td>5011</td>
-            <td>0</td>
-            <td>5008</td>
-            <td>5013</td>
-            <td>2</td>
-            <td>5011</td>
-            <td>0</td>
-            <td>0</td>
+            <td><span  id="from_amount1"></span></td>
+            <td><span  id="losses1"></span></td>
+            <td><span  id="to_amount1"></span></td> 
+            <td><span  id="from_amount2"></span></td>
+            <td><span  id="losses2"></span></td>
+            <td><span  id="to_amount2"></span></td> 
+            <td><span  id="from_amount3"></span></td>
+            <td><span  id="losses3"></span></td>
+            <td><span  id="to_amount3"></span></td> 
+            <td><span  id="from_amount4"></span></td>
+            <td><span  id="losses4"></span></td>
+            <td><span  id="to_amount4"></span></td> 
+            <td><span  id="from_amount5"></span></td>
+            <td><span  id="losses5"></span></td>
+            <td><span  id="to_amount5"></span></td> 
+            <td><span  id="from_amount6"></span></td>
+            <td><span  id="losses6"></span></td>
+            <td><span  id="to_amount6"></span></td> 
+        </tr>
+        <tr data-pipeline-id="17">
+            <td >КПОУ Жанажол</td>
+            <td >ГНПС Кинкияк</td>
+            <td><span id="percent-zhanazholPP"></span></td>
             <td></td>
+            <td></td>
+            <td data-pipelines-system-id="1"><span id="volume-zhanazhol"></span></td>
+            <td data-pipelines-system-id="1"><span id="loss-zhanazholP"></span></td>
+            <td data-pipelines-system-id="1"><span id="volume2-zhanazholedit"></span></td>
+            <td data-pipelines-system-id="2"><span id="volume-zhanazhol2"></span></td>
+            <td data-pipelines-system-id="2"><span id="loss-zhanazhol2P"></span></td>
+            <td data-pipelines-system-id="2"><span id="volume2-zhanazholedit2"></span></td>
+            <td data-pipelines-system-id="3"><span id="volume-zhanazhol3"></span></td>
+            <td data-pipelines-system-id="3"><span id="loss-zhanazhol3P"></span></td>
+            <td data-pipelines-system-id="3"><span id="volume2-zhanazholedit3"></span></td>
+            <td data-pipelines-system-id="4"><span id="volume-zhanazhol4"></span></td>
+            <td data-pipelines-system-id="4"><span id="loss-zhanazhol4P"></span></td>
+            <td data-pipelines-system-id="4"><span id="volume2-zhanazholedit4"></span></td>
+            <td data-pipelines-system-id="5"><span id="volume-zhanazhol5"></span></td>
+            <td data-pipelines-system-id="5"><span id="loss-zhanazhol5P"></span></td>
+            <td data-pipelines-system-id="5"><span id="volume2-zhanazholedit5"></span></td>
+            <td data-pipelines-system-id="6"><span id="volume-zhanazhol6"></span></td>
+            <td data-pipelines-system-id="6"><span id="loss-zhanazhol6P"></span></td>
+            <td data-pipelines-system-id="6"><span id="volume2-zhanazholedit6"></span></td>
         </tr>
         <tr>
-            <td class="left-align">КПОУ Жанажол</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0377%</td>
+ 
+            <td colspan="2">ГНПС Кинкияк</td>
+            <td><span id="percent-kenkiyakTransferPP"></span></td>
             <td></td>
             <td></td>
-            <td>1600</td>
-            <td>1</td>
-            <td>1599</td>
-            <td></td>
-            <td>0</td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td>0</td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
-            <td></td>
-            <td>0</td>
-            <td></td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="left-align">ГНПС Каламкас (перевалка)</td>
-            <td class="left-align">ГНПС Кинкияк</td>
-            <td>0,0277%</td>
-            <td></td>
-            <td></td>
-            <td>18777</td>
-            <td>1</td>
-            <td>18776</td>
-            <td>5011</td>
-            <td>0</td>
-            <td>5011</td>
-            <td>4008</td>
-            <td>0</td>
-            <td>4008</td>
-            <td>5008</td>
-            <td>0</td>
-            <td>5007</td>
-            <td>5011</td>
-            <td>0</td>
-            <td>5011</td>
-            <td>0</td>
-            <td>0</td>
-            <td></td>
+            <td data-pipelines-system-id="1"><span id="volume-kenkiyakTransfer"></span></td>
+            <td data-pipelines-system-id="1"><span id="loss-kenkiyakTransferP"></span></td>
+            <td data-pipelines-system-id="1"><span id="volume2-kenkiyak"></span></td>
+            <td data-pipelines-system-id="2"><span id="volume-kenkiyakTransfer2"></span></td>
+            <td data-pipelines-system-id="2"><span id="loss-kenkiyakTransfer2P"></span></td>
+            <td data-pipelines-system-id="2"><span id="volume2-kenkiyak2"></span></td>
+            <td data-pipelines-system-id="3"><span id="volume-kenkiyakTransfer3"></span></td>
+            <td data-pipelines-system-id="3"><span id="loss-kenkiyakTransfer3P"></span></td>
+            <td data-pipelines-system-id="3"><span id="volume2-kenkiyak3"></span></td>
+            <td data-pipelines-system-id="4"><span id="volume-kenkiyakTransfer4"></span></td>
+            <td data-pipelines-system-id="4"><span id="loss-zhanazhol4P"></span></td>
+            <td data-pipelines-system-id="4"><span id="volume2-zhanazholedit4"></span></td>
+            <td data-pipelines-system-id="5"><span id="volume-zhanazhol5"></span></td>
+            <td data-pipelines-system-id="5"><span id="loss-zhanazhol5P"></span></td>
+            <td data-pipelines-system-id="5"><span id="volume2-zhanazholedit5"></span></td>
+            <td data-pipelines-system-id="6"><span id="volume-zhanazhol6"></span></td>
+            <td data-pipelines-system-id="6"><span id="loss-zhanazhol6P"></span></td>
+            <td data-pipelines-system-id="6"><span id="volume2-zhanazholedit6"></span></td>
         </tr>
         <tr>
             <td class="left-align" colspan="2">По системе МН ТОО «Казахстанско-Китайский трубопровод»</td>
