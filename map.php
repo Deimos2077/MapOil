@@ -132,9 +132,9 @@ label[for="date-input"] {
         </li> -->
 
         <!-- Настройки -->
-        <li class="settings">
+        <!-- <li class="settings">
             <a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a>
-        </li>
+        </li> -->
 
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
     </ul>
