@@ -69,7 +69,7 @@ function exportToExcel() {
 
     // Устанавливаем ширину колонок
     ws['!cols'] = [
-        { wpx: 181 }, { wpx: 212 }, { wpx: 86 }, { wpx: 86 }, { wpx: 81 }
+        { wpx: 181 }, { wpx: 170 }, { wpx: 86 }, { wpx: 86 }, { wpx: 81 }
     ];
 
     let rows = table.rows;
@@ -170,13 +170,13 @@ for (let r of mergeRows) {
             setCellStyle(ws, r, c, "FCE4D6", borderStyle); // Коричневый фон и чёрные границы
         }
     }
-    let brownRows2 = [5,6,7,8,9,12,13,14,17];
+    let brownRows2 = [5,6,7,9,12,13,14,17];
     for (let r of brownRows2) {
         for (let c of [8, 9, 10]) {
             setCellStyle(ws, r, c, "FCE4D6", borderStyle); // Коричневый фон и чёрные границы
         }
     }
-    let brownRows3 = [5,6,7,8,19,21,22,24,25,26,27,28,29];
+    let brownRows3 = [5,6,7,19,21,22,24,25,26,27,28,29];
     for (let r of brownRows3) {
         for (let c of [11, 12, 13]) {
             setCellStyle(ws, r, c, "FCE4D6", borderStyle); // Коричневый фон и чёрные границы
@@ -201,23 +201,7 @@ for (let r of mergeRows) {
             setCellStyle(ws, r, c, "FCE4D6", borderStyle); // Коричневый фон и чёрные границы
         }
     }
-// Применяем шрифт Times New Roman и размер 10 ко всем ячейкам
-for (let r = 0; r < rows.length; r++) {
-    let row = rows[r];
-    for (let c = 0; c < row.cells.length; c++) {
-        let cellRef = XLSX.utils.encode_cell({ r, c });
-        if (!ws[cellRef]) continue;
 
-        // Применяем шрифт ко всем ячейкам
-        ws[cellRef].s = {
-            ...ws[cellRef].s,
-            font: {
-                name: "Times New Roman",
-                sz: 10
-            }
-        };
-    }
-}
 // Объединяем C3 и C4 (ячейка C — индекс 2, строки 3 и 4 — индексы 2 и 3)
 ws["!merges"].push({
     s: { r: 2, c: 2 },
@@ -335,8 +319,25 @@ for (let cell of redCells) {
         fill: { fgColor: { rgb: "FF0000" } }  // Красный цвет
     };
 }
+// Применяем шрифт Times New Roman и размер 10 ко всем ячейкам
+for (let r = 0; r < rows.length; r++) {
+    let row = rows[r];
+    for (let c = 0; c < row.cells.length; c++) {
+        let cellRef = XLSX.utils.encode_cell({ r, c });
+        if (!ws[cellRef]) continue;
+
+        // Применяем шрифт ко всем ячейкам
+        ws[cellRef].s = {
+            ...ws[cellRef].s,
+            font: {
+                name: "Times New Roman",
+                sz: 10
+            }
+        };
+    }
+}
 
     // Добавляем лист в книгу и сохраняем
     XLSX.utils.book_append_sheet(wb, ws, "Таблица");
-    XLSX.writeFile(wb, "table.xlsx");
+    XLSX.writeFile(wb, "Расчет Потерь.xlsx");
 }

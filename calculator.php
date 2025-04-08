@@ -20,10 +20,15 @@
             width: 17%;
         }
         .highlight-date {
-            background: #ffcc00 !important; /* Цвет фона */
-            color: black !important;
-            border-radius: 50%;
-        }
+        background: #ffcc00 !important; /* Жёлтая подсветка */
+        color: black !important;
+        border-radius: 50%;
+    }
+    .highlight-last-day {
+        background: #ff4d4d !important; /* Красная подсветка */
+        color: white !important;
+        border-radius: 50%;
+    }
     </style>
         
 <script>
@@ -217,11 +222,10 @@ async function loadData() {
         <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
         <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
-
         <!-- <li class="svg-editor">
             <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
         </li> -->
-        <li class="settings"><a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a></li>
+        <!-- <li class="settings"><a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a></li> -->
         <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
     </ul>
 </nav>
@@ -258,39 +262,25 @@ async function loadData() {
         </thead>
         <tbody>
         <tr reservoir_id="1">
-            <td>ПСП 45 км</td>
+            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
             <td><input type="number" id="start-volumePsp" class="form-control"></td>
             <td><input type="number" id="end-volumePsp" class="form-control"></td>
             <td><input type="number" id="minus-volumePsp" class="form-control"></td>
             <td><input type="number" id="plus-volumePsp" class="form-control"></td>
         </tr>
-        <tr reservoir_id="2">
-            <td>НПС им. Шманова</td>
-            <td><input type="number" id="start-volumeShmanova" class="form-control"></td>
-            <td><input type="number" id="end-volumeShmanova" class="form-control"></td>
-            <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
-            <td><input type="number" id="plus-volumeShmanova" class="form-control"></td>
-        </tr>
-        <tr reservoir_id="3">
-            <td>ГНПС Кумколь</td>
-            <td><input type="number" id="start-volumeKumkol" class="form-control"></td>
-            <td><input type="number" id="end-volumeKumkol" class="form-control"></td>
-            <td><input type="number" id="minus-volumeKumkol" class="form-control"></td>
-            <td><input type="number" id="plus-volumeKumkol" class="form-control"></td>
-        </tr>
-        <!-- <tr reservoir_id="4">
-            <td>ПСП Самара</td>
-            <td><input type="number" id="start-volume" class="form-control"></td>
-            <td><input type="number" id="end-volume" class="form-control"></td>
-            <td><input type="number" id="minus-volume" class="form-control"></td>
-            <td><input type="number" id="plus-volume" class="form-control"></td>
-        </tr> -->
         <tr reservoir_id="5">
             <td>МН ТОО «Казахстанско-Китайский трубопровод»</td>
             <td><input type="number" id="start-volume1" class="form-control"></td>
             <td><input type="number" id="end-volume1" class="form-control"></td>
             <td><input type="number" id="minus-volume1" class="form-control"></td>
             <td><input type="number" id="plus-volume1" class="form-control"></td>
+        </tr>
+        <tr reservoir_id="3">
+            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Восточный Филиал) </td>
+            <td><input type="number" id="start-volumeKumkol" class="form-control"></td>
+            <td><input type="number" id="end-volumeKumkol" class="form-control"></td>
+            <td><input type="number" id="minus-volumeKumkol" class="form-control"></td>
+            <td><input type="number" id="plus-volumeKumkol" class="form-control"></td>
         </tr>
         <tr reservoir_id="6">
             <td>МН АО "СЗТК "Мунайтас"</td>
@@ -299,6 +289,20 @@ async function loadData() {
             <td><input type="number" id="minus-volume2" class="form-control"></td>
             <td><input type="number" id="plus-volume2" class="form-control"></td>
         </tr>
+        <tr reservoir_id="2">
+            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
+            <td><input type="number" id="start-volumeShmanova" class="form-control"></td>
+            <td><input type="number" id="end-volumeShmanova" class="form-control"></td>
+            <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
+            <td><input type="number" id="plus-volumeShmanova" class="form-control"></td>
+        </tr>
+        <!-- <tr reservoir_id="4">
+            <td>ПСП Самара</td>
+            <td><input type="number" id="start-volume" class="form-control"></td>
+            <td><input type="number" id="end-volume" class="form-control"></td>
+            <td><input type="number" id="minus-volume" class="form-control"></td>
+            <td><input type="number" id="plus-volume" class="form-control"></td>
+        </tr> -->
         </tbody>
     </table>
     <h3 class="mb-4">Внутренний рынок (ПКОП)</h3>
@@ -1747,24 +1751,36 @@ async function loadData() {
 
 
 <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        fetch("get_dates.php") // Загружаем даты с сервера
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("get_dates.php")
             .then(response => response.json())
-            .then(dates => {
+            .then(result => {
+                const allDates = result.allDates;
+                const latestPerMonth = result.latestPerMonth;
+
                 flatpickr("#date-input", {
                     dateFormat: "Y-m-d",
                     locale: "ru",
                     onDayCreate: function(dObj, dStr, fp, dayElem) {
-                        let dateStr = dayElem.dateObj.toLocaleDateString("sv-SE"); // YYYY-MM-DD без часового пояса
-                        if (dates.includes(dateStr)) {
-                            dayElem.classList.add("highlight-date"); // Подсвечиваем дату
+                        const dateStr = dayElem.dateObj.toLocaleDateString("sv-SE");
+
+                        if (allDates.includes(dateStr)) {
+                            if (latestPerMonth.includes(dateStr)) {
+                                dayElem.classList.add("highlight-last-day"); // красный
+                            } else {
+                                dayElem.classList.add("highlight-date"); // жёлтый
+                            }
                         }
                     }
                 });
             })
             .catch(error => console.error("Ошибка загрузки дат:", error));
-        });
-    </script>
+    });
+</script>
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
