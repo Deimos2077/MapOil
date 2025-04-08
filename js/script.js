@@ -1270,19 +1270,30 @@ function addMinimalistFlow(points, oilTransferData) {
 
     minimalistFlowLayerGroup.clearLayers();
 
-    const uniqueEntries = new Set();
     const pointUsageCounter = {};
+    const allowedPointIds = [1, 3, 6, 9, 10, 11, 12];
 
+    // ✅ Уникальные записи для визуализации
+    const filteredMap = new Map();
     oilTransferData.forEach(record => {
+        if (!record.from_amount || record.from_amount === 0) return;
+
+        const key = `${record.from_point}_${record.to_point}`;
+        if (!filteredMap.has(key) || filteredMap.get(key).from_amount < record.from_amount) {
+            filteredMap.set(key, record);
+        }
+    });
+
+    const filteredData = Array.from(filteredMap.values());
+
+    filteredData.forEach(record => {
         const isSpecialSource = (record.from_point === 12 || record.from_point === 11);
         const pointId = isSpecialSource ? record.from_point : record.to_point;
 
+        if (!allowedPointIds.includes(pointId)) return;
+
         const point = points.find(p => p.id === pointId);
         if (!point || !point.coords) return;
-
-        const recordKey = `${record.from_point}_${record.to_point}_${record.from_amount}`;
-        if (uniqueEntries.has(recordKey)) return;
-        uniqueEntries.add(recordKey);
 
         if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
         const usageIndex = pointUsageCounter[pointId]++;
@@ -1303,43 +1314,35 @@ function addMinimalistFlow(points, oilTransferData) {
             point.coords[1] + dy * baseOffset
         ];
 
-// ✅ Отображаем только для нужных конечных точек
-const allowedPointIds = [1, 3, 6, 9, 10, 11, 12];
-if (!allowedPointIds.includes(pointId)) return;
+        const marker = L.marker(labelPosition, {
+            icon: L.divIcon({
+                className: 'flow-label',
+                html: `<div>${record.from_amount.toLocaleString()} тн</div>`,
+                iconSize: null,
+                iconAnchor: [10, 10],
+            })
+        });
 
-const marker = L.marker(labelPosition, {
-    icon: L.divIcon({
-        className: 'flow-label',
-        html: `<div>${record.from_amount} тн</div>`,
-        iconSize: null,
-        iconAnchor: [10, 10],
-    })
-});
+        const polyline = L.polyline([point.coords, labelPosition], {
+            color: 'black',
+            weight: 2,
+            dashArray: '5, 5',
+            opacity: 0.8,
+        });
 
-marker.options._originalPoint = point.coords;
-marker.options._direction = [dx, dy];
-marker.options._baseOffset = baseOffset;
+        marker.options._originalPoint = point.coords;
+        marker.options._direction = [dx, dy];
+        marker.options._baseOffset = baseOffset;
+        marker.options._polyline = polyline;
 
-const polyline = L.polyline([point.coords, labelPosition], {
-    color: 'black',
-    weight: 2,
-    dashArray: '5, 5',
-    opacity: 0.8,
-});
-
-marker.options._polyline = polyline;
-
-polyline.addTo(minimalistFlowLayerGroup);
-marker.addTo(minimalistFlowLayerGroup);
-
-
+        polyline.addTo(minimalistFlowLayerGroup);
+        marker.addTo(minimalistFlowLayerGroup);
     });
 
-    // ===== ✅ ДОБАВЛЯЕМ СУММЫ НА ПРОМЕЖУТОЧНЫХ ТОЧКАХ =====
-
+    // ===== Промежуточные суммы =====
     const routes = {
-        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13],  // Новороссийск
-        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],     // Усть-Луга
+        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13], // Новороссийск
+        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],    // Усть-Луга
         6: [5, 4, 18, 6],                         // ПКОП
         1: [5, 4, 18, 2, 1],                      // Алашанькоу
         3: [5, 4, 18, 2, 3]                       // ПНХЗ
@@ -1347,7 +1350,7 @@ marker.addTo(minimalistFlowLayerGroup);
 
     const volumesByPoint = {};
 
-    oilTransferData.forEach(record => {
+    filteredData.forEach(record => {
         const route = routes[record.to_point];
         if (!route || route[0] !== 5) return;
 
@@ -1361,7 +1364,7 @@ marker.addTo(minimalistFlowLayerGroup);
     Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
         pointId = parseInt(pointId);
         const point = points.find(p => p.id === pointId);
-        if (!point || !point.coords) return;
+        if (!point || !point.coords || volume === 0) return;
 
         const usageIndex = pointUsageCounter[pointId] || 0;
         pointUsageCounter[pointId] = usageIndex + 1;
@@ -1397,19 +1400,16 @@ marker.addTo(minimalistFlowLayerGroup);
                 iconAnchor: [10, 10],
             })
         });
-        
-        // 🛠️ Обязательно добавляем параметры для зума
+
         marker.options._originalPoint = point.coords;
         marker.options._direction = [dx, dy];
         marker.options._baseOffset = baseOffset;
         marker.options._polyline = polyline;
-        
 
         polyline.addTo(minimalistFlowLayerGroup);
         marker.addTo(minimalistFlowLayerGroup);
     });
 
-    // ✅ Возвращаем обратно метку Кенкияка
     kenkiyakMarkers.forEach(marker => marker.addTo(minimalistFlowLayerGroup));
 
     map.addLayer(minimalistFlowLayerGroup);

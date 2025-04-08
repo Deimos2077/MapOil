@@ -1,29 +1,26 @@
 <?php
-include 'db.php'; 
+require_once 'db.php';
 
-header('Content-Type: application/json');
-
-$year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
-$month = isset($_GET['month']) ? intval($_GET['month']) : date('m');
+$year = $_GET['year'] ?? date('Y');
+$month = $_GET['month'] ?? date('m');
 
 try {
     $stmt = $pdo->prepare("
-        SELECT SUM(from_amount) as total_oil
+        SELECT date, SUM(from_amount) AS total_oil
         FROM oiltransfer
-        WHERE to_point_id = 5 
-        AND from_point_id IN (12, 11)
-        AND YEAR(date) = ? 
-        AND MONTH(date) = ?
+        WHERE from_point_id = 5
+          AND YEAR(date) = :year
+          AND MONTH(date) = :month
+        GROUP BY date
+        ORDER BY date DESC
+        LIMIT 1
     ");
-    $stmt->execute([$year, $month]);
+    $stmt->execute(['year' => $year, 'month' => $month]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode([
-        "year" => $year,
-        "month" => $month,
-        "total_oil" => $result['total_oil'] ?? 0
+        'total_oil' => $result ? (float)$result['total_oil'] : 0
     ]);
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
 }
-?>
