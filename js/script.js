@@ -526,6 +526,16 @@ function createReservoirIcon(fillPercent, type, zoom) {
 }
 
 
+const reservoirCapacities = {
+    1: 5000,
+    2: 10000,
+    3: 10000,
+    4: 10000,
+    5: 15000,
+    6: 5000,
+};
+
+
 // Создаём слои для резервуаров
 const pointTanksLayer = L.layerGroup(); // Точечные резервуары
 const technicalTanksLayer = L.layerGroup(); // Технические резервуары
@@ -551,9 +561,8 @@ function addReservoirs(reservoirs) {
         const coordStartLabel = [coordStart[0] + offset.start.lat, coordStart[1] + offset.start.lng];
         const coordEndLabel = [coordEnd[0] + offset.end.lat, coordEnd[1] + offset.end.lng + 0.07];
 
-        let maxCapacity = 10000;
-        if (reservoir.name.includes("Шманова")) maxCapacity = 5000;
-        else if (reservoir.name.includes("Кумоль")) maxCapacity = 15000;
+        const maxCapacity = reservoirCapacities[reservoir.id] || 10000;
+
 
         const startFill = getFillPercentage(volumeData.start_volume, maxCapacity);
         const endFill = getFillPercentage(volumeData.end_volume, maxCapacity);
@@ -991,6 +1000,16 @@ async function main(points, oilTransferData) {
         return;
     }
 
+    const routes = {
+        9: [11, 5, 7, 19, 24, 13, 8, 18, 17, 21, 22, 23],
+        10: [12, 5, 7, 19, 24, 13, 8, 16, 20, 23, 10],
+        6: [11, 5, 4, 14, 6],
+        1: [12, 5, 4, 14, 2, 1],
+        3: [11, 5, 4, 14, 2, 3]
+    };
+
+    const mainLineColorCache = {}; // Кешировать цвет компании по from-to
+
     pipelinesWithIds.forEach(({ from, to, company }) => {
         const point1 = points.find(p => p.id === from);
         const point2 = points.find(p => p.id === to);
@@ -1002,7 +1021,6 @@ async function main(points, oilTransferData) {
 
         const mainLineColor = companyColors[company] || "black";
 
-        // 🎨 Основная линия (всегда рисуется)
         const mainLine = L.polyline([point1.coords, point2.coords], {
             pane: 'linesPane',
             color: mainLineColor,
@@ -1010,13 +1028,23 @@ async function main(points, oilTransferData) {
             opacity: 0.8,
         }).addTo(map);
 
-        // 🛢️ Проверяем, есть ли нефть по направлению
-        const hasOilFlow = oilTransferData.some(
-            record => record.from_point === from && record.to_point === to && record.to_amount > 0
-        );
+        mainLineColorCache[`${from}_${to}`] = mainLineColor;
+    });
 
-        // ➖ Только если есть нефть, рисуем пунктирную линию
-        if (hasOilFlow) {
+    // Теперь добавим только нужные пунктирные линии
+    Object.entries(routes).forEach(([endPoint, route]) => {
+        const hasOil = oilTransferData.some(r => r.to_point === parseInt(endPoint) && r.from_amount > 0);
+        if (!hasOil) return;
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const from = route[i];
+            const to = route[i + 1];
+
+            const point1 = points.find(p => p.id === from);
+            const point2 = points.find(p => p.id === to);
+
+            if (!point1 || !point2 || !point1.coords || !point2.coords) continue;
+
             L.polyline([point1.coords, point2.coords], {
                 pane: 'linesPane',
                 color: "black",
@@ -1026,8 +1054,14 @@ async function main(points, oilTransferData) {
                 className: "dashed-line",
             }).addTo(map);
         }
+    });
 
-        // ➤ Добавляем стрелку, если разрешено
+    // Добавим стрелки (только по прямым из базы)
+    pipelinesWithIds.forEach(({ from, to }) => {
+        const key = `${from}_${to}`;
+        const point1 = points.find(p => p.id === from);
+        const point2 = points.find(p => p.id === to);
+
         const noArrowLines = [
             { from: 12, to: 5 },
             { from: 11, to: 5 },
@@ -1035,17 +1069,19 @@ async function main(points, oilTransferData) {
             { from: 24, to: 13 },
             { from: 15, to: 9 }
         ];
+
         const hasArrow = !noArrowLines.some(line => line.from === from && line.to === to);
 
-        if (hasArrow) {
-            const arrowDecorator = L.polylineDecorator(mainLine, {
+        if (point1 && point2 && hasArrow && mainLineColorCache[key]) {
+            const mainLine = L.polyline([point1.coords, point2.coords]); // для стрелки
+            L.polylineDecorator(mainLine, {
                 patterns: [
                     {
                         offset: '50%',
                         repeat: 0,
                         symbol: L.Symbol.arrowHead({
                             pixelSize: 8,
-                            pathOptions: { color: mainLineColor, fillOpacity: 1 }
+                            pathOptions: { color: mainLineColorCache[key], fillOpacity: 1 }
                         })
                     }
                 ]
@@ -1053,6 +1089,7 @@ async function main(points, oilTransferData) {
         }
     });
 }
+
 
 
 // Вызов основной функции
@@ -1195,15 +1232,15 @@ function findFreePositionWithIndex(coords, layerGroup, pointId, usageIndex) {
 async function displayIntermediateOilTotals(oilTransferData, points) {
     const routes = {
         // Новороссийск
-        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13],
+        9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23],
         // Усть-Луга
-        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],
+        10: [5, 7, 19, 24, 8, 16, 20, 23, 10],
         // ПКОП
-        6: [5, 4, 18, 6],
+        6: [5, 4, 14, 6],
         // Алашанькоу
-        1: [5, 4, 18, 2, 1],
+        1: [5, 4, 14, 2, 1],
         // ПНХЗ
-        3: [5, 4, 18, 2, 3]
+        3: [5, 4, 14, 2, 3]
     };
 
     const volumesByPoint = {};
@@ -1341,11 +1378,11 @@ function addMinimalistFlow(points, oilTransferData) {
 
     // ===== Промежуточные суммы =====
     const routes = {
-        9: [5, 7, 19, 24, 8, 15, 21, 22, 23, 13], // Новороссийск
-        10: [5, 7, 19, 24, 8, 20, 25, 26, 10],    // Усть-Луга
-        6: [5, 4, 18, 6],                         // ПКОП
-        1: [5, 4, 18, 2, 1],                      // Алашанькоу
-        3: [5, 4, 18, 2, 3]                       // ПНХЗ
+        9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23], // Новороссийск
+        10: [5, 7, 19, 24, 8, 16, 20, 23, 10],    // Усть-Луга
+        6: [5, 4, 14, 6],                         // ПКОП
+        1: [5, 4, 14, 2, 1],                      // Алашанькоу
+        3: [5, 4, 14, 2, 3]                       // ПНХЗ
     };
 
     const volumesByPoint = {};
