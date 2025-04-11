@@ -458,13 +458,13 @@ html {
 .chart {
   background: #ffffff;
   border-radius: 12px;
-  padding: 16px;
+  padding: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   animation: fadeInUp 0.5s ease-in-out;
   transition: transform 0.3s ease;
   overflow: hidden;
   width: 100%;
-  max-width: 580px;
+  max-width: 520px;
 }
 
 /* Размеры под каждый iframe */
@@ -523,4 +523,183 @@ html {
 
 .flow-label {
   transition: transform 0.3s ease, top 0.3s ease, left 0.3s ease;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    padding: 20px;
+    line-height: 1.6;
+}
+.navbar {
+    background-color: #333;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 15px;
+}
+form {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+form input[type="date"],
+form select {
+    padding: 8px;
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 10px;
+}
+form input[type="submit"] {
+    padding: 10px 20px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+form input[type="submit"]:hover {
+    background: #555;
+}
+.dashboard-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+.dashboard-data {
+    flex: 1;
+    margin-right: 20px;
+    background: #e8e8e8;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
+}
+.dashboard-donut {
+    flex: 1;
+    max-width: 600px;
+    background: #e8e8e8;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
+}
+.dashboard-data ul {
+    list-style: none;
+    padding: 0;
+}
+.dashboard-data li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+.dashboard-data li:last-child {
+    border-bottom: none;
+}
+.results {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+}
+.summary {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.summary ul {
+    list-style: none;
+    padding: 0;
+}
+.summary li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+.summary li:last-child {
+    border-bottom: none;
+}
+.graphs {
+    margin-bottom: 40px;
+}
+.graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.graph-item {
+    flex: 1 1 42%;
+    margin: 10px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.table-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.table-container table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+.table-container table,
+.table-container th,
+.table-container td {
+    border: 1px solid #ccc;
+}
+.table-container th,
+.table-container td {
+    padding: 8px;
+    text-align: left;
+}
+.table-container table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+.table-container th {
+    background-color: #333;
+    color: #fff;
+}
+iframe {
+    width: 100%;
+    border: none;
+    margin-bottom: 20px;
+}
+.error {
+    background-color: #ffcccc;
+    padding: 10px;
+    border-radius: 5px;
+    color: #d8000c;
+}
+h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #333;
+}
+h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #444;
+}
+h4 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: #555;
+}
+.menu-href {
+    font-size: 18px;
 }

@@ -83,13 +83,22 @@ async function loadDataEx() {
             });
         });
 
-        // Обрабатываем резервуары только в таблице myTable
-        result.reservoirs.forEach(row => {
+        // === РЕЗЕРВУАРЫ ===
+        const reservoirsToUse = result.reservoirs.length > 0 ? result.reservoirs : result.last_reservoirs;
+
+        reservoirsToUse.forEach(row => {
             table.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
-                const startInput = tr.querySelector("[id^='start-']");
-                const endInput = tr.querySelector("[id^='end-']");
-                if (startInput) startInput.textContent = row.start_volume ?? "";
-                if (endInput) endInput.textContent = row.end_volume ?? "";
+                const startCell = tr.querySelector("[id^='start-']");
+                const endCell = tr.querySelector("[id^='end-']");
+
+                if (result.reservoirs.length > 0) {
+                    // Если есть данные на выбранную дату — используем как есть
+                    if (startCell) startCell.textContent = row.start_volume ?? "";
+                    if (endCell) endCell.textContent = row.end_volume ?? "";
+                } else {
+                    // Если данных нет — только start = end из последней записи
+                    if (startCell) startCell.textContent = row.end_volume ?? "";
+                }
             });
         });
 
