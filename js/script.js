@@ -170,7 +170,7 @@ async function fetchOilTransferFromDB(year, month) {
 
             // Кенкияк (id = 5) не отображается, но участвует в расчетах
             if (record.to_point_id === 5) {
-                console.log(`📌 Кенкияк (id 5) получит нефть от ${record.from_point_id}: ${record.from_amount} тн`);
+                console.log(`📌 Кенкияк (id 5) получит нефть от ${record.from_point_id}: ${record.from_amount} т`);
             }
 
             // Обычная запись (перемещение нефти)
@@ -563,12 +563,12 @@ function addReservoirs(reservoirs) {
         // Маркеры с учётом зума
         L.marker(coordStart, {
             icon: createReservoirIcon(startFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} м³`)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} т`)
           .addTo(layer);
 
         L.marker(coordEnd, {
             icon: createReservoirIcon(endFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} м³`)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} т`)
           .addTo(layer);
 
         // Линии
@@ -602,14 +602,14 @@ function addReservoirs(reservoirs) {
         // Подписи
         L.marker(coordStartLabel, {
             icon: L.divIcon({
-                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.start_volume} м³</div>`,
+                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.start_volume} т</div>`,
                 className: ''
             })
         }).addTo(layer);   
 
         L.marker(coordEndLabel, {
             icon: L.divIcon({
-                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.end_volume} м³</div>`,
+                html: `<div style="white-space: nowrap; font-weight: bold; transform: translateY(-10px);"> ${volumeData.end_volume} т</div>`,
                 className: ''
             })
         }).addTo(layer);
@@ -983,10 +983,8 @@ const companyColors = {
 };
 
 
-// Основная логика для добавления линий на карту
-async function main() {
+async function main(points, oilTransferData) {
     const pipelinesWithIds = await fetchPipelinesFromDB();
-    const points = await fetchPointsFromDB();
 
     if (pipelinesWithIds.length === 0 || points.length === 0) {
         console.error("Недостаточно данных для отрисовки линий.");
@@ -997,37 +995,39 @@ async function main() {
         const point1 = points.find(p => p.id === from);
         const point2 = points.find(p => p.id === to);
 
-        if (!point1 || !point2) {
-            console.warn(`Не найдены точки: from=${from}, to=${to}`);
-            return;
-        }
-
-        if (!point1.coords || !point2.coords) {
-            console.warn(`Некорректные координаты для точек: from=${from}, to=${to}`);
+        if (!point1 || !point2 || !point1.coords || !point2.coords) {
+            console.warn(`Проблема с координатами: from=${from}, to=${to}`);
             return;
         }
 
         const mainLineColor = companyColors[company] || "black";
 
-        // Основная линия
+        // 🎨 Основная линия (всегда рисуется)
         const mainLine = L.polyline([point1.coords, point2.coords], {
-            pane: 'linesPane', 
+            pane: 'linesPane',
             color: mainLineColor,
             weight: 6,
             opacity: 0.8,
         }).addTo(map);
 
-        // Пунктирная линия
-        const dashedLine = L.polyline([point1.coords, point2.coords], {
-            pane: 'linesPane', 
-            color: "black",
-            weight: 3,
-            dashArray: "10, 10",
-            opacity: 1,
-            className: "dashed-line",
-        }).addTo(map);
+        // 🛢️ Проверяем, есть ли нефть по направлению
+        const hasOilFlow = oilTransferData.some(
+            record => record.from_point === from && record.to_point === to && record.to_amount > 0
+        );
 
-        // Добавление стрелок, если они нужны
+        // ➖ Только если есть нефть, рисуем пунктирную линию
+        if (hasOilFlow) {
+            L.polyline([point1.coords, point2.coords], {
+                pane: 'linesPane',
+                color: "black",
+                weight: 3,
+                dashArray: "10, 10",
+                opacity: 1,
+                className: "dashed-line",
+            }).addTo(map);
+        }
+
+        // ➤ Добавляем стрелку, если разрешено
         const noArrowLines = [
             { from: 12, to: 5 },
             { from: 11, to: 5 },
@@ -1035,7 +1035,6 @@ async function main() {
             { from: 24, to: 13 },
             { from: 15, to: 9 }
         ];
-
         const hasArrow = !noArrowLines.some(line => line.from === from && line.to === to);
 
         if (hasArrow) {
@@ -1054,6 +1053,7 @@ async function main() {
         }
     });
 }
+
 
 // Вызов основной функции
 main();
@@ -1087,7 +1087,7 @@ const directionOffsets = {
     7: { lat: 0.4, lng: 0.2 },   // Шманова
     8: { lat: 0.2, lng: 0.2 },   // Самара
     9: { lat: -0.5, lng: -0.5 }, // Новороссийск
-    10: { lat: 0.2, lng: 0.3 },  // Усть-Луга
+    10: { lat: -0.15, lng: 0.4 },  // Усть-Луга
     11: { lat: 0, lng: 0 },      // Жана Жол
     12: { lat: 0, lng: 0 },      // ПСП 45 
     13: { lat: -0.2, lng: -0.4 },// Грушевая
@@ -1238,7 +1238,7 @@ async function displayIntermediateOilTotals(oilTransferData, points) {
         L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label sent',
-                html: `<div>${volume.toLocaleString()} тн</div>`,
+                html: `<div>${volume.toLocaleString()} т</div>`,
                 iconSize: null,
                 iconAnchor: [4, 18],
             }),
@@ -1317,7 +1317,7 @@ function addMinimalistFlow(points, oilTransferData) {
         const marker = L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label',
-                html: `<div>${record.from_amount.toLocaleString()} тн</div>`,
+                html: `<div>${record.from_amount.toLocaleString()} т</div>`,
                 iconSize: null,
                 iconAnchor: [10, 10],
             })
@@ -1395,7 +1395,7 @@ function addMinimalistFlow(points, oilTransferData) {
         const marker = L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label sent',
-                html: `<div>${volume.toLocaleString()} тн</div>`,
+                html: `<div>${volume.toLocaleString()} т</div>`,
                 iconSize: null,
                 iconAnchor: [10, 10],
             })
@@ -1585,7 +1585,7 @@ async function displayKenkiyakOilTotal(year, month, points) {
         labelPosition = [kenkiyakPoint.coords[0] + 0.5, kenkiyakPoint.coords[1] + 0.5]; 
     }
 
-    console.log(`✅ Метка добавляется в Кенкияк: ${totalOil} тн, позиция:`, labelPosition);
+    console.log(`✅ Метка добавляется в Кенкияк: ${totalOil} т, позиция:`, labelPosition);
 
     // Обычная черная линия от Кенкияка к метке
     L.polyline([kenkiyakPoint.coords, labelPosition], {
@@ -1599,7 +1599,7 @@ async function displayKenkiyakOilTotal(year, month, points) {
     L.marker(labelPosition, {
         icon: L.divIcon({
             className: 'flow-label',
-            html: `<div>${totalOil} тн</div>`,
+            html: `<div>${totalOil} т</div>`,
             iconSize: null,
             iconAnchor: [4, 18],
         }),
@@ -1656,7 +1656,7 @@ async function initializeFlowMap() {
         const volumeMarker = L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label',
-                html: `<div>${volume} тн</div>`,
+                html: `<div>${volume} т</div>`,
                 iconSize: null,
                 iconAnchor: [4, 18],
             }),

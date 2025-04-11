@@ -56,6 +56,9 @@ async function updateMapData(year, month) {
     window.cachedOilTransferData = oilTransferData;
     window.cachedReservoirs = reservoirs;
 
+
+    await main(points, oilTransferData);
+
     // ✅ Нефть — отрисовываем только при нужном зуме и включённом чекбоксе
     if (checkboxOne?.checked && oilTransferData.length > 0) {
         if (currentZoom >= zoomThreshold) {
