@@ -1,3 +1,3 @@
-CMD: "C:\Users\alfar\AppData\Local\Programs\Python\Python313\python.exe" "C:\xampp\htdocs\project\MapOil\generate_charts.py" 2025-02-01 2025-02-28 2>error.log
+CMD: "C:\Program Files\Python313\python.exe" "C:\xampp\htdocs\project\MapOil\generate_charts.py" 2025-04-01 2025-04-30 2>error.log
 OUTPUT:
-{"error": "2003 (HY000): Can't connect to MySQL server on '192.168.1.23:3306' (10060)"}
+{"net_tons": "\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445", "final_price": "\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445", "total_amount": "\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445"}

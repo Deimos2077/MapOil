@@ -162,20 +162,31 @@ async function loadData() {
             });
         });
 
-        // Заполняем данные для резервуаров, исключая строки внутри #myTable
-        result.reservoirs.forEach(row => {
-            let allRows = document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`);
+        // Заполнение резервуаров — если есть записи на выбранную дату
+        if (result.reservoirs && result.reservoirs.length > 0) {
+            result.reservoirs.forEach(row => {
+                document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+                    if (!tr.closest("#myTable")) {
+                        const start = tr.querySelector("[id^='start-']");
+                        const end = tr.querySelector("[id^='end-']");
 
-            allRows.forEach(tr => {
-                if (!tr.closest("#myTable")) {
-                    const start = tr.querySelector("[id^='start-']");
-                    const end = tr.querySelector("[id^='end-']");
-
-                    if (start) start.value = row.start_volume ?? "";
-                    if (end) end.value = row.end_volume ?? "";
-                }
+                        if (start) start.value = row.start_volume ?? "";
+                        if (end) end.value = row.end_volume ?? "";
+                    }
+                });
             });
-        });
+        }
+        // Если на выбранную дату нет резервуаров, берём последнюю запись и подставляем end_volume → start_volume
+        else if (result.last_reservoirs && result.last_reservoirs.length > 0) {
+            result.last_reservoirs.forEach(row => {
+                document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+                    if (!tr.closest("#myTable")) {
+                        const start = tr.querySelector("[id^='start-']");
+                        if (start) start.value = row.end_volume ?? "";
+                    }
+                });
+            });
+        }
 
     } catch (error) {
         alert("Ошибка при загрузке данных: " + error);
@@ -262,7 +273,7 @@ async function loadData() {
         </thead>
         <tbody>
         <tr reservoir_id="1">
-            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
+            <td>ПСП45 АО "КАЗТРАНСОЙЛ"</td>
             <td><input type="number" id="start-volumePsp" class="form-control"></td>
             <td><input type="number" id="end-volumePsp" class="form-control"></td>
             <td><input type="number" id="minus-volumePsp" class="form-control"></td>
@@ -276,7 +287,7 @@ async function loadData() {
             <td><input type="number" id="plus-volume1" class="form-control"></td>
         </tr>
         <tr reservoir_id="3">
-            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Восточный Филиал) </td>
+            <td>ГНПС Кумколь АО "КАЗТРАНСОЙЛ"</td>
             <td><input type="number" id="start-volumeKumkol" class="form-control"></td>
             <td><input type="number" id="end-volumeKumkol" class="form-control"></td>
             <td><input type="number" id="minus-volumeKumkol" class="form-control"></td>
@@ -290,7 +301,7 @@ async function loadData() {
             <td><input type="number" id="plus-volume2" class="form-control"></td>
         </tr>
         <tr reservoir_id="2">
-            <td>По системе МН АО "КАЗТРАНСОЙЛ" (Западный Филиал) </td>
+            <td>НПС им.Шманова АО "КАЗТРАНСОЙЛ"</td>
             <td><input type="number" id="start-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="end-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
@@ -1767,9 +1778,10 @@ async function loadData() {
                         if (allDates.includes(dateStr)) {
                             if (latestPerMonth.includes(dateStr)) {
                                 dayElem.classList.add("highlight-last-day"); // красный
-                            } else {
-                                dayElem.classList.add("highlight-date"); // жёлтый
-                            }
+                            } 
+                            // else {
+                            //     dayElem.classList.add("highlight-date"); // жёлтый
+                            // }
                         }
                     }
                 });

@@ -12,9 +12,13 @@ function getChartsForMonth($month) {
     $start_date = date("Y-m-01", strtotime($month));
     $end_date = date("Y-m-t", strtotime($month));
 
-    $pythonBin = "C:\\Users\\alfar\\AppData\\Local\\Programs\\Python\\Python313\\python.exe";
+    $pythonBin = "C:\Program Files\Python313\python.exe"; // Путь к Python
+    if (!file_exists($pythonBin)) {
+        $pythonBin = "C:\Python39\python.exe"; // Альтернативный путь к Python
+    }
     $pythonScript = __DIR__ . DIRECTORY_SEPARATOR . "generate_charts.py";
     $command = "\"$pythonBin\" \"$pythonScript\" $start_date $end_date 2>error.log";
+
 
     $output = shell_exec($command);
     file_put_contents("debug.log", "CMD: $command\nOUTPUT:\n$output");
