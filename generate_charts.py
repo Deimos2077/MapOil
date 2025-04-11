@@ -12,10 +12,13 @@ from bokeh.models import ColumnDataSource, HoverTool, LabelSet, NumeralTickForma
 
 # Параметры подключения к БД
 db_config = {
-    'host': '192.168.1.23',
-    'port': 3306,
-    'user': 'user',
-    'password': 'oil4815162342',
+    # 'host': '192.168.1.23',
+    'host': 'localhost',
+    # 'port': 3306,
+    # 'user': 'user',
+    'user': 'root',
+    'password': '',
+    # 'password': 'oil4815162342',
     'database': 'mapoil'
 }
 
