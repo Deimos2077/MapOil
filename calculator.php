@@ -1,3 +1,11 @@
+<?php 
+session_start();
+require_once 'database/db.php';
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -80,21 +88,24 @@ async function saveData() {
     });
 
     reservoirTables.forEach(table => {
-        table.querySelectorAll("tbody tr").forEach(row => {
-            const reservoirId = row.getAttribute("reservoir_id");
-            if (!reservoirId) {
-                console.warn("Пропущена строка, отсутствует reservoir_id:", row);
-                return;
-            }
+    table.querySelectorAll("tbody tr").forEach(row => {
+        const reservoirId = row.getAttribute("reservoir_id");
+        if (!reservoirId) {
+            console.warn("Пропущена строка, отсутствует reservoir_id:", row);
+            return;
+        }
 
-            reservoirs.push({
-                date,
-                reservoir_id: parseInt(reservoirId),
-                start_volume: parseInt(row.querySelector("[id^='start-']")?.value || "0"),
-                end_volume: parseInt(row.querySelector("[id^='end-']")?.value || "0")
-            });
+        reservoirs.push({
+            date,
+            reservoir_id: parseInt(reservoirId),
+            start_volume: parseInt(row.querySelector("[id^='start-']")?.value || "0"),
+            end_volume: parseInt(row.querySelector("[id^='end-']")?.value || "0"),
+            minus_volume: parseInt(row.querySelector("[id^='minus-']")?.value || "0"),
+            plus_volume: parseInt(row.querySelector("[id^='plus-']")?.value || "0")
         });
     });
+});
+
 
     console.log("Отправляемые oiltransfers:", oiltransfers);
     console.log("Отправляемые reservoirs:", reservoirs);
@@ -162,20 +173,25 @@ async function loadData() {
             });
         });
 
-        // Заполнение резервуаров — если есть записи на выбранную дату
-        if (result.reservoirs && result.reservoirs.length > 0) {
-            result.reservoirs.forEach(row => {
-                document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
-                    if (!tr.closest("#myTable")) {
-                        const start = tr.querySelector("[id^='start-']");
-                        const end = tr.querySelector("[id^='end-']");
+// Заполнение резервуаров — если есть записи на выбранную дату
+if (result.reservoirs && result.reservoirs.length > 0) {
+    result.reservoirs.forEach(row => {
+        document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+            if (!tr.closest("#myTable")) {
+                const start = tr.querySelector("[id^='start-']");
+                const end = tr.querySelector("[id^='end-']");
+                const minus = tr.querySelector("[id^='minus-']");
+                const plus = tr.querySelector("[id^='plus-']");
 
-                        if (start) start.value = row.start_volume ?? "";
-                        if (end) end.value = row.end_volume ?? "";
-                    }
-                });
-            });
-        }
+                if (start) start.value = row.start_volume ?? "";
+                if (end) end.value = row.end_volume ?? "";
+                if (minus) minus.value = row.minus_volume ?? "";
+                if (plus) plus.value = row.plus_volume ?? "";
+            }
+        });
+    });
+}
+
         // Если на выбранную дату нет резервуаров, берём последнюю запись и подставляем end_volume → start_volume
         else if (result.last_reservoirs && result.last_reservoirs.length > 0) {
             result.last_reservoirs.forEach(row => {
@@ -816,8 +832,9 @@ async function loadData() {
             </tr>
         </tbody>
     </table>
+    <?php if ($_SESSION['role_id'] == '1' || $_SESSION['role_id'] == '2'): ?>
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
-
+    <?php endif; ?>
     <table id="myTable" style="display:none" >
     <tr>
         <td colspan="23" style="font-weight: bold; text-align: center;">Расчет потерь при транспортировке нефти</td>
@@ -866,8 +883,8 @@ async function loadData() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -965,8 +982,8 @@ async function loadData() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -1015,8 +1032,8 @@ async function loadData() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -1164,8 +1181,8 @@ async function loadData() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -1213,8 +1230,8 @@ async function loadData() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>

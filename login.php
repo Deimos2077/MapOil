@@ -6,28 +6,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Отладочный вывод
-    echo "Логин: " . $username . "<br>";
-    echo "Пароль: " . $password . "<br>";
+
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
     $stmt->execute(['username' => $username]);
     $user = $stmt->fetch();
 
-    if ($user) {
-        echo "Пользователь найден: " . print_r($user, true) . "<br>";
-    } else {
-        echo "Пользователь не найден<br>";
-    }
 
-    // Временная проверка пароля
+
     if ($user && $password == $user['password']) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role_id'] = $user['role_id'];
         header('Location: map.php');
         exit;
     } else {
-        echo "Неверное имя пользователя или пароль";
+        echo "<script type='text/javascript'>alert('Неверное имя пользователя или пароль');</script>";
     }
 
     if ($user && $password == $user['password']) {
@@ -46,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: map.php');
         exit;
     }
-    
+
 }
 ?>
 

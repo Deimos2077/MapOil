@@ -83,24 +83,31 @@ async function loadDataEx() {
             });
         });
 
-        // === РЕЗЕРВУАРЫ ===
-        const reservoirsToUse = result.reservoirs.length > 0 ? result.reservoirs : result.last_reservoirs;
+// === РЕЗЕРВУАРЫ ===
+const reservoirsToUse = result.reservoirs.length > 0 ? result.reservoirs : result.last_reservoirs;
 
-        reservoirsToUse.forEach(row => {
-            table.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
-                const startCell = tr.querySelector("[id^='start-']");
-                const endCell = tr.querySelector("[id^='end-']");
+reservoirsToUse.forEach(row => {
+    table.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+        const startCell = tr.querySelector("[id^='start-']");
+        const endCell = tr.querySelector("[id^='end-']");
+        const minusCell = tr.querySelector("[id^='minus-']");
+        const plusCell = tr.querySelector("[id^='plus-']");
 
-                if (result.reservoirs.length > 0) {
-                    // Если есть данные на выбранную дату — используем как есть
-                    if (startCell) startCell.textContent = row.start_volume ?? "";
-                    if (endCell) endCell.textContent = row.end_volume ?? "";
-                } else {
-                    // Если данных нет — только start = end из последней записи
-                    if (startCell) startCell.textContent = row.end_volume ?? "";
-                }
-            });
-        });
+        if (result.reservoirs.length > 0) {
+            // Если есть данные на выбранную дату — используем как есть
+            if (startCell) startCell.textContent = row.start_volume ?? "";
+            if (endCell) endCell.textContent = row.end_volume ?? "";
+            if (minusCell) minusCell.textContent = row.minus_volume ?? "";
+            if (plusCell) plusCell.textContent = row.plus_volume ?? "";
+        } else {
+            // Если данных нет — только start = end из последней записи
+            if (startCell) startCell.textContent = row.end_volume ?? "";
+            if (minusCell) minusCell.textContent = "";
+            if (plusCell) plusCell.textContent = "";
+        }
+    });
+});
+
 
     } catch (error) {
         alert("Ошибка при загрузке данных: " + error);
@@ -162,8 +169,8 @@ async function loadDataEx() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -261,8 +268,8 @@ async function loadDataEx() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -311,8 +318,8 @@ async function loadDataEx() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -460,8 +467,8 @@ async function loadDataEx() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>
@@ -509,8 +516,8 @@ async function loadDataEx() {
             <td></td>
             <td><span id="start-volume"></span></td>
             <td><span id="end-volume"></span></td>
-            <td></td>
-            <td></td>
+            <td><span id="minus-volume"></span></td>
+            <td><span id="plus-volume"></span></td>
             <td></td>
             <td></td>
             <td></td>

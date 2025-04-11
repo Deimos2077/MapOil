@@ -65,14 +65,24 @@ if (!empty($data["reservoirs"])) {
     $deleteStmt->close();
 
     // Подготовленный SQL-запрос для вставки
-    $stmt = $conn->prepare("INSERT INTO reservoirvolumes (date, reservoir_id, start_volume, end_volume) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("
+        INSERT INTO reservoirvolumes 
+        (date, reservoir_id, start_volume, end_volume, minus_volume, plus_volume) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
 
     foreach ($data["reservoirs"] as $row) {
-        $stmt->bind_param("siid", 
+        // Устанавливаем значения, если они есть, иначе по умолчанию 0
+        $minus_volume = isset($row["minus_volume"]) ? $row["minus_volume"] : 0;
+        $plus_volume = isset($row["plus_volume"]) ? $row["plus_volume"] : 0;
+
+        $stmt->bind_param("siidii", 
             $row["date"], 
             $row["reservoir_id"], 
             $row["start_volume"], 
-            $row["end_volume"]
+            $row["end_volume"],
+            $minus_volume,
+            $plus_volume
         );
 
         $stmt->execute();
