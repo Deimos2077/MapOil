@@ -54,6 +54,8 @@ $charts = getChartsForMonth($current_month);
     <link rel="stylesheet" href="css/modal_set.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 
 
     <style>
@@ -89,6 +91,11 @@ label[for="date-input"] {
     </style>
 </head>
 <body>
+
+<div id="global-preloader" class="preloader-overlay">
+  <div class="loader"></div>
+</div>
+
             <!-- Модальное окно -->
             <div id="settings-modal" class="modal">
                 <div class="modal-content">
@@ -155,10 +162,12 @@ label[for="date-input"] {
             <li><input type="checkbox" id="checkboxFour" value="Moondancer"><label for="checkboxFour">Moondancer</label></li>
             <li><input type="checkbox" id="checkboxFive" value="Surprise"><label for="checkboxFive">Surprise</label></li> -->
             
+
 <div id="filter-container">
-    <label for="month-input">Месяц:</label>
-    <input type="month" id="month-input" class="form-control mb-3">
+  <label for="month-input">Месяц:</label>
+  <input type="text" id="month-input" placeholder="Выберите месяц" class="form-control">
 </div>
+
 
 
         </ul>     
@@ -308,6 +317,29 @@ label[for="date-input"] {
             }
         });
     </script>
+
+    <script>
+flatpickr("#month-input", {
+    locale: "ru",
+    allowInput: true, 
+    clickOpens: true, 
+    wrap: false,      
+    plugins: [
+        new monthSelectPlugin({
+            shorthand: false,
+            dateFormat: "Y-m", 
+            altFormat: "F Y",
+            theme: "light"
+        })
+    ]
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="js/legend.js"></script>

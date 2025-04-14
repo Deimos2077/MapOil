@@ -1643,9 +1643,12 @@ async function initializeFlowMap() {
 
     const [year, month] = monthInput.value.split('-');
 
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB(year, month);
-    const pipelines = await fetchPipelinesFromDB();
+    const [points, oilTransferData, reservoirs] = await Promise.all([
+        fetchPointsFromDB(),
+        fetchOilTransferFromDB(year, month),
+        fetchReservoirVolumesFromDB(year, month)
+    ]);
+    
 
     console.log("🛠 Пример oilTransferData[0]:", oilTransferData[0]);
     console.log("🛠 Пример pipelines[0]:", pipelines[0]);
@@ -2269,3 +2272,36 @@ function closeModal() {
     modal.style.display = 'none';
     blur.classList.remove('active');
 }
+
+
+function showPreloader() {
+    document.getElementById("global-preloader").style.display = "flex";
+}
+
+function hidePreloader() {
+    document.getElementById("global-preloader").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#month-input", {
+      locale: "ru",
+      dateFormat: "Y-m",
+      defaultDate: new Date(),
+      allowInput: true,
+      clickOpens: true,
+      plugins: [
+        new monthSelectPlugin({
+          shorthand: false,
+          dateFormat: "Y-m",   // значение в input
+          altFormat: "F Y",    // отображение для пользователя
+          theme: "light"
+        })
+      ]
+    });
+  
+    // На всякий случай вручную открытие
+    document.getElementById("month-input").addEventListener("click", function () {
+      this._flatpickr.open();
+    });
+  });
+  

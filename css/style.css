@@ -703,3 +703,51 @@ h4 {
 .menu-href {
     font-size: 18px;
 }
+
+
+
+.preloader-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.85);
+  display: none;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  border: 10px solid #eee;
+  border-top: 10px solid #007bff;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}
+
+#month-input {
+  width: 200px;
+  padding: 10px 14px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff url('https://cdn-icons-png.flaticon.com/512/747/747310.png') no-repeat right 10px center;
+  background-size: 18px;
+  transition: box-shadow 0.3s ease;
+}
+#month-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.5);
+  outline: none;
+}
+
+#month-input {
+  cursor: pointer; /* курсор "рука", как у кнопки */
+}

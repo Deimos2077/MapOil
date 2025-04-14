@@ -23,76 +23,81 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-
 async function updateMapData(year, month) {
-    console.log(`📊 Загружаем данные за ${year}-${month}`);
+    showPreloader(); // ⏳ Включаем прелоадер
 
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB(year, month);
-    const reservoirs = await fetchReservoirVolumesFromDB(year, month);
+    try {
+        console.log(`📊 Загружаем данные за ${year}-${month}`);
 
-    clearAllDataLayers();
+        // ⬇ Загружаем параллельно
+        const [points, oilTransferData, reservoirs] = await Promise.all([
+            fetchPointsFromDB(),
+            fetchOilTransferFromDB(year, month),
+            fetchReservoirVolumesFromDB(year, month)
+        ]);
 
-    const zoomThreshold = 6;
-    const currentZoom = map.getZoom();
+        clearAllDataLayers();
 
-    const checkboxOne = document.getElementById('checkboxOne');
-    const checkboxTwo = document.getElementById('checkboxTwo');
- 
-    if (oilTransferData.length === 0 && reservoirs.length === 0) {
-        console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
-        dataLoaded = false;
+        const zoomThreshold = 6;
+        const currentZoom = map.getZoom();
 
+        const checkboxOne = document.getElementById('checkboxOne');
+        const checkboxTwo = document.getElementById('checkboxTwo');
+
+        // ⛔ Нет данных
+        if (oilTransferData.length === 0 && reservoirs.length === 0) {
+            console.warn("⚠ Нет данных за выбранный месяц. Карта очищена.");
+            dataLoaded = false;
+
+            const msg = document.getElementById('no-data-message');
+            if (msg) msg.style.display = 'block';
+
+            return;
+        }
+
+        // ✅ Скрыть сообщение об отсутствии данных
         const msg = document.getElementById('no-data-message');
-        if (msg) msg.style.display = 'block';
+        if (msg) msg.style.display = 'none';
 
-        return;
-    }
+        // 🧠 Кэшируем
+        window.cachedPoints = points;
+        window.cachedOilTransferData = oilTransferData;
+        window.cachedReservoirs = reservoirs;
 
-    const msg = document.getElementById('no-data-message');
-    if (msg) msg.style.display = 'none';
+        // 🧭 Линии всегда отрисовываются
+        await main(points, oilTransferData);
 
-    window.cachedPoints = points;
-    window.cachedOilTransferData = oilTransferData;
-    window.cachedReservoirs = reservoirs;
-
-
-    await main(points, oilTransferData);
-
-    // ✅ Нефть — отрисовываем только при нужном зуме и включённом чекбоксе
-    if (checkboxOne?.checked && oilTransferData.length > 0) {
-        if (currentZoom >= zoomThreshold) {
-            addMinimalistFlow(points, oilTransferData);
-            await displayKenkiyakOilTotal(year, month, points);
-        } else {
-            console.log("🛢️ Нефть не отрисована — зум ниже порога");
+        // 🛢️ Отрисовка нефти
+        if (checkboxOne?.checked && oilTransferData.length > 0) {
+            if (currentZoom >= zoomThreshold) {
+                addMinimalistFlow(points, oilTransferData);
+                await displayKenkiyakOilTotal(year, month, points);
+            } else {
+                console.log("🛢️ Нефть не отрисована — зум ниже порога");
+            }
         }
-    }
 
-    // ✅ Резервуары — отрисовываем только при нужном зуме и включённом чекбоксе
-    if (checkboxTwo?.checked && reservoirs.length > 0) {
-        if (currentZoom >= zoomThreshold) {
-            addReservoirs(reservoirs);
+        // 🛢️ Отрисовка резервуаров
+        if (checkboxTwo?.checked && reservoirs.length > 0) {
+            if (currentZoom >= zoomThreshold) {
+                addReservoirs(reservoirs);
+            } else {
+                console.log("🛢️ Резервуары не отрисованы — зум ниже порога");
+                clearReservoirLayers(); // очищаем
+            }
         } else {
-            console.log("🛢️ Резервуары не отрисованы — зум ниже порога");
+            clearReservoirLayers(); // отключено или нет данных
         }
-    }
 
-    dataLoaded = true;
-    console.log("✅ Карта обновлена");
-
-    // ✅ Резервуары — отрисовываем только при нужном зуме и включённом чекбоксе
-    if (checkboxTwo?.checked && reservoirs.length > 0) {
-        if (currentZoom >= zoomThreshold) {
-            addReservoirs(reservoirs);
-        } else {
-            console.log("🛢️ Резервуары не отрисованы — зум ниже порога");
-            clearReservoirLayers(); // ⬅ очищаем, если зум ниже
-        }
-    } else {
-        clearReservoirLayers(); // ⬅ очищаем, если чекбокс выключен или нет данных
+        dataLoaded = true;
+        console.log("✅ Карта обновлена");
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении карты:", error);
+    } finally {
+        setTimeout(hidePreloader, 300); // ⌛ Плавное скрытие
     }
 }
+
 
 
 
