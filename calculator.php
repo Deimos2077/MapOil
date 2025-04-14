@@ -263,11 +263,12 @@ if (result.reservoirs && result.reservoirs.length > 0) {
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3" onchange="loadData();loadDataEx();">
     <button class="btn btn-primary mb-4" onclick="exportToExcel()" >Экспортировать excel</button>
+<?php if ($_SESSION['role_id'] == '1' || $_SESSION['role_id'] == '2'): ?>
     <table class="table table-bordered">
         <thead>
             <tr class="table-primary">
                 <th>Сдача нефти</th>
-                <th>Нехватка нефти</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -276,6 +277,8 @@ if (result.reservoirs && result.reservoirs.length > 0) {
             <td><input type="number" id="oil-loss" class="form-control"></td>
         </tr>
         </tbody>
+    </table>
+<?php endif; ?>
     <h3 class="mb-4" style="display:block">Остатки</h3>
     <table class="table table-bordered" data-type="reservoirs">
         <thead>
