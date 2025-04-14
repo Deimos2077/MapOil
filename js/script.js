@@ -1288,35 +1288,23 @@ async function displayIntermediateOilTotals(oilTransferData, points) {
 
 
 
-
 function addMinimalistFlow(points, oilTransferData) {
     const zoom = map.getZoom();
     const zoomThreshold = 6;
-
-    if (zoom < zoomThreshold) {
-        console.log("⛔ Зум ниже порога — addMinimalistFlow() не будет выполнять отрисовку");
-        return;
-    }
+    if (zoom < zoomThreshold) return;
 
     kenkiyakLabelLayer.clearLayers();
     if (!flowLayerVisible) return;
-
-    const kenkiyakMarkers = minimalistFlowLayerGroup.getLayers().filter(layer =>
-        layer.options && layer.options._isKenkiyak
-    );
 
     minimalistFlowLayerGroup.clearLayers();
 
     const pointUsageCounter = {};
     const allowedPointIds = [1, 3, 6, 9, 10, 11, 12];
 
-    // ✅ Уникальные записи для визуализации
     const filteredMap = new Map();
     oilTransferData.forEach(record => {
-        if (!record.from_amount || record.from_amount === 0) return;
-
         const key = `${record.from_point}_${record.to_point}`;
-        if (!filteredMap.has(key) || filteredMap.get(key).from_amount < record.from_amount) {
+        if (!filteredMap.has(key) || filteredMap.get(key).to_amount < record.to_amount) {
             filteredMap.set(key, record);
         }
     });
@@ -1326,11 +1314,13 @@ function addMinimalistFlow(points, oilTransferData) {
     filteredData.forEach(record => {
         const isSpecialSource = (record.from_point === 12 || record.from_point === 11);
         const pointId = isSpecialSource ? record.from_point : record.to_point;
-
         if (!allowedPointIds.includes(pointId)) return;
 
         const point = points.find(p => p.id === pointId);
         if (!point || !point.coords) return;
+
+        const amount = isSpecialSource ? record.from_amount : record.to_amount;
+        if (!amount || amount === 0) return;
 
         if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
         const usageIndex = pointUsageCounter[pointId]++;
@@ -1338,23 +1328,24 @@ function addMinimalistFlow(points, oilTransferData) {
         const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
         if (!rawLabelPosition) return;
 
-        let dx = rawLabelPosition[0] - point.coords[0];
-        let dy = rawLabelPosition[1] - point.coords[1];
+        const dx = rawLabelPosition[0] - point.coords[0];
+        const dy = rawLabelPosition[1] - point.coords[1];
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return;
-        dx /= length;
-        dy /= length;
 
+        const unitX = dx / length;
+        const unitY = dy / length;
         const baseOffset = 1.5;
+
         const labelPosition = [
-            point.coords[0] + dx * baseOffset,
-            point.coords[1] + dy * baseOffset
+            point.coords[0] + unitX * baseOffset,
+            point.coords[1] + unitY * baseOffset
         ];
 
         const marker = L.marker(labelPosition, {
             icon: L.divIcon({
                 className: 'flow-label',
-                html: `<div>${record.from_amount.toLocaleString()} т</div>`,
+                html: `<div>${amount.toLocaleString()} т</div>`,
                 iconSize: null,
                 iconAnchor: [10, 10],
             })
@@ -1368,7 +1359,7 @@ function addMinimalistFlow(points, oilTransferData) {
         });
 
         marker.options._originalPoint = point.coords;
-        marker.options._direction = [dx, dy];
+        marker.options._direction = [unitX, unitY];
         marker.options._baseOffset = baseOffset;
         marker.options._polyline = polyline;
 
@@ -1376,7 +1367,7 @@ function addMinimalistFlow(points, oilTransferData) {
         marker.addTo(minimalistFlowLayerGroup);
     });
 
-    // ===== Промежуточные суммы =====
+    // 🔁 Промежуточные суммы
     const routes = {
         9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23], // Новороссийск
         10: [5, 7, 19, 24, 8, 16, 20, 23, 10],    // Усть-Луга
@@ -1394,7 +1385,7 @@ function addMinimalistFlow(points, oilTransferData) {
         for (let i = 1; i < route.length - 1; i++) {
             const pointId = route[i];
             if (!volumesByPoint[pointId]) volumesByPoint[pointId] = 0;
-            volumesByPoint[pointId] += record.from_amount;
+            volumesByPoint[pointId] += record.to_amount || 0;
         }
     });
 
@@ -1409,17 +1400,18 @@ function addMinimalistFlow(points, oilTransferData) {
         const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
         if (!rawLabelPosition) return;
 
-        let dx = rawLabelPosition[0] - point.coords[0];
-        let dy = rawLabelPosition[1] - point.coords[1];
+        const dx = rawLabelPosition[0] - point.coords[0];
+        const dy = rawLabelPosition[1] - point.coords[1];
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return;
-        dx /= length;
-        dy /= length;
 
+        const unitX = dx / length;
+        const unitY = dy / length;
         const baseOffset = 1.2;
+
         const labelPosition = [
-            point.coords[0] + dx * baseOffset,
-            point.coords[1] + dy * baseOffset
+            point.coords[0] + unitX * baseOffset,
+            point.coords[1] + unitY * baseOffset
         ];
 
         const polyline = L.polyline([point.coords, labelPosition], {
@@ -1439,7 +1431,7 @@ function addMinimalistFlow(points, oilTransferData) {
         });
 
         marker.options._originalPoint = point.coords;
-        marker.options._direction = [dx, dy];
+        marker.options._direction = [unitX, unitY];
         marker.options._baseOffset = baseOffset;
         marker.options._polyline = polyline;
 
@@ -1447,10 +1439,9 @@ function addMinimalistFlow(points, oilTransferData) {
         marker.addTo(minimalistFlowLayerGroup);
     });
 
-    kenkiyakMarkers.forEach(marker => marker.addTo(minimalistFlowLayerGroup));
-
     map.addLayer(minimalistFlowLayerGroup);
 }
+
 
 
 
@@ -1652,9 +1643,12 @@ async function initializeFlowMap() {
 
     const [year, month] = monthInput.value.split('-');
 
-    const points = await fetchPointsFromDB();
-    const oilTransferData = await fetchOilTransferFromDB(year, month);
-    const pipelines = await fetchPipelinesFromDB();
+    const [points, oilTransferData, reservoirs] = await Promise.all([
+        fetchPointsFromDB(),
+        fetchOilTransferFromDB(year, month),
+        fetchReservoirVolumesFromDB(year, month)
+    ]);
+    
 
     console.log("🛠 Пример oilTransferData[0]:", oilTransferData[0]);
     console.log("🛠 Пример pipelines[0]:", pipelines[0]);
@@ -2278,3 +2272,36 @@ function closeModal() {
     modal.style.display = 'none';
     blur.classList.remove('active');
 }
+
+
+function showPreloader() {
+    document.getElementById("global-preloader").style.display = "flex";
+}
+
+function hidePreloader() {
+    document.getElementById("global-preloader").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#month-input", {
+      locale: "ru",
+      dateFormat: "Y-m",
+      defaultDate: new Date(),
+      allowInput: true,
+      clickOpens: true,
+      plugins: [
+        new monthSelectPlugin({
+          shorthand: false,
+          dateFormat: "Y-m",   // значение в input
+          altFormat: "F Y",    // отображение для пользователя
+          theme: "light"
+        })
+      ]
+    });
+  
+    // На всякий случай вручную открытие
+    document.getElementById("month-input").addEventListener("click", function () {
+      this._flatpickr.open();
+    });
+  });
+  
