@@ -452,9 +452,10 @@ function calculateFrom(startId = null) {
     document.getElementById("end-volume2").value = end_volume2;
     document.getElementById("end-volumeShmanova").value = end_volumeShmanova;
 
-
+    let oilplane= parseFloat(document.getElementById("oilplane").value) || psp45end+zhanazhol+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6
     let oil = parseFloat(document.getElementById("oil").value) || 0;
-    let oil_loss = psp45end+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-oil;
+    let oil_loss = psp45end+zhanazhol+psp45end2+psp45end3+psp45end4+psp45end5+psp45end6-oil;
+    document.getElementById("oilplane").value = oilplane;
     document.getElementById("oil-loss").value = oil_loss;
     // let kenkiyak4P = parseFloat(document.getElementById("loss-kenkiyak4P").value) || calculateLoss(kenkiyakPP, kumkol4);
     // let kenkiyak4 = kumkol4 + kenkiyak4P;

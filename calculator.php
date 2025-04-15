@@ -47,6 +47,16 @@ async function saveData() {
         return;
     }
 
+    // Получаем значения для sumoil
+    const oilplane = parseInt(document.getElementById("oilplane").value || 0);
+    const oil = parseInt(document.getElementById("oil").value || 0);
+
+    const sumoil = [{
+        date,
+        oilplane,
+        oil
+    }];
+
     let oiltransfers = [];
     let reservoirs = [];
 
@@ -88,50 +98,56 @@ async function saveData() {
     });
 
     reservoirTables.forEach(table => {
-    table.querySelectorAll("tbody tr").forEach(row => {
-        const reservoirId = row.getAttribute("reservoir_id");
-        if (!reservoirId) {
-            console.warn("Пропущена строка, отсутствует reservoir_id:", row);
-            return;
-        }
+        table.querySelectorAll("tbody tr").forEach(row => {
+            const reservoirId = row.getAttribute("reservoir_id");
+            if (!reservoirId) {
+                console.warn("Пропущена строка, отсутствует reservoir_id:", row);
+                return;
+            }
 
-        reservoirs.push({
-            date,
-            reservoir_id: parseInt(reservoirId),
-            start_volume: parseInt(row.querySelector("[id^='start-']")?.value || "0"),
-            end_volume: parseInt(row.querySelector("[id^='end-']")?.value || "0"),
-            minus_volume: parseInt(row.querySelector("[id^='minus-']")?.value || "0"),
-            plus_volume: parseInt(row.querySelector("[id^='plus-']")?.value || "0")
+            reservoirs.push({
+                date,
+                reservoir_id: parseInt(reservoirId),
+                start_volume: parseInt(row.querySelector("[id^='start-']")?.value || "0"),
+                end_volume: parseInt(row.querySelector("[id^='end-']")?.value || "0"),
+                minus_volume: parseInt(row.querySelector("[id^='minus-']")?.value || "0"),
+                plus_volume: parseInt(row.querySelector("[id^='plus-']")?.value || "0")
+            });
         });
     });
-});
-
 
     console.log("Отправляемые oiltransfers:", oiltransfers);
     console.log("Отправляемые reservoirs:", reservoirs);
+    console.log("Отправляемые данные для sumoil:", sumoil);
 
-    const data = { oiltransfers, reservoirs };
+    const data = {
+        oiltransfers,
+        reservoirs,
+        sumoil
+    };
 
-    const response = await fetch('save_data.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-});
+    try {
+        const response = await fetch('save_data.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
 
-const text = await response.text();
-console.log("Ответ сервера:", text);
+        const text = await response.text();
+        console.log("Ответ сервера:", text);
 
-try {
-    const result = JSON.parse(text);
-    if (result.success) {
-        alert("Данные успешно сохранены!");
-    } else {
-        alert("Ошибка: " + result.message);
+        const result = JSON.parse(text);
+        if (result.success) {
+            alert("Данные успешно сохранены!");
+        } else {
+            alert("Ошибка: " + result.message);
+        }
+    } catch (error) {
+        alert("Ошибка при отправке данных: " + error);
     }
-} catch (error) {
-    alert("Ошибка обработки JSON: " + error);
 }
-}
+
+
 
 // загрузка данных
 
@@ -155,12 +171,12 @@ async function loadData() {
 
         console.log("Загруженные данные:", result);
 
-        // Заполняем данные для трубопроводов, исключая строки внутри #myTable
+        // Заполняем данные для трубопроводов
         result.oiltransfers.forEach(row => {
             let allRows = document.querySelectorAll(`tr[data-pipeline-id="${row.pipeline_id}"]`);
 
             allRows.forEach(tr => {
-                // Проверяем, не находится ли tr внутри таблицы с id="myTable"
+                // Проверяем, не находится ли tr внутри #myTable
                 if (!tr.closest("#myTable")) {
                     const volume = tr.querySelector("[id^='volume-']");
                     const loss = tr.querySelector("[id^='loss-']");
@@ -173,24 +189,24 @@ async function loadData() {
             });
         });
 
-// Заполнение резервуаров — если есть записи на выбранную дату
-if (result.reservoirs && result.reservoirs.length > 0) {
-    result.reservoirs.forEach(row => {
-        document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
-            if (!tr.closest("#myTable")) {
-                const start = tr.querySelector("[id^='start-']");
-                const end = tr.querySelector("[id^='end-']");
-                const minus = tr.querySelector("[id^='minus-']");
-                const plus = tr.querySelector("[id^='plus-']");
+        // Заполнение резервуаров — если есть записи на выбранную дату
+        if (result.reservoirs && result.reservoirs.length > 0) {
+            result.reservoirs.forEach(row => {
+                document.querySelectorAll(`tr[reservoir_id="${row.reservoir_id}"]`).forEach(tr => {
+                    if (!tr.closest("#myTable")) {
+                        const start = tr.querySelector("[id^='start-']");
+                        const end = tr.querySelector("[id^='end-']");
+                        const minus = tr.querySelector("[id^='minus-']");
+                        const plus = tr.querySelector("[id^='plus-']");
 
-                if (start) start.value = row.start_volume ?? "";
-                if (end) end.value = row.end_volume ?? "";
-                if (minus) minus.value = row.minus_volume ?? "";
-                if (plus) plus.value = row.plus_volume ?? "";
-            }
-        });
-    });
-}
+                        if (start) start.value = row.start_volume ?? "";
+                        if (end) end.value = row.end_volume ?? "";
+                        if (minus) minus.value = row.minus_volume ?? "";
+                        if (plus) plus.value = row.plus_volume ?? "";
+                    }
+                });
+            });
+        }
 
         // Если на выбранную дату нет резервуаров, берём последнюю запись и подставляем end_volume → start_volume
         else if (result.last_reservoirs && result.last_reservoirs.length > 0) {
@@ -204,10 +220,20 @@ if (result.reservoirs && result.reservoirs.length > 0) {
             });
         }
 
+        // Заполнение данных для sumoil
+        if (result.sumoil) {
+            const oilplaneInput = document.getElementById("oilplane");
+            const oilInput = document.getElementById("oil");
+
+            if (oilplaneInput) oilplaneInput.value = result.sumoil.oilplane ?? "";
+            if (oilInput) oilInput.value = result.sumoil.oil ?? "";
+        }
+
     } catch (error) {
         alert("Ошибка при загрузке данных: " + error);
     }
 }
+
 
 </script>
 </head>
@@ -263,11 +289,23 @@ if (result.reservoirs && result.reservoirs.length > 0) {
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3" onchange="loadData();loadDataEx();">
     <button class="btn btn-primary mb-4" onclick="exportToExcel()" >Экспортировать excel</button>
-<?php if ($_SESSION['role_id'] == '1' || $_SESSION['role_id'] == '2'): ?>
-    <table class="table table-bordered">
+    <table class="table table-bordered col-1" data-type="oilplane">
         <thead>
             <tr class="table-primary">
-                <th>Сдача нефти</th>
+                <th>План здачи нефти</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><input type="number" id="oilplane" class="form-control"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="table table-bordered" data-type="oilfact">
+        <thead>
+            <tr class="table-primary">
+                <th>Факт здачи нефти</th>
                 <th></th>
             </tr>
         </thead>
@@ -278,7 +316,6 @@ if (result.reservoirs && result.reservoirs.length > 0) {
         </tr>
         </tbody>
     </table>
-<?php endif; ?>
     <h3 class="mb-4" style="display:block">Остатки</h3>
     <table class="table table-bordered" data-type="reservoirs">
         <thead>
@@ -292,7 +329,7 @@ if (result.reservoirs && result.reservoirs.length > 0) {
         </thead>
         <tbody>
         <tr reservoir_id="1">
-            <td>ПСП45 АО "КАЗТРАНСОЙЛ"</td>
+            <td>ПСП45 (АО "КАЗТРАНСОЙЛ")</td>
             <td><input type="number" id="start-volumePsp" class="form-control"></td>
             <td><input type="number" id="end-volumePsp" class="form-control"></td>
             <td><input type="number" id="minus-volumePsp" class="form-control"></td>
@@ -306,7 +343,7 @@ if (result.reservoirs && result.reservoirs.length > 0) {
             <td><input type="number" id="plus-volume1" class="form-control"></td>
         </tr>
         <tr reservoir_id="3">
-            <td>ГНПС Кумколь АО "КАЗТРАНСОЙЛ"</td>
+            <td>ГНПС Кумколь (АО "КАЗТРАНСОЙЛ")</td>
             <td><input type="number" id="start-volumeKumkol" class="form-control"></td>
             <td><input type="number" id="end-volumeKumkol" class="form-control"></td>
             <td><input type="number" id="minus-volumeKumkol" class="form-control"></td>
@@ -320,7 +357,7 @@ if (result.reservoirs && result.reservoirs.length > 0) {
             <td><input type="number" id="plus-volume2" class="form-control"></td>
         </tr>
         <tr reservoir_id="2">
-            <td>НПС им.Шманова АО "КАЗТРАНСОЙЛ"</td>
+            <td>НПС им.Шманова (АО "КАЗТРАНСОЙЛ")</td>
             <td><input type="number" id="start-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="end-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
@@ -835,9 +872,7 @@ if (result.reservoirs && result.reservoirs.length > 0) {
             </tr>
         </tbody>
     </table>
-    <?php if ($_SESSION['role_id'] == '1' || $_SESSION['role_id'] == '2'): ?>
     <button class="btn btn-success" onclick="saveData(1)">Сохранить</button>
-    <?php endif; ?>
     <table id="myTable" style="display:none" >
     <tr>
         <td colspan="23" style="font-weight: bold; text-align: center;">Расчет потерь при транспортировке нефти</td>

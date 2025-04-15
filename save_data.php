@@ -16,26 +16,26 @@ if ($conn->connect_error) {
 
 // Получаем JSON
 $data = json_decode(file_get_contents("php://input"), true);
-if (!$data || !isset($data["oiltransfers"]) || !isset($data["reservoirs"])) {
+if (!$data || !isset($data["oiltransfers"]) || !isset($data["reservoirs"]) || !isset($data["sumoil"])) {
     die(json_encode(["success" => false, "message" => "Некорректные данные"]));
 }
 
-// Если есть данные по трубопроводам
+// ====== Сохранение трубопроводов ======
 if (!empty($data["oiltransfers"])) {
     $date = $data["oiltransfers"][0]["date"];
 
-    // Удаляем старые записи по этой дате
+    // Удаляем старые записи
     $deleteStmt = $conn->prepare("DELETE FROM oiltransfer WHERE date = ?");
     $deleteStmt->bind_param("s", $date);
     $deleteStmt->execute();
     $deleteStmt->close();
 
-    // Подготовленный SQL-запрос для вставки
-    $stmt = $conn->prepare("INSERT INTO oiltransfer (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO oiltransfer 
+        (date, pipeline_id, piplines_system_id, from_point_id, to_point_id, from_amount, losses, to_amount, loss_coefficient) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     foreach ($data["oiltransfers"] as $row) {
         $loss_coefficient = floatval($row["loss_coefficient"]);
-        
         $stmt->bind_param("siiiidddd", 
             $row["date"], 
             $row["pipeline_id"], 
@@ -47,32 +47,26 @@ if (!empty($data["oiltransfers"])) {
             $row["to_amount"], 
             $loss_coefficient
         );
-        
         $stmt->execute();
     }
 
     $stmt->close();
 }
 
-// Если есть данные по резервуарам
+// ====== Сохранение резервуаров ======
 if (!empty($data["reservoirs"])) {
     $date = $data["reservoirs"][0]["date"];
 
-    // Удаляем старые записи по этой дате
     $deleteStmt = $conn->prepare("DELETE FROM reservoirvolumes WHERE date = ?");
     $deleteStmt->bind_param("s", $date);
     $deleteStmt->execute();
     $deleteStmt->close();
 
-    // Подготовленный SQL-запрос для вставки
-    $stmt = $conn->prepare("
-        INSERT INTO reservoirvolumes 
+    $stmt = $conn->prepare("INSERT INTO reservoirvolumes 
         (date, reservoir_id, start_volume, end_volume, minus_volume, plus_volume) 
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
+        VALUES (?, ?, ?, ?, ?, ?)");
 
     foreach ($data["reservoirs"] as $row) {
-        // Устанавливаем значения, если они есть, иначе по умолчанию 0
         $minus_volume = isset($row["minus_volume"]) ? $row["minus_volume"] : 0;
         $plus_volume = isset($row["plus_volume"]) ? $row["plus_volume"] : 0;
 
@@ -89,6 +83,36 @@ if (!empty($data["reservoirs"])) {
     }
 
     $stmt->close();
+}
+
+// ====== Сохранение данных sumoil ======
+if (!empty($data["sumoil"])) {
+    $row = $data["sumoil"][0];  // Один объект
+    $date = $row["date"];
+    $oilplane = intval($row["oilplane"]);
+    $oil = intval($row["oil"]);
+
+    // Проверка: есть ли уже запись на эту дату
+    $check = $conn->prepare("SELECT id FROM sumoil WHERE date = ?");
+    $check->bind_param("s", $date);
+    $check->execute();
+    $check->store_result();
+
+    if ($check->num_rows > 0) {
+        // Обновляем
+        $update = $conn->prepare("UPDATE sumoil SET oilplane = ?, oil = ? WHERE date = ?");
+        $update->bind_param("iis", $oilplane, $oil, $date);
+        $update->execute();
+        $update->close();
+    } else {
+        // Вставляем
+        $insert = $conn->prepare("INSERT INTO sumoil (date, oilplane, oil) VALUES (?, ?, ?)");
+        $insert->bind_param("sii", $date, $oilplane, $oil);
+        $insert->execute();
+        $insert->close();
+    }
+
+    $check->close();
 }
 
 // Закрываем соединение
