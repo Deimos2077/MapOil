@@ -363,13 +363,13 @@ async function loadData() {
             <td><input type="number" id="minus-volumeShmanova" class="form-control"></td>
             <td><input type="number" id="plus-volumeShmanova" class="form-control"></td>
         </tr>
-        <!-- <tr reservoir_id="4">
+        <tr reservoir_id="4">
             <td>ПСП Самара</td>
             <td><input type="number" id="start-volume" class="form-control"></td>
             <td><input type="number" id="end-volume" class="form-control"></td>
             <td><input type="number" id="minus-volume" class="form-control"></td>
             <td><input type="number" id="plus-volume" class="form-control"></td>
-        </tr> -->
+        </tr>
         </tbody>
     </table>
     <h3 class="mb-4">Внутренний рынок (ПКОП)</h3>
@@ -800,7 +800,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kasimova6P" class="form-control"></td>
                 <td><input type="number" id="volume2-km12356" class="form-control main-input"></td>
             </tr>
-            <tr data-pipeline-id="67" data-from-id="24" data-to-id="8">
+            <!-- <tr data-pipeline-id="67" data-from-id="24" data-to-id="8">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Самара</td>
                 <td><input type="number" id="percent-samaraPP" class="form-control" step="0.0001" value="0.0192"></td>
@@ -861,9 +861,9 @@ async function loadData() {
                 <td><input type="number" id="volume-grushavai" class="form-control"></td>
                 <td><input type="number" id="loss-grushavaiTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-grushavaiTransfer" class="form-control"></td>
-            </tr>
+            </tr> -->
             <tr data-pipeline-id="75" data-from-id="15" data-to-id="9">
-                <td>ПК Шесхарис промплощадка Грушовая (перевалка)</td>
+                <td>1235,3 км граница (РК/РФ)</td>
                 <td>Новороссийск</td>
                 <td><input type="number" id="percent-grushavai999" class="form-control" step="0.0001" value="0.0151"></td>
                 <td><input type="number" id="volume-grushavaiTransfer" class="form-control"></td>
