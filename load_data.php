@@ -54,6 +54,14 @@ if (count($reservoirs) === 0) {
     $stmt->close();
 }
 
+// --- Суммарная нефть ---
+$sumoilQuery = $conn->prepare("SELECT * FROM sumoil WHERE date = ?");
+$sumoilQuery->bind_param("s", $date);
+$sumoilQuery->execute();
+$sumoilResult = $sumoilQuery->get_result();
+$sumoil = $sumoilResult->fetch_assoc(); // одна строка
+$sumoilQuery->close();
+
 $conn->close();
 
 // Ответ
@@ -61,6 +69,7 @@ echo json_encode([
     "success" => true,
     "oiltransfers" => $oiltransfers,
     "reservoirs" => $reservoirs,
-    "last_reservoirs" => $last_reservoirs
+    "last_reservoirs" => $last_reservoirs,
+    "sumoil" => $sumoil
 ]);
 ?>
