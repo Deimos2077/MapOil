@@ -186,7 +186,9 @@ label[for="date-input"] {
                     <li><span class="pipeline" style="background-color: rgb(221, 5, 221);"></span> Нефтепровод АО 'СЗТК' МунайТас'</li>
                     <li><span class="circle" style="background-color: white; border: 2px solid black;"></span> Приемо-сдаточный пункт</li>
                     <li><span class="circle" style="background-color: red; border: 2px solid black;"></span> Приемо-сдаточный пункт с резервуарами для <br>хранения остатков товарной нефти</li><li><span class="cylinder-T" style="background-color: rgb(239, 17, 17)"></span> Резервуар для хранения <br>остатков товарной нефти</li>
-                    <li><span class="cylinder-S" style="background-color: #88d279;"></span> Нефтепровод для хранения <br>остатков технологической нефти</li>
+                    <li><span class="cylinder cylinder-T"><span class="fill"></span></span>Резервуар для хранения <br>остатков товарной нефти</li>
+                    <li><span class="cylinder cylinder-S"><span class="fill"></span></span>Резервуар для хранения <br>остатков технологической нефти</li>
+
                 </ul>
             </div>
         </div>
