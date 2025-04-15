@@ -471,7 +471,7 @@ fetch('database/getData.php?table=Points')
 
 
 
-    
+
 //--------------------------Резервуары----------------------------
 
 // Настройка смещения для каждого резервуара
@@ -511,19 +511,42 @@ function getReservoirSizeByZoom(zoom) {
 }
 
 function createReservoirIcon(fillPercent, type, zoom) {
-    const size = getReservoirSizeByZoom(zoom);
+    const size = getReservoirSizeByZoom(zoom, type); 
+    const borderColor = type === 1 ? "green" : "rgba(192, 38, 38, 0.99)";
+    const borderRadius = type === 1 ? "2px" : "0px";
+
+    const fillColor = "black"; // ✅ всегда чёрный внутри
 
     return L.divIcon({
         html: `
-            <div class="reservoir-container ${type === 1 ? 'technical' : ''}" 
-                 style="width: ${size.width}px; height: ${size.height}px;">
-                <div class="reservoir-fill" style="height: ${fillPercent}%;"></div>
+            <div style="
+                position: relative;
+                width: ${size.width}px;
+                height: ${size.height}px;
+                border: 2px solid ${borderColor};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                background: white;
+                transition: width 0.2s ease, height 0.2s ease;
+                border-radius: ${borderRadius};
+                overflow: hidden;
+            ">
+                <div style="
+                    position: absolute;
+                    width: 100%;
+                    bottom: 0;
+                    height: ${fillPercent}%;
+                    background: ${fillColor};
+                    transition: height 0.3s ease;
+                "></div>
             </div>
         `,
         className: '',
         iconSize: null
     });
 }
+
+
+
 
 
 const reservoirCapacities = {
@@ -570,15 +593,28 @@ function addReservoirs(reservoirs) {
         const layer = reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer;
 
         // Маркеры с учётом зума
-        L.marker(coordStart, {
-            icon: createReservoirIcon(startFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} т`)
-          .addTo(layer);
+        // L.marker(coordStart, {
+        //     icon: createReservoirIcon(startFill, reservoir.type, zoom)
+        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} т`)
+        //   .addTo(layer);
 
-        L.marker(coordEnd, {
-            icon: createReservoirIcon(endFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} т`)
-          .addTo(layer);
+        // L.marker(coordEnd, {
+        //     icon: createReservoirIcon(endFill, reservoir.type, zoom)
+        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} т`)
+        //   .addTo(layer);
+        // Заменяем bindPopup на обработчик клика
+L.marker(coordStart, {
+    icon: createReservoirIcon(startFill, reservoir.type, zoom)
+}).on('click', () => {
+    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+}).addTo(layer);
+
+L.marker(coordEnd, {
+    icon: createReservoirIcon(endFill, reservoir.type, zoom)
+}).on('click', () => {
+    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+}).addTo(layer);
+
 
         // Линии
         const centerOffsetLat = 0.035;  // вверх (регулируется по высоте резервуара)
@@ -631,38 +667,38 @@ function addReservoirs(reservoirs) {
     }    
 }
 
-function createReservoirIcon(fillPercent, type, zoom) {
-    const size = getReservoirSizeByZoom(zoom, type); 
-    const borderColor = type === 1 ? "brown" : "rgba(192, 38, 38, 0.99)";
-    const borderRadius = type === 1 ? "2px" : "0px";
+// function createReservoirIcon(fillPercent, type, zoom) {
+//     const size = getReservoirSizeByZoom(zoom, type); 
+//     const borderColor = type === 1 ? "brown" : "rgba(192, 38, 38, 0.99)";
+//     const borderRadius = type === 1 ? "2px" : "0px";
 
-    return L.divIcon({
-        html: `
-            <div style="
-                position: relative;
-                width: ${size.width}px;
-                height: ${size.height}px;
-                border: 2px solid ${borderColor};
-                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                background: white;
-                transition: width 0.2s ease, height 0.2s ease;
-                border-radius: ${borderRadius};
-                overflow: hidden;
-            ">
-                <div style="
-                    position: absolute;
-                    width: 100%;
-                    bottom: 0;
-                    height: ${fillPercent}%;
-                    background: black;
-                    transition: height 0.3s ease;
-                "></div>
-            </div>
-        `,
-        className: '',
-        iconSize: null
-    });
-}
+//     return L.divIcon({
+//         html: `
+//             <div style="
+//                 position: relative;
+//                 width: ${size.width}px;
+//                 height: ${size.height}px;
+//                 border: 2px solid ${borderColor};
+//                 box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+//                 background: white;
+//                 transition: width 0.2s ease, height 0.2s ease;
+//                 border-radius: ${borderRadius};
+//                 overflow: hidden;
+//             ">
+//                 <div style="
+//                     position: absolute;
+//                     width: 100%;
+//                     bottom: 0;
+//                     height: ${fillPercent}%;
+//                     background: black;
+//                     transition: height 0.3s ease;
+//                 "></div>
+//             </div>
+//         `,
+//         className: '',
+//         iconSize: null
+//     });
+// }
 
 
 function getReservoirSizeByZoom(zoom, type) {
@@ -2196,48 +2232,48 @@ function calculateIntermediateOilVolumes(oilTransferData, pipelines) {
 // });
 
 
-//------------------------Модальное окно--------------------------
-function openModalWithPointData(pointId, pointName, year, month) {
-    const modal = document.getElementById('pointModal');
-    const modalBody = document.getElementById('modalBody');
-    const modalTitle = document.getElementById('modalTitle');
-    const blur = document.getElementById('blur-background');
+// //------------------------Модальное окно--------------------------
+// function openModalWithPointData(pointId, pointName, year, month) {
+//     const modal = document.getElementById('pointModal');
+//     const modalBody = document.getElementById('modalBody');
+//     const modalTitle = document.getElementById('modalTitle');
+//     const blur = document.getElementById('blur-background');
 
-    modal.style.display = 'block';
-    modal.classList.add('show');
-    blur.classList.add('active');
+//     modal.style.display = 'block';
+//     modal.classList.add('show');
+//     blur.classList.add('active');
 
-    modalTitle.textContent = `Данные по точке: ${pointName}`;
-    modalBody.innerHTML = 'Загрузка...';
+//     modalTitle.textContent = `Данные по точке: ${pointName}`;
+//     modalBody.innerHTML = 'Загрузка...';
 
-    const url = `database/getPointDetails.php?point_id=${pointId}&year=${year}&month=${month}`;
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            let html = `<p><strong>Принято:</strong> ${data.accepted} т</p>`;
-            html += `<p><strong>Передано:</strong> ${data.transferred} т</p>`;
-            html += `<p><strong>Куда передано:</strong></p><ul>`;
-            data.toPoints.forEach(p => {
-                html += `<li>${p.name}: ${p.amount} т</li>`;
-            });
-            html += '</ul>';
+//     const url = `database/getPointDetails.php?point_id=${pointId}&year=${year}&month=${month}`;
+//     fetch(url)
+//         .then(res => res.json())
+//         .then(data => {
+//             let html = `<p><strong>Принято:</strong> ${data.accepted} т</p>`;
+//             html += `<p><strong>Передано:</strong> ${data.transferred} т</p>`;
+//             html += `<p><strong>Куда передано:</strong></p><ul>`;
+//             data.toPoints.forEach(p => {
+//                 html += `<li>${p.name}: ${p.amount} т</li>`;
+//             });
+//             html += '</ul>';
 
-            if (data.reservoirs.length > 0) {
-                html += `<p><strong>Резервуары:</strong></p><ul>`;
-                data.reservoirs.forEach(r => {
-                    html += `<li>${r.name}: начало ${r.start_volume} т, конец ${r.end_volume} т</li>`;
-                });
-                html += '</ul>';
-            } else {
-                html += `<p>Нет данных по резервуарам</p>`;
-            }
+//             if (data.reservoirs.length > 0) {
+//                 html += `<p><strong>Резервуары:</strong></p><ul>`;
+//                 data.reservoirs.forEach(r => {
+//                     html += `<li>${r.name}: начало ${r.start_volume} т, конец ${r.end_volume} т</li>`;
+//                 });
+//                 html += '</ul>';
+//             } else {
+//                 html += `<p>Нет данных по резервуарам</p>`;
+//             }
 
-            modalBody.innerHTML = html;
-        })
-        .catch(() => {
-            modalBody.innerHTML = 'Ошибка загрузки данных';
-        });
-}
+//             modalBody.innerHTML = html;
+//         })
+//         .catch(() => {
+//             modalBody.innerHTML = 'Ошибка загрузки данных';
+//         });
+// }
 
 // Закрытие по кнопке ✖
 document.querySelector('.close-btn').addEventListener('click', closeModal);
@@ -2274,6 +2310,9 @@ function closeModal() {
 }
 
 
+
+//------------------------------------------------------------------
+
 function showPreloader() {
     document.getElementById("global-preloader").style.display = "flex";
 }
@@ -2305,3 +2344,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
   
+
+
+
+//----------------------------------------------
+function openModalWithReservoirData(reservoirId, reservoirName) {
+    const modal = document.getElementById('pointModal');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalTitle');
+    const blur = document.getElementById('blur-background');
+
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    blur.classList.add('active');
+
+    modalTitle.textContent = `Информация о резервуаре: ${reservoirName}`;
+    modalBody.innerHTML = 'Загрузка...';
+
+    const [year, month] = document.getElementById('month-input').value.split('-');
+    const url = `database/getReservoirDetails.php?reservoir_id=${reservoirId}&year=${year}&month=${month}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) throw new Error(data.error);
+
+            let html = `<p><strong>Название:</strong> ${data.name}</p>`;
+            html += `<p><strong>Тип:</strong> ${data.type == 1 ? 'Технический' : 'Товарный'}</p>`;
+            html += `<p><strong>Объем на начало месяца:</strong> ${data.start_volume} т</p>`;
+            html += `<p><strong>Объем на конец месяца:</strong> ${data.end_volume} т</p>`;
+
+            modalBody.innerHTML = html;
+        })
+        .catch((err) => {
+            console.error(err);
+            modalBody.innerHTML = 'Ошибка загрузки данных о резервуаре';
+        });
+}
+
