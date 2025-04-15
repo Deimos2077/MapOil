@@ -1270,7 +1270,7 @@ async function displayIntermediateOilTotals(oilTransferData, points) {
         // Новороссийск
         9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23],
         // Усть-Луга
-        10: [5, 7, 19, 24, 8, 16, 20, 23, 10],
+        10: [5, 7, 19, 24, 8],
         // ПКОП
         6: [5, 4, 14, 6],
         // Алашанькоу
@@ -1406,7 +1406,7 @@ function addMinimalistFlow(points, oilTransferData) {
     // 🔁 Промежуточные суммы
     const routes = {
         9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23], // Новороссийск
-        10: [5, 7, 19, 24, 8, 16, 20, 23, 10],    // Усть-Луга
+        10: [5, 7, 19, 24, 8, 16],    // Усть-Луга
         6: [5, 4, 14, 6],                         // ПКОП
         1: [5, 4, 14, 2, 1],                      // Алашанькоу
         3: [5, 4, 14, 2, 3]                       // ПНХЗ
@@ -1421,7 +1421,7 @@ function addMinimalistFlow(points, oilTransferData) {
         for (let i = 1; i < route.length - 1; i++) {
             const pointId = route[i];
             if (!volumesByPoint[pointId]) volumesByPoint[pointId] = 0;
-            volumesByPoint[pointId] += record.to_amount || 0;
+            volumesByPoint[pointId] += record.from_amount || 0;
         }
     });
 
