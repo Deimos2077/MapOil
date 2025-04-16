@@ -389,11 +389,18 @@ fetch('database/getData.php?table=Points')
                 }).addTo(map);
 
 
+                // marker.on('click', () => {
+                //     console.log(`🔍 Клик по точке ${point.name} (ID: ${point.id})`);
+                //     const selectedMonth = document.getElementById('month-input').value;
+                //     const [year, month] = selectedMonth.split('-');
+                //     openModalWithPointData(point.id, point.name, year, month);
+                // });
+                
                 marker.on('click', () => {
-                    console.log(`🔍 Клик по точке ${point.name} (ID: ${point.id})`);
+                    console.log(`📍 Всплывающее окно по точке ${point.name} (ID: ${point.id})`);
                     const selectedMonth = document.getElementById('month-input').value;
                     const [year, month] = selectedMonth.split('-');
-                    openModalWithPointData(point.id, point.name, year, month);
+                    showPointTooltip(point.id, point.name, marker.getLatLng(), year, month); // ✅ Показываем tooltip
                 });
                 
 
@@ -593,27 +600,27 @@ function addReservoirs(reservoirs) {
         const layer = reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer;
 
         // Маркеры с учётом зума
-        // L.marker(coordStart, {
-        //     icon: createReservoirIcon(startFill, reservoir.type, zoom)
-        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} т`)
-        //   .addTo(layer);
+        L.marker(coordStart, {
+            icon: createReservoirIcon(startFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>На начало: ${volumeData.start_volume} т`)
+          .addTo(layer);
 
-        // L.marker(coordEnd, {
-        //     icon: createReservoirIcon(endFill, reservoir.type, zoom)
-        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} т`)
-        //   .addTo(layer);
+        L.marker(coordEnd, {
+            icon: createReservoirIcon(endFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>На конец: ${volumeData.end_volume} т`)
+          .addTo(layer);
         // Заменяем bindPopup на обработчик клика
-L.marker(coordStart, {
-    icon: createReservoirIcon(startFill, reservoir.type, zoom)
-}).on('click', () => {
-    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
-}).addTo(layer);
+// L.marker(coordStart, {
+//     icon: createReservoirIcon(startFill, reservoir.type, zoom)
+// }).on('click', () => {
+//     openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+// }).addTo(layer);
 
-L.marker(coordEnd, {
-    icon: createReservoirIcon(endFill, reservoir.type, zoom)
-}).on('click', () => {
-    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
-}).addTo(layer);
+// L.marker(coordEnd, {
+//     icon: createReservoirIcon(endFill, reservoir.type, zoom)
+// }).on('click', () => {
+//     openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+// }).addTo(layer);
 
 
         // Линии
@@ -775,7 +782,7 @@ function getReservoirSizeByZoom(zoom, type) {
         
                 console.log("✅ Резервуары отображены");
             } else {
-                clearReservoirLayers(); // 💥 вот теперь сработает всегда!
+                clearReservoirLayers(); 
             }
         });
             
@@ -2275,6 +2282,8 @@ function calculateIntermediateOilVolumes(oilTransferData, pipelines) {
 //         });
 // }
 
+
+
 // Закрытие по кнопке ✖
 document.querySelector('.close-btn').addEventListener('click', closeModal);
 
@@ -2382,3 +2391,73 @@ function openModalWithReservoirData(reservoirId, reservoirName) {
         });
 }
 
+window.addEventListener('load', () => {
+    const checkboxOil = document.getElementById('checkboxOne');
+    const checkboxTanks = document.getElementById('checkboxTwo');
+
+    if (checkboxOil) {
+        checkboxOil.checked = true;
+        checkboxOil.dispatchEvent(new Event('change'));
+    }
+
+    if (checkboxTanks) {
+        checkboxTanks.checked = true;
+        checkboxTanks.dispatchEvent(new Event('change'));
+    }
+});
+
+
+
+//-------------mod-point
+function showPointTooltip(pointId, pointName, latlng, year, month) {
+    const url = `database/getPointDetails.php?point_id=${pointId}&year=${year}&month=${month}`;
+
+    // Только эти точки показывают резервуары
+    const pointsWithReservoirs = [12, 7, 4]; // ПСП 45 км, Шманова, Кумколь
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            let tooltipContent = `
+                <div style="font-size: 14px; line-height: 1.4;">
+                    <strong>${pointName}</strong><br>
+                    <strong>Принято:</strong> ${data.accepted || 0} т<br>
+                    <strong>Сдано:</strong> ${data.transferred || 0} т<br>
+            `;
+
+            // Если точка — одна из нужных, выводим резервуары
+            if (pointsWithReservoirs.includes(pointId) && data.reservoirs && data.reservoirs.length > 0) {
+                data.reservoirs.forEach(r => {
+                    tooltipContent += `
+                        <strong>Рез. на начало:</strong> ${r.start_volume || 0} т<br>
+                        <strong>Рез. на конец:</strong> ${r.end_volume || 0} т<br>
+                        <hr style="margin: 4px 0;">
+                    `;
+                });
+            }
+
+            tooltipContent += `</div>`;
+
+            const tooltip = L.popup({
+                closeButton: true,
+                offset: [0, -15],
+                className: 'point-tooltip'
+            })
+            .setLatLng(latlng)
+            .setContent(tooltipContent)
+            .openOn(map);
+        })
+        .catch(error => {
+            console.error('❌ Ошибка при получении данных по точке:', error);
+        });
+}
+
+
+
+
+// Пример при создании маркера точки:
+const marker = L.marker([point.lat, point.lng])
+    .addTo(map)
+    .on('click', () => {
+        showPointTooltip(point.id, point.name, marker.getLatLng(), selectedYear, selectedMonth);
+    });
