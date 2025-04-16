@@ -602,12 +602,12 @@ function addReservoirs(reservoirs) {
         // Маркеры с учётом зума
         L.marker(coordStart, {
             icon: createReservoirIcon(startFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>На начало: ${volumeData.start_volume} т`)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Остатки на начало: ${volumeData.start_volume} т`)
           .addTo(layer);
 
         L.marker(coordEnd, {
             icon: createReservoirIcon(endFill, reservoir.type, zoom)
-        }).bindPopup(`<strong>${reservoir.name}</strong><br>На конец: ${volumeData.end_volume} т`)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>Остатки на конец: ${volumeData.end_volume} т`)
           .addTo(layer);
         // Заменяем bindPopup на обработчик клика
 // L.marker(coordStart, {
@@ -2416,40 +2416,59 @@ function showPointTooltip(pointId, pointName, latlng, year, month) {
     const pointsWithReservoirs = [12, 7, 4]; // ПСП 45 км, Шманова, Кумколь
 
     fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            let tooltipContent = `
-                <div style="font-size: 14px; line-height: 1.4;">
-                    <strong>${pointName}</strong><br>
-                    <strong>Принято:</strong> ${data.accepted || 0} т<br>
-                    <strong>Сдано:</strong> ${data.transferred || 0} т<br>
-            `;
+    .then(res => res.json())
+    .then(data => {
+        let tooltipContent = `
+            <div style="font-size: 14px; line-height: 1.4;">
+                <strong>${pointName}</strong><br>
+        `;
 
-            // Если точка — одна из нужных, выводим резервуары
-            if (pointsWithReservoirs.includes(pointId) && data.reservoirs && data.reservoirs.length > 0) {
+        // Для ПСП 45 (pointId = 12) и Жанажол (pointId = 11) — только сдача и резервуары
+        if ([12, 11].includes(pointId)) {
+            tooltipContent += `<strong>Принято:</strong> ${data.transferred || 0} т<br>`;
+
+            if (data.reservoirs && data.reservoirs.length > 0) {
                 data.reservoirs.forEach(r => {
                     tooltipContent += `
-                        <strong>Рез. на начало:</strong> ${r.start_volume || 0} т<br>
-                        <strong>Рез. на конец:</strong> ${r.end_volume || 0} т<br>
+                        <strong>Остатки на начало:</strong> ${r.start_volume || 0} т<br>
+                        <strong>Остатки на конец:</strong> ${r.end_volume || 0} т<br>
                         <hr style="margin: 4px 0;">
                     `;
                 });
             }
 
-            tooltipContent += `</div>`;
+        } else {
+            // Для всех остальных точек
+            tooltipContent += `
+                <strong>Принято:</strong> ${data.accepted || 0} т<br>
+            `;
 
-            const tooltip = L.popup({
-                closeButton: true,
-                offset: [0, -15],
-                className: 'point-tooltip'
-            })
-            .setLatLng(latlng)
-            .setContent(tooltipContent)
-            .openOn(map);
+            if (pointsWithReservoirs.includes(pointId) && data.reservoirs && data.reservoirs.length > 0) {
+                data.reservoirs.forEach(r => {
+                    tooltipContent += `
+                        <strong>Остатки на начало:</strong> ${r.start_volume || 0} т<br>
+                        <strong>Остатки на конец:</strong> ${r.end_volume || 0} т<br>
+                        <hr style="margin: 4px 0;">
+                    `;
+                });
+            }
+        }
+
+        tooltipContent += `</div>`;
+
+        const tooltip = L.popup({
+            closeButton: true,
+            offset: [0, -15],
+            className: 'point-tooltip'
         })
-        .catch(error => {
-            console.error('❌ Ошибка при получении данных по точке:', error);
-        });
+        .setLatLng(latlng)
+        .setContent(tooltipContent)
+        .openOn(map);
+    })
+    .catch(error => {
+        console.error('❌ Ошибка при получении данных по точке:', error);
+    });
+
 }
 
 
