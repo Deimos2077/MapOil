@@ -593,27 +593,27 @@ function addReservoirs(reservoirs) {
         const layer = reservoir.type === 0 ? pointTanksLayer : technicalTanksLayer;
 
         // Маркеры с учётом зума
-        // L.marker(coordStart, {
-        //     icon: createReservoirIcon(startFill, reservoir.type, zoom)
-        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Начало: ${volumeData.start_volume} / ${maxCapacity} т`)
-        //   .addTo(layer);
+        L.marker(coordStart, {
+            icon: createReservoirIcon(startFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>На начало: ${volumeData.start_volume} т`)
+          .addTo(layer);
 
-        // L.marker(coordEnd, {
-        //     icon: createReservoirIcon(endFill, reservoir.type, zoom)
-        // }).bindPopup(`<strong>${reservoir.name}</strong><br>Конец: ${volumeData.end_volume} / ${maxCapacity} т`)
-        //   .addTo(layer);
+        L.marker(coordEnd, {
+            icon: createReservoirIcon(endFill, reservoir.type, zoom)
+        }).bindPopup(`<strong>${reservoir.name}</strong><br>На конец: ${volumeData.end_volume} т`)
+          .addTo(layer);
         // Заменяем bindPopup на обработчик клика
-L.marker(coordStart, {
-    icon: createReservoirIcon(startFill, reservoir.type, zoom)
-}).on('click', () => {
-    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
-}).addTo(layer);
+// L.marker(coordStart, {
+//     icon: createReservoirIcon(startFill, reservoir.type, zoom)
+// }).on('click', () => {
+//     openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+// }).addTo(layer);
 
-L.marker(coordEnd, {
-    icon: createReservoirIcon(endFill, reservoir.type, zoom)
-}).on('click', () => {
-    openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
-}).addTo(layer);
+// L.marker(coordEnd, {
+//     icon: createReservoirIcon(endFill, reservoir.type, zoom)
+// }).on('click', () => {
+//     openModalWithReservoirData(reservoir.id, reservoir.name, volumeData.start_volume, volumeData.end_volume);
+// }).addTo(layer);
 
 
         // Линии
@@ -775,7 +775,7 @@ function getReservoirSizeByZoom(zoom, type) {
         
                 console.log("✅ Резервуары отображены");
             } else {
-                clearReservoirLayers(); // 💥 вот теперь сработает всегда!
+                clearReservoirLayers(); 
             }
         });
             
@@ -2382,3 +2382,17 @@ function openModalWithReservoirData(reservoirId, reservoirName) {
         });
 }
 
+window.addEventListener('load', () => {
+    const checkboxOil = document.getElementById('checkboxOne');
+    const checkboxTanks = document.getElementById('checkboxTwo');
+
+    if (checkboxOil) {
+        checkboxOil.checked = true;
+        checkboxOil.dispatchEvent(new Event('change'));
+    }
+
+    if (checkboxTanks) {
+        checkboxTanks.checked = true;
+        checkboxTanks.dispatchEvent(new Event('change'));
+    }
+});
