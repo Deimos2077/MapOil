@@ -2430,8 +2430,8 @@ function showPointTooltip(pointId, pointName, latlng, year, month) {
             if (data.reservoirs && data.reservoirs.length > 0) {
                 data.reservoirs.forEach(r => {
                     tooltipContent += `
-                        <strong>Остатки на начало:</strong> ${r.start_volume || 0} т<br>
-                        <strong>Остатки на конец:</strong> ${r.end_volume || 0} т<br>
+                        <strong>Остатки на начало месяца:</strong> ${r.start_volume || 0} т<br>
+                        <strong>Остатки на конец месяца:</strong> ${r.end_volume || 0} т<br>
                         <hr style="margin: 4px 0;">
                     `;
                 });
