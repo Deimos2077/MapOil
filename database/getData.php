@@ -1,33 +1,50 @@
 <?php
 header('Content-Type: application/json');
-include 'db.php';
+require_once 'db.php';
 
-$tableName = $_GET['table'];
+$tableName = $_GET['table'] ?? '';
 $year = isset($_GET['year']) ? (int)$_GET['year'] : null;
 $month = isset($_GET['month']) ? (int)$_GET['month'] : null;
 
-try {
-    if (($tableName === 'oiltransfer' || $tableName === 'reservoirvolumes') && $year && $month) {
-        // Получаем последнюю дату за месяц
-        $stmt = $pdo->prepare("SELECT MAX(date) as max_date FROM $tableName WHERE YEAR(date) = :year AND MONTH(date) = :month");
-        $stmt->execute(['year' => $year, 'month' => $month]);
-        $maxDate = $stmt->fetch(PDO::FETCH_ASSOC)['max_date'];
+// Только допустимые таблицы
+$allowedTables = ['Pipelines', 'Points', 'oiltransfer', 'reservoirvolumes', 'sumoil']; // добавь свои
+if (!in_array($tableName, $allowedTables)) {
+    echo json_encode(['error' => 'Недопустимая таблица']);
+    exit;
+}
 
-        if ($maxDate) {
-            // Получаем записи только за эту дату
-            $stmt = $pdo->prepare("SELECT * FROM $tableName WHERE DATE(date) = :maxDate");
-            $stmt->execute(['maxDate' => $maxDate]);
+try {
+    // Для таблиц с датой — нужна фильтрация
+    if ($year && $month && in_array($tableName, ['oiltransfer', 'reservoirvolumes', 'sumoil'])) {
+        // Найдём последнюю дату за указанный месяц
+        $stmt = $pdo->prepare("
+            SELECT MAX(date) AS latest_date
+            FROM {$tableName}
+            WHERE YEAR(date) = :year AND MONTH(date) = :month
+        ");
+        $stmt->execute(['year' => $year, 'month' => $month]);
+        $latestDate = $stmt->fetchColumn();
+
+        if ($latestDate) {
+            // Возвращаем записи только за эту дату
+            $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE DATE(date) = :date");
+            $stmt->execute(['date' => $latestDate]);
         } else {
             echo json_encode([]); // Нет данных
             exit;
         }
-    } elseif ($year && $month) {
-        // Общий случай: фильтрация по году и месяцу (если не oiltransfer или reservoirvolumes)
-        $stmt = $pdo->prepare("SELECT * FROM $tableName WHERE YEAR(date) = :year AND MONTH(date) = :month");
+    }
+    // Если год и месяц заданы, но таблица без особого режима (например, Points или Pipelines)
+    elseif ($year && $month) {
+        $stmt = $pdo->prepare("
+            SELECT * FROM {$tableName}
+            WHERE YEAR(date) = :year AND MONTH(date) = :month
+        ");
         $stmt->execute(['year' => $year, 'month' => $month]);
-    } else {
-        // Без фильтра — вся таблица
-        $stmt = $pdo->prepare("SELECT * FROM $tableName");
+    }
+    // Если вообще без фильтрации — отдать всё
+    else {
+        $stmt = $pdo->prepare("SELECT * FROM {$tableName}");
         $stmt->execute();
     }
 
@@ -37,4 +54,3 @@ try {
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
-?>

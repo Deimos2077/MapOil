@@ -1412,25 +1412,61 @@ function addMinimalistFlow(points, oilTransferData) {
 
     // 🔁 Промежуточные суммы
     const routes = {
-        9: [5, 7, 19, 24, 8, 18, 17, 21, 22, 23], // Новороссийск
-        10: [5, 7, 19, 24, 8, 16],    // Усть-Луга
+        9: [5, 7, 19, 24, 8], // Новороссийск
+        10: [5, 7, 19, 24, 8],    // Усть-Луга
         6: [5, 4, 14, 6],                         // ПКОП
-        1: [5, 4, 14, 2, 1],                      // Алашанькоу
+        1: [5, 4, 14, 2],                      // Алашанькоу
         3: [5, 4, 14, 2, 3]                       // ПНХЗ
     };
 
     const volumesByPoint = {};
-
-    filteredData.forEach(record => {
-        const route = routes[record.to_point];
-        if (!route || route[0] !== 5) return;
-
-        for (let i = 1; i < route.length - 1; i++) {
-            const pointId = route[i];
-            if (!volumesByPoint[pointId]) volumesByPoint[pointId] = 0;
-            volumesByPoint[pointId] += record.from_amount || 0;
+    const logsByPoint = {};
+    const handledPairs = new Set();
+    
+    Object.entries(routes).forEach(([finalPointId, route]) => {
+        for (let i = 1; i < route.length; i++) {
+            const fromId = route[i - 1];
+            const toId = route[i];
+            const key = `${fromId}_${toId}`;
+    
+            // Не обрабатывать один и тот же участок дважды
+            if (handledPairs.has(key)) continue;
+            handledPairs.add(key);
+    
+            const record = filteredData.find(r => r.from_point === fromId && r.to_point === toId);
+            if (!record) continue;
+    
+            const isFirst = i === 1;
+            const value = isFirst ? record.from_amount : record.to_amount;
+    
+            if (!volumesByPoint[toId]) {
+                volumesByPoint[toId] = 0;
+                logsByPoint[toId] = [];
+            }
+    
+            volumesByPoint[toId] += value || 0;
+    
+            logsByPoint[toId].push({
+                from: record.from_point,
+                to: record.to_point,
+                used: isFirst ? 'from_amount' : 'to_amount',
+                value: value || 0,
+                full: record
+            });
         }
     });
+    
+    
+    
+    // 👇 Логирование
+    Object.entries(logsByPoint).forEach(([pointId, logs]) => {
+        console.log(`📍 Точка ID ${pointId}:`);
+        logs.forEach(log => {
+            console.log(`   ➕ Из ${log.from} → ${log.to} (${log.used}): ${log.value} т`);
+        });
+        console.log(`   🧮 Итого в точке ${pointId}: ${volumesByPoint[pointId]} т`);
+    });
+    
 
     Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
         pointId = parseInt(pointId);
@@ -2425,18 +2461,17 @@ function showPointTooltip(pointId, pointName, latlng, year, month) {
 
         // Для ПСП 45 (pointId = 12) и Жанажол (pointId = 11) — только сдача и резервуары
         if ([12, 11].includes(pointId)) {
-            tooltipContent += `<strong>Принято:</strong> ${data.transferred || 0} т<br>`;
-
+            tooltipContent += `<strong>Сдано за месяц:</strong> ${data.transferred || 0} т<br>`;
+        
             if (data.reservoirs && data.reservoirs.length > 0) {
                 data.reservoirs.forEach(r => {
                     tooltipContent += `
-                        <strong>Остатки на начало месяца:</strong> ${r.start_volume || 0} т<br>
-                        <strong>Остатки на конец месяца:</strong> ${r.end_volume || 0} т<br>
+                        <strong>Остатки на начало:</strong> ${r.start_volume || 0} т<br>
+                        <strong>Остатки на конец:</strong> ${r.end_volume || 0} т<br>
                         <hr style="margin: 4px 0;">
                     `;
                 });
             }
-
         } else {
             // Для всех остальных точек
             tooltipContent += `
