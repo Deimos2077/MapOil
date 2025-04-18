@@ -20,6 +20,39 @@ if ($date) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $sum = $row['total_sum'] ?? 0;
 }
+// По умолчанию нули
+$start_volume_1 = $end_volume_1 = 0;
+$start_volume_2 = $end_volume_2 = 0;
+
+if ($date) {
+    // Резервуар 1
+    $stmt1 = $pdo->prepare("
+        SELECT start_volume, end_volume
+        FROM reservoirvolumes
+        WHERE reservoir_id = 1 AND date = :date
+        LIMIT 1
+    ");
+    $stmt1->execute([':date' => $date]);
+    $res1 = $stmt1->fetch(PDO::FETCH_ASSOC);
+    if ($res1) {
+        $start_volume_1 = $res1['start_volume'];
+        $end_volume_1 = $res1['end_volume'];
+    }
+
+    // Резервуар 2
+    $stmt2 = $pdo->prepare("
+        SELECT start_volume, end_volume
+        FROM reservoirvolumes
+        WHERE reservoir_id = 2 AND date = :date
+        LIMIT 1
+    ");
+    $stmt2->execute([':date' => $date]);
+    $res2 = $stmt2->fetch(PDO::FETCH_ASSOC);
+    if ($res2) {
+        $start_volume_2 = $res2['start_volume'];
+        $end_volume_2 = $res2['end_volume'];
+    }
+}
 ?>
 <html>
 <head>
@@ -94,13 +127,13 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.1.1</td>
-            <td class="indent2 italic">Остатки на ПСП 45 км на состоянию на 01.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на ПСП 45 км на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_1, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.1.2</td>
-            <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на 01.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_2, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.1.3</td>
@@ -134,13 +167,13 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.1.9</td>
-            <td class="indent2 italic">Остатки на ПСП 45 км на состоянию на 31.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на ПСП 45 км на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_1, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.1.10</td>
-            <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на 31.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_2, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.2</td>
