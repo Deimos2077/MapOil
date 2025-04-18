@@ -27,6 +27,10 @@ if (!isset($_SESSION['user_id'])) {
         #date-input{
             width: 17%;
         }
+        .gray-input{
+            background-color:rgb(218, 217, 217) !important;
+            font-weight: bold;
+        }
         .highlight-date {
         background: #ffcc00 !important; /* Жёлтая подсветка */
         color: black !important;
@@ -178,10 +182,12 @@ async function loadData() {
             allRows.forEach(tr => {
                 // Проверяем, не находится ли tr внутри #myTable
                 if (!tr.closest("#myTable")) {
+                    const percent = tr.querySelector("[id^='percent-']");
                     const volume = tr.querySelector("[id^='volume-']");
                     const loss = tr.querySelector("[id^='loss-']");
                     const volume2 = tr.querySelector("[id^='volume2-']");
 
+                    if (percent) percent.value = row.loss_coefficient ?? "";
                     if (volume) volume.value = row.from_amount ?? "";
                     if (loss) loss.value = row.losses ?? "";
                     if (volume2) volume2.value = row.to_amount ?? "";
@@ -399,7 +405,7 @@ async function loadData() {
             <td><input type="number" id="percent-zhanazholPP" class="form-control" step="0.0001" value="0.0377"></td>
             <td><input type="number" id="volume-zhanazhol" class="form-control"></td>
             <td><input type="number" id="loss-zhanazholP" class="form-control"></td>
-            <td><input type="number" id="volume2-zhanazholedit" class="form-control"></td>
+            <td><input type="number" id="volume2-zhanazholedit" class="form-control gray-input"></td>
         </tr>
             <tr data-pipeline-id="26" data-from-id="25" data-to-id="25">
                 <td colspan="2">ГНПС Кенкияк (перевалка)</td>
@@ -654,7 +660,7 @@ async function loadData() {
             <tr data-pipeline-id="52" data-from-id="5" data-to-id="4">
                 <td>ГНПС Кенкияк</td>
                 <td>ГНПС Кумколь</td>
-                <td><input type="number" id="percent-kenkiyakPP" class="form-control" step="0.0001" value="0.0794"></td>
+                <td><input type="number" id="percent-kenkiyak4PP" class="form-control" step="0.0001" value="0.0794"></td>
                 <td><input type="number" id="volume-kenkiyak4" class="form-control"></td>
                 <td><input type="number" id="loss-kenkiyak4P" class="form-control"></td>
                 <td><input type="number" id="volume2-kumkol4" class="form-control main-input"></td>
@@ -800,7 +806,7 @@ async function loadData() {
                 <td><input type="number" id="loss-kasimova6P" class="form-control"></td>
                 <td><input type="number" id="volume2-km12356" class="form-control main-input"></td>
             </tr>
-            <!-- <tr data-pipeline-id="67" data-from-id="24" data-to-id="8">
+            <tr data-pipeline-id="67" data-from-id="24" data-to-id="8">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Самара</td>
                 <td><input type="number" id="percent-samaraPP" class="form-control" step="0.0001" value="0.0192"></td>
@@ -861,7 +867,7 @@ async function loadData() {
                 <td><input type="number" id="volume-grushavai" class="form-control"></td>
                 <td><input type="number" id="loss-grushavaiTransferP" class="form-control"></td>
                 <td><input type="number" id="volume2-grushavaiTransfer" class="form-control"></td>
-            </tr> -->
+            </tr>
             <tr data-pipeline-id="75" data-from-id="15" data-to-id="9">
                 <td>1235,3 км граница (РК/РФ)</td>
                 <td>Новороссийск</td>
