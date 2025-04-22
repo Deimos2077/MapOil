@@ -1354,61 +1354,143 @@ function addMinimalistFlow(points, oilTransferData) {
 
     const filteredData = Array.from(filteredMap.values());
 
-    filteredData.forEach(record => {
-        const isSpecialSource = (record.from_point === 12 || record.from_point === 11);
-        const pointId = isSpecialSource ? record.from_point : record.to_point;
-        if (!allowedPointIds.includes(pointId)) return;
+// ✅ 1. Отдельно рисуем ПСП 45 и Жана Жол (id = 11, 12)
+[11, 12].forEach(specialId => {
+    const relevant = oilTransferData.filter(r =>
+        r.from_point === specialId &&
+        r.to_point === 5 &&
+        r.from_amount > 0
+    );
 
-        const point = points.find(p => p.id === pointId);
-        if (!point || !point.coords) return;
+    if (relevant.length === 0) {
+        console.warn(`⚠️ Нет подходящих записей для точки ${specialId}`);
+        return;
+    }
 
-        const amount = isSpecialSource ? record.from_amount : record.to_amount;
-        if (!amount || amount === 0) return;
+    const latestDate = relevant.reduce((latest, r) =>
+        new Date(r.date) > new Date(latest) ? r.date : latest,
+        relevant[0].date
+    );
 
-        if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
-        const usageIndex = pointUsageCounter[pointId]++;
+    const sameDateRecords = relevant.filter(r => r.date === latestDate);
 
-        const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
-        if (!rawLabelPosition) return;
+    let totalOut = sameDateRecords.reduce((sum, r) => sum + (parseFloat(r.from_amount) || 0), 0);
 
-        const dx = rawLabelPosition[0] - point.coords[0];
-        const dy = rawLabelPosition[1] - point.coords[1];
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return;
+    // ✂️ Делим на 2
+    totalOut = totalOut / 2;
 
-        const unitX = dx / length;
-        const unitY = dy / length;
-        const baseOffset = 1.5;
+    if (totalOut === 0) return;
 
-        const labelPosition = [
-            point.coords[0] + unitX * baseOffset,
-            point.coords[1] + unitY * baseOffset
-        ];
+    console.log(`📦 ${specialId === 11 ? 'Жана Жол' : 'ПСП 45'} [id=${specialId}] → 5: ${totalOut} т (дата: ${latestDate}, ÷2)`);
 
-        const marker = L.marker(labelPosition, {
-            icon: L.divIcon({
-                className: 'flow-label',
-                html: `<div>${amount.toLocaleString()} т</div>`,
-                iconSize: null,
-                iconAnchor: [10, 10],
-            })
-        });
+    const point = points.find(p => p.id === specialId);
+    if (!point || !point.coords) return;
 
-        const polyline = L.polyline([point.coords, labelPosition], {
-            color: 'black',
-            weight: 2,
-            dashArray: '5, 5',
-            opacity: 0.8,
-        });
+    const usageIndex = pointUsageCounter[specialId] || 0;
+    pointUsageCounter[specialId] = usageIndex + 1;
 
-        marker.options._originalPoint = point.coords;
-        marker.options._direction = [unitX, unitY];
-        marker.options._baseOffset = baseOffset;
-        marker.options._polyline = polyline;
+    const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, specialId, usageIndex);
+    if (!rawLabelPosition) return;
 
-        polyline.addTo(minimalistFlowLayerGroup);
-        marker.addTo(minimalistFlowLayerGroup);
+    const dx = rawLabelPosition[0] - point.coords[0];
+    const dy = rawLabelPosition[1] - point.coords[1];
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length === 0) return;
+
+    const unitX = dx / length;
+    const unitY = dy / length;
+    const baseOffset = 1.8;
+
+    const labelPosition = [
+        point.coords[0] + unitX * baseOffset,
+        point.coords[1] + unitY * baseOffset
+    ];
+
+    const polyline = L.polyline([point.coords, labelPosition], {
+        color: 'black',
+        weight: 2,
+        dashArray: '5, 5',
+        opacity: 0.8,
     });
+
+    const marker = L.marker(labelPosition, {
+        icon: L.divIcon({
+            className: 'flow-label',
+            html: `<div><b>${Math.round(totalOut).toLocaleString()} т</b></div>`,
+            iconSize: null,
+            iconAnchor: [10, 10],
+        })
+    });
+
+    marker.options._originalPoint = point.coords;
+    marker.options._direction = [unitX, unitY];
+    marker.options._baseOffset = baseOffset;
+    marker.options._polyline = polyline;
+
+    polyline.addTo(minimalistFlowLayerGroup);
+    marker.addTo(minimalistFlowLayerGroup);
+});
+
+
+// ✅ 2. Основная визуализация для всех остальных точек из filteredData
+filteredData.forEach(record => {
+    const isSpecialSource = (record.from_point === 12 || record.from_point === 11);
+    const pointId = isSpecialSource ? record.from_point : record.to_point;
+    if (pointId === 11 || pointId === 12) return; // эти точки уже отрисованы выше
+
+    if (!allowedPointIds.includes(pointId)) return;
+
+    const point = points.find(p => p.id === pointId);
+    if (!point || !point.coords) return;
+
+    const amount = isSpecialSource ? record.from_amount : record.to_amount;
+    if (!amount || amount === 0) return;
+
+    if (!pointUsageCounter[pointId]) pointUsageCounter[pointId] = 0;
+    const usageIndex = pointUsageCounter[pointId]++;
+
+    const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
+    if (!rawLabelPosition) return;
+
+    const dx = rawLabelPosition[0] - point.coords[0];
+    const dy = rawLabelPosition[1] - point.coords[1];
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length === 0) return;
+
+    const unitX = dx / length;
+    const unitY = dy / length;
+    const baseOffset = 1.5;
+
+    const labelPosition = [
+        point.coords[0] + unitX * baseOffset,
+        point.coords[1] + unitY * baseOffset
+    ];
+
+    const marker = L.marker(labelPosition, {
+        icon: L.divIcon({
+            className: 'flow-label',
+            html: `<div>${amount.toLocaleString()} т</div>`,
+            iconSize: null,
+            iconAnchor: [10, 10],
+        })
+    });
+
+    const polyline = L.polyline([point.coords, labelPosition], {
+        color: 'black',
+        weight: 2,
+        dashArray: '5, 5',
+        opacity: 0.8,
+    });
+
+    marker.options._originalPoint = point.coords;
+    marker.options._direction = [unitX, unitY];
+    marker.options._baseOffset = baseOffset;
+    marker.options._polyline = polyline;
+
+    polyline.addTo(minimalistFlowLayerGroup);
+    marker.addTo(minimalistFlowLayerGroup);
+});
+
 
     // 🔁 Промежуточные суммы
     const routes = {
