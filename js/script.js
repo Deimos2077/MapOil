@@ -1492,113 +1492,115 @@ filteredData.forEach(record => {
 });
 
 
-    // 🔁 Промежуточные суммы
-    const routes = {
-        9: [5, 7, 19, 24, 8], // Новороссийск
-        10: [5, 7, 19, 24, 8],    // Усть-Луга
-        6: [5, 4, 14, 6],                         // ПКОП
-        1: [5, 4, 14, 2],                      // Алашанькоу
-        3: [5, 4, 14, 2, 3]                       // ПНХЗ
-    };
+const routes = {
+    9: [5, 7, 19, 24, 8], // Новороссийск
+    10: [5, 7, 19, 24, 8], // Усть-Луга
+    6: [5, 4, 14, 6],      // ПКОП
+    1: [5, 4, 14, 2],      // Алашанькоу
+    3: [5, 4, 14, 2, 3]    // ПНХЗ
+};
 
-    const volumesByPoint = {};
-    const logsByPoint = {};
-    const handledPairs = new Set();
-    
-    Object.entries(routes).forEach(([finalPointId, route]) => {
-        for (let i = 1; i < route.length; i++) {
-            const fromId = route[i - 1];
-            const toId = route[i];
-            const key = `${fromId}_${toId}`;
-    
-            // Не обрабатывать один и тот же участок дважды
-            if (handledPairs.has(key)) continue;
-            handledPairs.add(key);
-    
-            const record = filteredData.find(r => r.from_point === fromId && r.to_point === toId);
-            if (!record) continue;
-    
-            const isFirst = i === 1;
-            const value = isFirst ? record.from_amount : record.to_amount;
-    
-            if (!volumesByPoint[toId]) {
-                volumesByPoint[toId] = 0;
-                logsByPoint[toId] = [];
-            }
-    
-            volumesByPoint[toId] += value || 0;
-    
-            logsByPoint[toId].push({
-                from: record.from_point,
-                to: record.to_point,
-                used: isFirst ? 'from_amount' : 'to_amount',
-                value: value || 0,
-                full: record
-            });
+const volumesByPoint = {};
+const logsByPoint = {};
+const handledPairs = new Set();
+
+Object.entries(routes).forEach(([finalPointId, route]) => {
+    for (let i = 1; i < route.length; i++) {
+        const fromId = route[i - 1];
+        const toId = route[i];
+        const key = `${fromId}_${toId}`;
+
+        // Не обрабатывать один и тот же участок дважды
+        if (handledPairs.has(key)) continue;
+        handledPairs.add(key);
+
+        // Получаем все записи по участку и находим самую последнюю дату
+        const relevant = oilTransferData.filter(r =>
+            r.from_point === fromId && r.to_point === toId
+        );
+
+        if (relevant.length === 0) continue;
+
+        const latestDate = relevant.reduce((latest, r) =>
+            new Date(r.date) > new Date(latest) ? r.date : latest,
+            relevant[0].date
+        );
+
+        const sameDateRecords = relevant.filter(r => r.date === latestDate);
+
+        const isFirst = i === 1;
+        const value = sameDateRecords.reduce((sum, r) => {
+            return sum + (isFirst ? (parseFloat(r.from_amount) || 0) : (parseFloat(r.to_amount) || 0));
+        }, 0);
+
+        if (!volumesByPoint[toId]) {
+            volumesByPoint[toId] = 0;
+            logsByPoint[toId] = [];
         }
-    });
-    
-    
-    
-    // 👇 Логирование
-    Object.entries(logsByPoint).forEach(([pointId, logs]) => {
-        console.log(`📍 Точка ID ${pointId}:`);
-        logs.forEach(log => {
-            console.log(`   ➕ Из ${log.from} → ${log.to} (${log.used}): ${log.value} т`);
+
+        volumesByPoint[toId] += value;
+
+        logsByPoint[toId].push({
+            from: fromId,
+            to: toId,
+            used: isFirst ? 'from_amount' : 'to_amount',
+            value,
+            date: latestDate
         });
-        console.log(`   🧮 Итого в точке ${pointId}: ${volumesByPoint[pointId]} т`);
+    }
+});
+
+// 👇 Визуализация
+Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
+    pointId = parseInt(pointId);
+    const point = points.find(p => p.id === pointId);
+    if (!point || !point.coords || volume === 0) return;
+
+    const usageIndex = pointUsageCounter[pointId] || 0;
+    pointUsageCounter[pointId] = usageIndex + 1;
+
+    const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
+    if (!rawLabelPosition) return;
+
+    const dx = rawLabelPosition[0] - point.coords[0];
+    const dy = rawLabelPosition[1] - point.coords[1];
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length === 0) return;
+
+    const unitX = dx / length;
+    const unitY = dy / length;
+    const baseOffset = 1.2;
+
+    const labelPosition = [
+        point.coords[0] + unitX * baseOffset,
+        point.coords[1] + unitY * baseOffset
+    ];
+
+    const marker = L.marker(labelPosition, {
+        icon: L.divIcon({
+            className: 'flow-label sent',
+            html: `<div>${Math.round(volume).toLocaleString()} т</div>`,
+            iconSize: null,
+            iconAnchor: [10, 10],
+        })
     });
-    
 
-    Object.entries(volumesByPoint).forEach(([pointId, volume]) => {
-        pointId = parseInt(pointId);
-        const point = points.find(p => p.id === pointId);
-        if (!point || !point.coords || volume === 0) return;
-
-        const usageIndex = pointUsageCounter[pointId] || 0;
-        pointUsageCounter[pointId] = usageIndex + 1;
-
-        const rawLabelPosition = findFreePositionWithIndex(point.coords, minimalistFlowLayerGroup, pointId, usageIndex);
-        if (!rawLabelPosition) return;
-
-        const dx = rawLabelPosition[0] - point.coords[0];
-        const dy = rawLabelPosition[1] - point.coords[1];
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return;
-
-        const unitX = dx / length;
-        const unitY = dy / length;
-        const baseOffset = 1.2;
-
-        const labelPosition = [
-            point.coords[0] + unitX * baseOffset,
-            point.coords[1] + unitY * baseOffset
-        ];
-
-        const polyline = L.polyline([point.coords, labelPosition], {
-            color: 'black',
-            weight: 2,
-            dashArray: '5, 5',
-            opacity: 0.8,
-        });
-
-        const marker = L.marker(labelPosition, {
-            icon: L.divIcon({
-                className: 'flow-label sent',
-                html: `<div>${volume.toLocaleString()} т</div>`,
-                iconSize: null,
-                iconAnchor: [10, 10],
-            })
-        });
-
-        marker.options._originalPoint = point.coords;
-        marker.options._direction = [unitX, unitY];
-        marker.options._baseOffset = baseOffset;
-        marker.options._polyline = polyline;
-
-        polyline.addTo(minimalistFlowLayerGroup);
-        marker.addTo(minimalistFlowLayerGroup);
+    const polyline = L.polyline([point.coords, labelPosition], {
+        color: 'black',
+        weight: 2,
+        dashArray: '5, 5',
+        opacity: 0.8,
     });
+
+    marker.options._originalPoint = point.coords;
+    marker.options._direction = [unitX, unitY];
+    marker.options._baseOffset = baseOffset;
+    marker.options._polyline = polyline;
+
+    polyline.addTo(minimalistFlowLayerGroup);
+    marker.addTo(minimalistFlowLayerGroup);
+});
+
 
     map.addLayer(minimalistFlowLayerGroup);
 }
