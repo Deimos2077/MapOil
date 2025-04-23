@@ -177,6 +177,21 @@ if ($date) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $sumKasimova = $row['total_sum'] ?? 0;
 }
+$sumKasimova2 = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(to_amount) AS total_sum
+        FROM oiltransfer
+        WHERE from_point_id = 7
+          AND to_point_id = 19
+          AND piplines_system_id BETWEEN 1 AND 6
+          AND date = :date
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sumKasimova2 = $row['total_sum'] ?? 0;
+}
 $sum12353km = 0;
 
 if ($date) {
@@ -303,6 +318,8 @@ $start_volume_2 = $end_volume_2 = 0;
 
 if ($date) {
     // Резервуар 1
+    $start_volume_1 = $start_volume_1 ?? 0;
+    $end_volume_1 = $end_volume_1 ?? 0;
     $stmt1 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -317,6 +334,8 @@ if ($date) {
     }
 
     // Резервуар 2
+    $start_volume_2 = $start_volume_2 ?? 0;
+    $end_volume_2 = $end_volume_2 ?? 0;
     $stmt2 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -330,6 +349,8 @@ if ($date) {
         $end_volume_2 = $res2['end_volume'];
     }
     // Резервуар 3
+    $start_volume_3 = $start_volume_3 ?? 0;
+    $end_volume_3 = $end_volume_3 ?? 0;
     $stmt3 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -342,7 +363,10 @@ if ($date) {
         $start_volume_3 = $res2['start_volume'];
         $end_volume_3 = $res2['end_volume'];
     }
+    
     // Резервуар 4
+    $start_volume_4 = $start_volume_4 ?? 0;
+    $end_volume_4 = $end_volume_4 ?? 0;
     $stmt4 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -356,6 +380,8 @@ if ($date) {
         $end_volume_4 = $res4['end_volume'];
     }
     // Резервуар 5
+    $start_volume_5 = $start_volume_5 ?? 0;
+    $end_volume_5 = $end_volume_5 ?? 0;
     $stmt5 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -369,6 +395,8 @@ if ($date) {
         $end_volume_5 = $res5['end_volume'];
     }
     // Резервуар 6
+    $start_volume_6 = $start_volume_6 ?? 0;
+    $end_volume_6 = $end_volume_6 ?? 0;
     $stmt6 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -383,6 +411,7 @@ if ($date) {
     }
 }
 ?>
+
 <html>
 <head>
     <style>
@@ -403,7 +432,7 @@ if ($date) {
             text-align: center;
         }
         .right {
-            text-align: right;
+            text-align: center;
         }
         .indent1 {
             padding-left: 20px;
@@ -415,24 +444,107 @@ if ($date) {
             font-style: italic;
         }
     </style>
-
+    <style>
+        .main-input {
+            background-color: #ffcccc !important;
+            border: 2px solid red;
+            font-weight: bold;
+        }
+        #date-input{
+            width: 17%;
+        }
+        .gray-input{
+            background-color:rgb(218, 217, 217) !important;
+            font-weight: bold;
+        }
+        .highlight-date {
+        background: #ffcc00 !important; /* Жёлтая подсветка */
+        color: black !important;
+        border-radius: 50%;
+    }
+    .highlight-last-day {
+        background: #ff4d4d !important; /* Красная подсветка */
+        color: white !important;
+        border-radius: 50%;
+    }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/modal_set.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+                    <!-- Модальное окно -->
+                    <div id="settings-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Настройки</h2>
+                    <ul>
+                        <li>
+                            <span data-i18n="settings_language">Язык интерфейса:</span>
+                            <select id="language-select">
+                                <option value="ru">Русский</option>
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </li>
+                        <li>
+                            <span data-i18n="settings_font_size">Размер шрифта:</span>
+                            <input type="range" id="font-size" min="12" max="24" step="1">
+                        </li>
+                        <li><a href="#" id="export-excel" data-i18n="settings_export_excel">Экспорт данных в Excel</a></li>
+                        <li><a href="#" id="export-pdf" data-i18n="settings_export_pdf">Экспорт данных в PDF</a></li>
+                        <li>
+                            <span data-i18n="settings_email_report">Отчет по email:</span>
+                            <input type="email" id="email" placeholder="Введите email">
+                            <button id="send-report">Отправить</button>
+                        </li>
+                        <li><a href="#" id="help-button" data-i18n="settings_help">Помощь</a></li>
+                        <li><a href="/project/MapOil/password_change.php" data-i18n="settings_password_change">Смена пароля</a></li>
+                        <li><a href="/project/MapOil/login_history.php" data-i18n="settings_login_history">История входов</a></li>
+                    </ul>
+                </div>
+            </div>
+<nav id="slide-menu">
+    <ul>
+        <li class="map"><a class="menu-href" href="/project/MapOil/map.php" ><i class="fa fa-map" ></i>Карта транспортировки нефти</a></li>        
+        <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
+        <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
+        <li class="report"><a class="menu-href" href="/project/MapOil/ExcelMathReport.php" ><i class="fa fa-file"></i>МатОтчет</a></li>
+        <!-- <li class="svg-editor">
+            <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
+        </li> -->
+        <!-- <li class="settings"><a href="#" id="settings-toggle" data-i18n="menu_settings">Настройки</a></li> -->
+        <li class="logout"><a href="logout.php" data-i18n="menu_logout">Выход</a></li>
+    </ul>
+</nav>
+<div id="content">
+<div class="menu-trigger"></div>
 <form method="GET">
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" name="date" class="form-control mb-3">
-    <button type="submit">Показать сумму</button>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary mb-4" type="submit">Показать сумму</button>
+        <button class="btn btn-primary mb-4" onclick="exportToExcel()">Экспорт в Excel</button>
+    </div>
 </form>
-    <table>
+    <table id="myTable" class="table table-bordered table-striped">
         <tr>
             <th class="center">№</th>
             <th>Наименование</th>
             <th>Кол-во<br>(тонн нетто)</th>
         </tr>
         <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
             <td class="center">1</td>
             <td><strong>СДАЧА НЕФТИ:</strong></td>
-            <td class="right"></td>
+            <td class="right"><?= number_format($sum, 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">1.1</td>
@@ -442,7 +554,7 @@ if ($date) {
         <tr>
             <td class="center">1.2</td>
             <td class="indent1">СДАЧА НЕФТИ в ТОО "Актобе нефтепереработка" (самовывоз)</td>
-            <td class="right"><?= number_format($sum, 2, '.', ' ') ?></td>
+            <td class="right"></td>
         </tr>
         <tr>
             <td class="center">2</td>
@@ -462,7 +574,7 @@ if ($date) {
         <tr>
             <td class="center">2.1.2</td>
             <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на начало месяца</td>
-            <td class="right"><?= number_format($start_volume_2, 0, '.', ' ') ?></td>
+            <td class="right"></td>
         </tr>
         <tr>
             <td class="center">2.1.3</td>
@@ -502,7 +614,7 @@ if ($date) {
         <tr>
             <td class="center">2.1.10</td>
             <td class="indent2 italic">Остатки на КПОУ Жанажол на состоянию на конец месяца</td>
-            <td class="right"><?= number_format($end_volume_2, 0, '.', ' ') ?></td>
+            <td class="right"></td>
         </tr>
         <tr>
             <td class="center">2.2</td>
@@ -512,7 +624,7 @@ if ($date) {
         <tr>
             <td class="center">2.2.1</td>
             <td class="indent2 italic">Остатки технологической нефти на состоянию на начало месяца </td>
-            <td class="right">11 596</td>
+            <td class="right"><?= number_format($start_volume_5, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.2.2</td>
@@ -537,7 +649,7 @@ if ($date) {
         <tr>
             <td class="center">2.2.6</td>
             <td class="indent2 italic">Остатки технологической нефти на состоянию на конец месяца.</td>
-            <td class="right">11 596</td>
+            <td class="right"><?= number_format($end_volume_5, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.3</td>
@@ -546,8 +658,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.3.1</td>
-            <td class="indent2 italic">Остатки на ГНПС Кумколь на состоянию на 01.01.2025 г.</td>
-            <td class="right">1 213</td>
+            <td class="indent2 italic">Остатки на ГНПС Кумколь на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_3, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.3.2</td>
@@ -576,8 +688,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.3.7</td>
-            <td class="indent2 italic">Остатки на ГНПС Кумколь на состоянию на 31.01.2025 г.</td>
-            <td class="right">1 213</td>
+            <td class="indent2 italic">Остатки на ГНПС Кумколь на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_3, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.4</td>
@@ -586,7 +698,7 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.4.1</td>
-            <td class="indent2 italic">Остатки технологической нефти на состоянию на 01.01.2025 г.</td>
+            <td class="indent2 italic">Остатки технологической нефти на состоянию на начало месяца</td>
             <td class="right">0</td>
         </tr>
         <tr>
@@ -606,7 +718,7 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.4.6</td>
-            <td class="indent2 italic">Остатки технологической нефти на состоянию на 31.01.2025 г.</td>
+            <td class="indent2 italic">Остатки технологической нефти на состоянию на конец месяца</td>
             <td class="right">0</td>
         </tr>
         <tr>
@@ -616,8 +728,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.5.1</td>
-            <td class="indent2 italic">Остатки технологической нефти на состоянию на 01.01.2025 г.</td>
-            <td class="right">1 022</td>
+            <td class="indent2 italic">Остатки технологической нефти на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_6, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.5.2</td>
@@ -636,8 +748,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.5.5</td>
-            <td class="indent2 italic">Остатки технологической нефти на состоянию на 31.01.2025 г.</td>
-            <td class="right">1 022</td>
+            <td class="indent2 italic">Остатки технологической нефти на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_6, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.6</td>
@@ -646,8 +758,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.6.1</td>
-            <td class="indent2 italic">Остатки на НПС им. Шманева на состоянию на 01.01.2025 г.</td>
-            <td class="right">440</td>
+            <td class="indent2 italic">Остатки на НПС им. Шманева на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_2, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.6.2</td>
@@ -656,6 +768,11 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.6.3</td>
+            <td class="indent2">Принято НПС им. Шманова</td>
+            <td class="right"><?= number_format($sumKasimova2,2,'.',' ')  ?></td>
+        </tr>
+        <tr>
+            <td class="center">2.6.4</td>
             <td class="indent2">Передано 12353 км (граница РК-РФ)</td>
             <td class="right"><?= number_format($sum12353km,2,'.',' ')  ?></td>
         </tr>
@@ -667,8 +784,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.6.6</td>
-            <td class="indent2 italic">Остатки на НПС им. Шманева на состоянию на 31.01.2025 г.</td>
-            <td class="right">440</td>
+            <td class="indent2 italic">Остатки на НПС им. Шманева на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_2, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.7</td>
@@ -677,8 +794,8 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.7.1</td>
-            <td class="indent2 italic">Остатки на системе ПАО "Транснефть" на состоянию на 01.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на системе ПАО "Транснефть" на состоянию на начало месяца</td>
+            <td class="right"><?= number_format($start_volume_4, 0, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.7.2</td>
@@ -702,11 +819,162 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.7.6</td>
-            <td class="indent2 italic">Остатки на системе ПАО "Транснефть" на состоянию на 31.01.2025 г.</td>
-            <td class="right">0</td>
+            <td class="indent2 italic">Остатки на системе ПАО "Транснефть" на состоянию на конец месяца</td>
+            <td class="right"><?= number_format($end_volume_4, 0, '.', ' ') ?></td>
         </tr>
     </table>
+</div>
 
+<script>
+function exportToExcel() {
+  const table = document.querySelector("table");
+  const rows = table.querySelectorAll("tr");
+  const data = [];
+
+  rows.forEach(row => {
+    const rowData = [];
+    const cells = row.querySelectorAll("th, td");
+
+    cells.forEach(cell => {
+      const text = cell.textContent.trim();
+      const number = text.replace(/\s/g, '').replace(',', '.');
+      if (!isNaN(number) && number !== "") {
+        rowData.push(parseFloat(number));
+      } else {
+        rowData.push(text);
+      }
+    });
+
+    data.push(rowData);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  // Обводка и стили для всех ячеек
+  for (let R = 0; R < data.length; R++) {
+    for (let C = 0; C < data[R].length; C++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[cellAddress]) ws[cellAddress] = { t: "s", v: "" };
+
+      if (!ws[cellAddress].s) ws[cellAddress].s = {};
+
+      ws[cellAddress].s.border = {
+        top:    { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left:   { style: "thin", color: { rgb: "000000" } },
+        right:  { style: "thin", color: { rgb: "000000" } }
+      };
+    }
+  }
+// Применяем шрифт Times New Roman и размер 10 ко всем ячейкам
+for (let r = 0; r < rows.length; r++) {
+    let row = rows[r];
+    for (let c = 0; c < row.cells.length; c++) {
+        let cellRef = XLSX.utils.encode_cell({ r, c });
+        if (!ws[cellRef]) continue;
+
+        // Применяем шрифт ко всем ячейкам
+        ws[cellRef].s = {
+            ...ws[cellRef].s,
+            font: {
+                name: "Times New Roman",
+                sz: 11
+            }
+        };
+    }
+}
+  // Центрирование в колонке C
+  for (let R = 0; R < data.length; R++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 });
+    if (!ws[cellAddress]) continue;
+    ws[cellAddress].s.alignment = {
+      horizontal: "center",
+      vertical: "center"
+    };
+  }
+
+  // Первая строка — жирный и wrap
+  for (let C = 0; C < data[0].length; C++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+    if (!ws[cellAddress]) continue;
+    ws[cellAddress].s.font = { bold: true };
+    ws[cellAddress].s.alignment = {
+      wrapText: true,
+      horizontal: "center",
+      vertical: "center"
+    };
+  }
+
+  // Голубой фон для строк
+  const blueRows = [2, 3, 4, 5, 6, 17, 24, 32, 38, 44, 51];
+  blueRows.forEach(rowIdx => {
+    for (let C = 0; C < data[rowIdx].length; C++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: C });
+      if (!ws[cellAddress]) continue;
+      ws[cellAddress].s.fill = {
+        fgColor: { rgb: "D9EAF7" }
+      };
+    }
+  });
+
+    // Жирным строки
+    const boldRows = [2, 7, 8, 15, 16, 18, 23, 25, 31, 33, 37, 39, 43, 45, 50, 52, 57];
+  boldRows.forEach(rowIdx => {
+    for (let C = 0; C < data[rowIdx].length; C++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: C });
+      if (!ws[cellAddress]) continue;
+
+      if (!ws[cellAddress].s) ws[cellAddress].s = {};
+      if (!ws[cellAddress].s.font) ws[cellAddress].s.font = {};
+      ws[cellAddress].s.font.bold = true;
+    }
+  });
+  // Ширина колонок
+  ws["!cols"] = [
+    { wch: 10 },     // Колонка A
+    { wpx: 444 },    // Колонка B (444 пикселей)
+    { wch: 8 }      // Колонка C
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+  XLSX.writeFile(wb, "report.xlsx");
+}
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("get_dates.php")
+            .then(response => response.json())
+            .then(result => {
+                const allDates = result.allDates;
+                const latestPerMonth = result.latestPerMonth;
+
+                flatpickr("#date-input", {
+                    dateFormat: "Y-m-d",
+                    locale: "ru",
+                    onDayCreate: function(dObj, dStr, fp, dayElem) {
+                        const dateStr = dayElem.dateObj.toLocaleDateString("sv-SE");
+
+                        if (allDates.includes(dateStr)) {
+                            if (latestPerMonth.includes(dateStr)) {
+                                dayElem.classList.add("highlight-last-day"); // красный
+                            } 
+                            // else {
+                            //     dayElem.classList.add("highlight-date"); // жёлтый
+                            // }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error("Ошибка загрузки дат:", error));
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/Settings.js"></script>
+    <script src="js/menu.js"></script>
 </body>
 
 </html>

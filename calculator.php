@@ -280,7 +280,7 @@ async function loadData() {
         <li class="map"><a class="menu-href" href="/project/MapOil/map.php" ><i class="fa fa-map" ></i>Карта транспортировки нефти</a></li>        
         <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
-        <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
+        <li class="report"><a class="menu-href" href="/project/MapOil/ExcelMathReport.php" ><i class="fa fa-file"></i>МатОтчет</a></li>
         <!-- <li class="svg-editor">
             <a class="menu-href" href="/project/svgedit-master/dist/editor/" target="_blank">Редактор SVG</a>
         </li> -->
@@ -294,7 +294,9 @@ async function loadData() {
     <h2 class="mb-4">Форма расчета потерь нефти</h2>
     <label style="display:block" for="date-input">Дата:</label>
     <input type="date" id="date-input" class="form-control mb-3" onchange="loadData();loadDataEx();">
-    <button class="btn btn-primary mb-4" onclick="exportToExcel()" >Экспортировать excel</button>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary mb-4" onclick="exportToExcel()" >Экспортировать Excel</button>
+    </div>
     <table class="table table-bordered col-1" data-type="oilplane">
         <thead>
             <tr class="table-primary">
