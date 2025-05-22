@@ -300,7 +300,7 @@ async function loadData() {
     <table class="table table-bordered col-1" data-type="oilplane">
         <thead>
             <tr class="table-primary">
-                <th>План здачи нефти</th>
+                <th>План сдачи нефти</th>
             </tr>
         </thead>
         <tbody>
@@ -313,7 +313,7 @@ async function loadData() {
     <table class="table table-bordered" data-type="oilfact">
         <thead>
             <tr class="table-primary">
-                <th>Факт здачи нефти</th>
+                <th>Факт сдачи нефти</th>
                 <th></th>
             </tr>
         </thead>

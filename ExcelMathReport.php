@@ -41,10 +41,10 @@ $sumPkop = 0;
 
 if ($date) {
     $stmt = $pdo->prepare("
-        SELECT SUM(to_amount) + losses AS total_sum
+        SELECT SUM(to_amount) AS total_sum
         FROM oiltransfer
-        WHERE from_point_id = 4
-          AND to_point_id = 6
+        WHERE from_point_id = 5
+          AND to_point_id = 4
           AND piplines_system_id BETWEEN 1 AND 6
           AND date = :date
     ");
@@ -66,6 +66,55 @@ if ($date) {
     $stmt->execute([':date' => $date]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $Pkop = $row['total_sum'] ?? 0;
+}
+
+$Pkopfrom = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(to_amount) AS total_sum
+        FROM oiltransfer
+        WHERE from_point_id = 5
+          AND piplines_system_id IN (1, 4)
+          AND to_point_id = 4
+          AND date = :date
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $Pkopfrom = $row['total_sum'] ?? 0;
+}
+
+$sumLossesUst = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(losses) AS total_losses
+        FROM oiltransfer
+        WHERE date = :date
+          AND (
+                (from_point_id = 7 AND to_point_id = 19)
+             OR (from_point_id = 19 AND to_point_id = 24)
+          )
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sumLossesUst = $row['total_losses'] ?? 0;
+}
+
+$lossesKasimov = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(losses) AS total_losses
+        FROM oiltransfer
+        WHERE date = :date
+          AND (
+                (from_point_id = 7 AND to_point_id = 19)
+          )
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $lossesKasimov = $row['total_losses'] ?? 0;
 }
 
 $PNHZ = 0;
@@ -116,6 +165,22 @@ $sumKumkol = 0;
 
 if ($date) {
     $stmt = $pdo->prepare("
+        SELECT SUM(to_amount) AS total_sum
+        FROM oiltransfer
+        WHERE from_point_id = 5
+          AND to_point_id = 4
+          AND piplines_system_id BETWEEN 1 AND 6
+          AND date = :date
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sumKumkol = $row['total_sum'] ?? 0;
+}
+
+$sumKumkol = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
         SELECT SUM(from_amount) AS total_sum
         FROM oiltransfer
         WHERE from_point_id = 5
@@ -127,6 +192,34 @@ if ($date) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $sumKumkol = $row['total_sum'] ?? 0;
 }
+
+// $minusVolumeKumkol = 0;
+
+// if ($date) {
+//     $stmt = $pdo->prepare("
+//         SELECT minus_volume 
+//         FROM reservoirvolumes
+//         WHERE reservoir_id = 3
+//           AND date = :date
+//     ");
+//     $stmt->execute([':date' => $date]);
+//     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+//     $minusVolumeKumkol = $row['minus_volume'] ?? 0;
+// }
+
+// $plusVolumeKumkol = 0;
+
+// if ($date) {
+//     $stmt = $pdo->prepare("
+//         SELECT plus_volume  
+//         FROM reservoirvolumes
+//         WHERE reservoir_id = 3
+//           AND date = :date
+//     ");
+//     $stmt->execute([':date' => $date]);
+//     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+//     $plusVolumeKumkol = $row['plus_volume'] ?? 0;
+// }
 
 $sumKumkol2 = 0;
 
@@ -297,25 +390,43 @@ if ($date) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $sum_losses = $row['total_losses'] ?? 0;
 }
-// $sum_losses2 = 0;
+$sum_losses2 = 0;
 
-// if ($date) {
-//     $stmt = $pdo->prepare("
-//         SELECT SUM(losses) AS total_losses
-//         FROM oiltransfer
-//         WHERE from_point_id = 5
-//           AND to_point_id = 4
-//           AND piplines_system_id BETWEEN 1 AND 6
-//           AND date = :date
-//     ");
-//     $stmt->execute([':date' => $date]);
-//     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-//     $sum_losses2 = $row['total_losses'] ?? 0;
-// }
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(losses) AS total_losses
+        FROM oiltransfer
+        WHERE from_point_id = 5
+          AND to_point_id = 4
+          AND piplines_system_id BETWEEN 1 AND 2
+          AND date = :date
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sum_losses2 = $row['total_losses'] ?? 0;
+}
+
+$lossesPkop = 0;
+
+if ($date) {
+    $stmt = $pdo->prepare("
+        SELECT SUM(losses) AS total_losses
+        FROM oiltransfer
+        WHERE from_point_id = 4
+          AND to_point_id = 6
+          AND date = :date
+    ");
+    $stmt->execute([':date' => $date]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $lossesPkop = $row['total_losses'] ?? 0;
+}
 // По умолчанию нули
 $start_volume_1 = $end_volume_1 = 0;
 $start_volume_2 = $end_volume_2 = 0;
-
+$start_volume_3 = $end_volume_3 = 0;
+$start_volume_4 = $end_volume_4 = 0;
+$start_volume_5 = $end_volume_5 = 0;
+$start_volume_6 = $end_volume_6 = 0;
 if ($date) {
     // Резервуар 1
     $start_volume_1 = $start_volume_1 ?? 0;
@@ -334,8 +445,6 @@ if ($date) {
     }
 
     // Резервуар 2
-    $start_volume_2 = $start_volume_2 ?? 0;
-    $end_volume_2 = $end_volume_2 ?? 0;
     $stmt2 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -349,8 +458,6 @@ if ($date) {
         $end_volume_2 = $res2['end_volume'];
     }
     // Резервуар 3
-    $start_volume_3 = $start_volume_3 ?? 0;
-    $end_volume_3 = $end_volume_3 ?? 0;
     $stmt3 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -365,8 +472,6 @@ if ($date) {
     }
     
     // Резервуар 4
-    $start_volume_4 = $start_volume_4 ?? 0;
-    $end_volume_4 = $end_volume_4 ?? 0;
     $stmt4 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -380,8 +485,6 @@ if ($date) {
         $end_volume_4 = $res4['end_volume'];
     }
     // Резервуар 5
-    $start_volume_5 = $start_volume_5 ?? 0;
-    $end_volume_5 = $end_volume_5 ?? 0;
     $stmt5 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -395,8 +498,6 @@ if ($date) {
         $end_volume_5 = $res5['end_volume'];
     }
     // Резервуар 6
-    $start_volume_6 = $start_volume_6 ?? 0;
-    $end_volume_6 = $end_volume_6 ?? 0;
     $stmt6 = $pdo->prepare("
         SELECT start_volume, end_volume
         FROM reservoirvolumes
@@ -629,12 +730,12 @@ if ($date) {
         <tr>
             <td class="center">2.2.2</td>
             <td class="indent2">Принято в нефтепровод ГНПС Кенкияк - ГНПС Кумколь</td>
-            <td class="right"><?= number_format($sumKumkol2, 2, '.', ' ') ?></td>
+            <td class="right"><?= number_format($sumKumkol, 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.2.3</td>
             <td class="indent2">Передано в ГНПС Кумколь (для ПКОП)</td>
-            <td class="right"><?= number_format($sumPkop, 2, '.', ' ') ?></td>
+            <td class="right"><?= number_format($Pkopfrom, 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.2.4</td>
@@ -644,7 +745,7 @@ if ($date) {
         <tr>
             <td class="center">2.2.5</td>
             <td class="indent2">Технологические потери</td>
-            <td class="right"><?= number_format($techLosses = $sumKumkol2 - ($sumPkop + $sumDzhumagalieva), 2, '.', ' ') ?></td>
+            <td class="right"><?= number_format($sum_losses2, 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.2.6</td>
@@ -664,7 +765,7 @@ if ($date) {
         <tr>
             <td class="center">2.3.2</td>
             <td class="indent2">Принято в ГНПС Кумколь</td>
-            <td class="right"><?= number_format($lossesKum = $sumPkop + $sumDzhumagalieva, 2, '.', ' ') ?></td>
+            <td class="right"><?= number_format($sumPkop, 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.3.3</td>
@@ -684,7 +785,7 @@ if ($date) {
         <tr>
             <td class="center">2.3.6</td>
             <td class="indent2">Технологические потери</td>
-            <td class="right"><?= number_format($lossesKum-($PNHZ+$Pkop+$sumAtasu), 2, '.', ' ') ?></td>
+            <td class="right"><?= number_format($lossesPkop+($sumDzhumagalieva-$sumAtasu), 2, '.', ' ') ?></td>
         </tr>
         <tr>
             <td class="center">2.3.7</td>
@@ -744,7 +845,7 @@ if ($date) {
         <tr>
             <td class="center">2.5.4</td>
             <td class="indent2">Технологические потери</td>
-            <td class="right"><?= number_format($sumShmanova-$sumKasimova,2,'.',' ')  ?></td>
+            <td class="right"><?= number_format($lossesKasimov,2,'.',' ')  ?></td>
         </tr>
         <tr>
             <td class="center">2.5.5</td>
@@ -768,7 +869,7 @@ if ($date) {
         </tr>
         <tr>
             <td class="center">2.6.3</td>
-            <td class="indent2">Принято НПС им. Шманова</td>
+            <td class="indent2">Принято в НПС им. Касымова</td>
             <td class="right"><?= number_format($sumKasimova2,2,'.',' ')  ?></td>
         </tr>
         <tr>
@@ -780,7 +881,7 @@ if ($date) {
         <tr>
             <td class="center">2.6.5</td>
             <td class="indent2">Технологические потери</td>
-            <td class="right"><?= number_format($sumKasimova-$sum12353km,2,'.',' ')  ?></td>
+            <td class="right"><?= number_format($sumLossesUst,2,'.',' ')  ?></td>
         </tr>
         <tr>
             <td class="center">2.6.6</td>
