@@ -91,6 +91,7 @@ if (!empty($data["sumoil"])) {
     $date = $row["date"];
     $oilplane = intval($row["oilplane"]);
     $oil = intval($row["oil"]);
+    $oil_loss = intval($row["oilLoss"]);
 
     // Проверка: есть ли уже запись на эту дату
     $check = $conn->prepare("SELECT id FROM sumoil WHERE date = ?");
@@ -100,14 +101,14 @@ if (!empty($data["sumoil"])) {
 
     if ($check->num_rows > 0) {
         // Обновляем
-        $update = $conn->prepare("UPDATE sumoil SET oilplane = ?, oil = ? WHERE date = ?");
-        $update->bind_param("iis", $oilplane, $oil, $date);
+        $update = $conn->prepare("UPDATE sumoil SET oilplane = ?, oil = ?, oil_loss = ? WHERE date = ?");
+        $update->bind_param("iiis", $oilplane, $oil, $oil_loss, $date);
         $update->execute();
         $update->close();
     } else {
         // Вставляем
-        $insert = $conn->prepare("INSERT INTO sumoil (date, oilplane, oil) VALUES (?, ?, ?)");
-        $insert->bind_param("sii", $date, $oilplane, $oil);
+        $insert = $conn->prepare("INSERT INTO sumoil (date, oilplane, oil, oil_loss) VALUES (?, ?, ?, ?)");
+        $insert->bind_param("siii", $date, $oilplane, $oil, $oil_loss);
         $insert->execute();
         $insert->close();
     }

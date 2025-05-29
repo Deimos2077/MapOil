@@ -1060,9 +1060,9 @@ for (let r = 0; r < rows.length; r++) {
                             if (latestPerMonth.includes(dateStr)) {
                                 dayElem.classList.add("highlight-last-day"); // красный
                             } 
-                            // else {
-                            //     dayElem.classList.add("highlight-date"); // жёлтый
-                            // }
+                            else {
+                                dayElem.classList.add("highlight-date"); // жёлтый
+                            }
                         }
                     }
                 });

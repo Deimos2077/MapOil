@@ -54,11 +54,13 @@ async function saveData() {
     // Получаем значения для sumoil
     const oilplane = parseInt(document.getElementById("oilplane").value || 0);
     const oil = parseInt(document.getElementById("oil").value || 0);
+    const oilLoss = parseInt(document.getElementById("oil-loss").value || 0);
 
     const sumoil = [{
         date,
         oilplane,
-        oil
+        oil,
+        oilLoss
     }];
 
     let oiltransfers = [];
@@ -230,9 +232,11 @@ async function loadData() {
         if (result.sumoil) {
             const oilplaneInput = document.getElementById("oilplane");
             const oilInput = document.getElementById("oil");
+            const oilLossInput = document.getElementById("oil-loss");
 
             if (oilplaneInput) oilplaneInput.value = result.sumoil.oilplane ?? "";
             if (oilInput) oilInput.value = result.sumoil.oil ?? "";
+            if (oilLossInput) oilLossInput.value = result.sumoil.oil_loss ?? "";
         }
 
     } catch (error) {
@@ -1822,8 +1826,6 @@ async function loadData() {
 <div>
 
 
-
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetch("get_dates.php")
@@ -1842,9 +1844,9 @@ async function loadData() {
                             if (latestPerMonth.includes(dateStr)) {
                                 dayElem.classList.add("highlight-last-day"); // красный
                             } 
-                            // else {
-                            //     dayElem.classList.add("highlight-date"); // жёлтый
-                            // }
+                            else {
+                                dayElem.classList.add("highlight-date"); // жёлтый
+                            }
                         }
                     }
                 });
@@ -1852,10 +1854,6 @@ async function loadData() {
             .catch(error => console.error("Ошибка загрузки дат:", error));
     });
 </script>
-
-
-
-
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

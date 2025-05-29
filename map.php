@@ -134,6 +134,7 @@ label[for="date-input"] {
 
         <?php if ($_SESSION['role_id'] == '1' || $_SESSION['role_id'] == '2'): ?>        
         <li class="calculator"><a class="menu-href" href="/project/MapOil/calculator.php" data-i18n="menu_calculator"><i class="fa fa-file-text"></i>Отчетность</a></li>
+        <li class="events"><a class="menu-href" href="/project/MapOil/tableForm.php">Админ панель</a></li>
         <?php endif; ?>
         <li class="timeline"><a class="menu-href" href="/project/Graph/analysis.php" data-i18n="menu_graphs">Графики</a></li>
         <!-- <li class="events"><a class="menu-href" href="/project/MapOil/table.php" data-i18n="menu_reports">МатОтчет</a></li> -->
